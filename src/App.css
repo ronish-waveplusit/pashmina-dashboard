@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+@layer base {
+    :root {
+        --background: 30 33% 99%;
+        --foreground: 20 10% 20%;
+
+        --card: 30 33% 100%;
+        --card-foreground: 20 10% 20%;
+
+        --popover: 30 33% 100%;
+        --popover-foreground: 20 10% 20%;
+
+        --primary: 25 40% 35%;
+        --primary-foreground: 30 30% 98%;
+
+        --secondary: 25 20% 94%;
+        --secondary-foreground: 25 40% 25%;
+
+        --muted: 25 10% 96%;
+        --muted-foreground: 25 10% 40%;
+
+        --accent: 25 20% 94%;
+        --accent-foreground: 25 40% 25%;
+
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 25 10% 90%;
+        --input: 25 10% 90%;
+        --ring: 25 40% 35%;
+
+        --radius: 0.75rem;
+
+        --sidebar-background: 0 0% 98%;
+        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-primary-foreground: 0 0% 98%;
+        --sidebar-accent: 240 4.8% 95.9%;
+        --sidebar-accent-foreground: 240 5.9% 10%;
+        --sidebar-border: 220 13% 91%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+        --card: 222.2 84% 4.9%;
+        --card-foreground: 210 40% 98%;
+        --popover: 222.2 84% 4.9%;
+        --popover-foreground: 210 40% 98%;
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 11.2%;
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+        --ring: 212.7 26.8% 83.9%;
+
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans overflow-x-hidden;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-medium tracking-tight;
+    }
+
+    h1 {
+        @apply text-4xl leading-tight sm:text-5xl;
+    }
+
+    h2 {
+        @apply text-3xl leading-tight sm:text-4xl;
+    }
+
+    h3 {
+        @apply text-2xl leading-tight sm:text-3xl;
+    }
+
+    h4 {
+        @apply text-xl leading-tight sm:text-2xl;
+    }
+
+    /* Glass morphism components */
+    .glass {
+        @apply bg-white/60 backdrop-blur-md border border-white/20 shadow-glass;
+    }
+
+    .glass-dark {
+        @apply bg-black/10 backdrop-blur-md border border-white/10 shadow-glass;
+    }
+
+    /* Neomorphic elements */
+    .neomorphic {
+        @apply bg-cream shadow-neomorphic rounded-xl border-none;
+    }
+
+    .neomorphic-sm {
+        @apply bg-cream shadow-neomorphic-sm rounded-lg border-none;
+    }
+
+    /* Transition classes */
+    .transition-all-200 {
+        @apply transition-all duration-200 ease-in-out;
+    }
+
+    .transition-all-300 {
+        @apply transition-all duration-300 ease-in-out;
+    }
+
+    .transition-transform-300 {
+        @apply transition-transform duration-300 ease-in-out;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-muted rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground/30;
+    }
+
+    /* Page transitions */
+    .page-transition-enter {
+        @apply opacity-0;
+    }
+
+    .page-transition-enter-active {
+        @apply opacity-100 transition-all duration-300 ease-in-out;
+    }
+
+    .page-transition-exit {
+        @apply opacity-100;
+    }
+
+    .page-transition-exit-active {
+        @apply opacity-0 transition-all duration-300 ease-in-out;
+    }
+
+    /* Sidebar styles */
+    .sidebar-content {
+        position: sticky;
+        top: 0;
+        height: calc(100vh - 120px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--muted) transparent;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        h1 {
+            @apply text-3xl;
+        }
+
+        h2 {
+            @apply text-2xl;
+        }
+
+        h3 {
+            @apply text-xl;
+        }
+
+        .mobile-menu-active {
+            @apply text-coffee font-medium;
+        }
+
+        .card-mobile-stack {
+            @apply flex-col;
+        }
+    }
+}
+
+@layer components {
+    .button-primary {
+        @apply bg-primary text-primary-foreground py-2 px-4 rounded-lg font-medium
+           transition-all duration-200 hover:brightness-110
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    }
+
+    .button-secondary {
+        @apply bg-secondary text-secondary-foreground py-2 px-4 rounded-lg font-medium
+           transition-all duration-200 hover:bg-secondary/80
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    }
+
+    .button-ghost {
+        @apply bg-transparent text-foreground py-2 px-4 rounded-lg font-medium
+           transition-all duration-200 hover:bg-muted
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    }
+
+    .input-primary {
+        @apply bg-background border-input rounded-lg px-4 py-2 focus:outline-none
+           focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
+    }
+
+    .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    }
+
+    [data-radix-popper-content-wrapper] {
+        @apply z-[9999] !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .responsive-table td {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start !important;
+        padding: 0.5rem 0;
+        gap: 12px;
+    }
+}
+
+.quill .ql-container {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 500px;
+    overflow-y: auto;
+}

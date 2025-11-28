@@ -1,0 +1,193 @@
+// _components/AttributeForm.tsx
+import React, { useState, useEffect } from "react";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Loader2 } from "lucide-react";
+import * as Yup from "yup";
+import { AttributePayload } from "../../../types/attribute";
+import { AxiosError } from "axios";
+
+// Yup schema for attribute validation (same as your backend expects)
+const attributeSchema = Yup.object().shape({
+  name: Yup.string()
+    .required("Attribute name is required")
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name cannot exceed 100 characters"),
+  // Slug is usually generated on backend, but we allow manual input if needed
+  slug: Yup.string()
+    .optional()
+    .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase and hyphen-separated (e.g., shoe-size)")
+    .max(100, "Slug cannot exceed 100 characters"),
+});
+
+interface AttributeFormProps {
+  initialData?: AttributePayload | null;
+  onSubmit: (formData: FormData) => Promise<AttributePayload>;
+  isSubmitting: boolean;
+  onCloseModal: () => void;
+}
+
+type FormErrors = Partial<
+  Record<keyof Yup.InferType<typeof attributeSchema>, string | string[]>
+>;
+
+export const AttributeForm: React.FC<AttributeFormProps> = ({
+  initialData,
+  onSubmit,
+  isSubmitting,
+  onCloseModal,
+}) => {
+  const isEditMode = !!initialData;
+
+  const [formData, setFormData] = useState({
+    name: "",
+    slug: "",
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  // Initialize form with initialData when editing
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      setFormData({
+        name: initialData.name || "",
+        slug: initialData.slug || "",
+      });
+    } else {
+      setFormData({ name: "", slug: "" });
+    }
+  }, [initialData, isEditMode]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    try {
+      // Validate with Yup
+      await attributeSchema.validate(formData, { abortEarly: false });
+
+      const data = new FormData();
+      data.append("name", formData.name.trim());
+
+      // Only send slug if it's not empty (backend usually generates it)
+      if (formData.slug.trim()) {
+        data.append("slug", formData.slug.trim());
+      }
+
+      if (isEditMode) {
+        data.append("_method", "PUT");
+      }
+
+      await onSubmit(data);
+      onCloseModal();
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const yupErrors: FormErrors = {};
+        err.inner.forEach((error) => {
+          if (error.path) {
+            yupErrors[error.path as keyof FormErrors] = error.message;
+          }
+        });
+        setErrors(yupErrors);
+      } else if (err instanceof AxiosError && err.response?.status === 422) {
+        // Laravel validation errors
+        setErrors(err.response.data.errors);
+      } else {
+        console.error(err);
+        throw err;
+      }
+    }
+  };
+
+  const getErrorMessage = (error: string | string[] | undefined) => {
+    if (Array.isArray(error)) return error[0];
+    return error;
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 gap-6">
+        {/* Name Field */}
+        <div className="space-y-2">
+          <Label htmlFor="name">
+            Attribute Name <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            placeholder="e.g., Color, Size, Material"
+            autoFocus
+          />
+          {errors.name && (
+            <p className="text-sm text-red-600 mt-1">
+              {getErrorMessage(errors.name)}
+            </p>
+          )}
+        </div>
+
+        {/* Slug Field (Optional) */}
+        <div className="space-y-2">
+          <Label htmlFor="slug">
+            Slug <span className="text-muted-foreground text-xs">(Optional)</span>
+          </Label>
+          <Input
+            id="slug"
+            name="slug"
+            value={formData.slug}
+            onChange={handleInputChange}
+            placeholder="e.g., color, shoe-size (auto-generated if empty)"
+          />
+          <p className="text-xs text-muted-foreground">
+            Used in URLs and filters. Leave empty to auto-generate from name.
+          </p>
+          {errors.slug && (
+            <p className="text-sm text-red-600 mt-1">
+              {getErrorMessage(errors.slug)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3 pt-4 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCloseModal}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSubmitting
+            ? isEditMode
+              ? "Updating..."
+              : "Creating..."
+            : isEditMode
+            ? "Update Attribute"
+            : "Create Attribute"}
+        </Button>
+      </div>
+    </form>
+  );
+};
