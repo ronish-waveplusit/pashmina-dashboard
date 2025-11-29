@@ -7,19 +7,7 @@ import { Loader2 } from "lucide-react";
 import * as Yup from "yup";
 import { AttributePayload } from "../../../types/attribute";
 import { AxiosError } from "axios";
-
-// Yup schema for attribute validation (same as your backend expects)
-const attributeSchema = Yup.object().shape({
-  name: Yup.string()
-    .required("Attribute name is required")
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name cannot exceed 100 characters"),
-  // Slug is usually generated on backend, but we allow manual input if needed
-  slug: Yup.string()
-    .optional()
-    .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase and hyphen-separated (e.g., shoe-size)")
-    .max(100, "Slug cannot exceed 100 characters"),
-});
+import { attributeSchema } from "../_hooks/attributeSchema";
 
 interface AttributeFormProps {
   initialData?: AttributePayload | null;

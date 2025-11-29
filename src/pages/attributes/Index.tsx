@@ -1,3 +1,4 @@
+// Index.tsx
 import { useState, useEffect, useMemo } from "react";
 import Layout from "../../components/layouts/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
@@ -13,7 +14,7 @@ import { Plus, Search, X, Tag as TagIcon, Edit, Trash2 } from "lucide-react";
 import { useAttribute } from "./_hooks/useAttribute";
 import { AttributeForm } from "./_components/AttributeForm";
 import { AttributeValueForm } from "./_components/AttributeValueForm";
-import { AttributePayload, AttributeValuePayload } from "../../types/attribute";
+import { AttributeValuePayload, AttributeWithValues } from "../../types/attribute";
 import { useHasPermission } from "../../utils/helper/permissionUtils";
 import Pagination from "../../components/pagination/pagination";
 import { Label } from "../../components/ui/label";
@@ -33,9 +34,9 @@ type ModalMode = "attribute" | "attributeValue" | null;
 
 const Index = () => {
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [editingAttribute, setEditingAttribute] = useState<AttributePayload | null>(null);
+  const [editingAttribute, setEditingAttribute] = useState<AttributeWithValues | null>(null);
   const [editingAttributeValue, setEditingAttributeValue] = useState<AttributeValuePayload | null>(null);
-  const [selectedAttributeForValue, setSelectedAttributeForValue] = useState<AttributePayload | null>(null);
+  const [selectedAttributeForValue, setSelectedAttributeForValue] = useState<AttributeWithValues | null>(null);
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -80,13 +81,20 @@ const Index = () => {
 
   const handleOpenModal = (
     mode: "attribute" | "attributeValue",
-    attribute?: AttributePayload,
+    attribute?: AttributeWithValues,
     attributeValue?: AttributeValuePayload
   ) => {
     setModalMode(mode);
-    setEditingAttribute(mode === "attribute" ? attribute || null : null);
-    setEditingAttributeValue(mode === "attributeValue" ? attributeValue || null : null);
-    setSelectedAttributeForValue(mode === "attributeValue" ? attribute || null : null);
+    
+    if (mode === "attribute") {
+      setEditingAttribute(attribute || null);
+      setEditingAttributeValue(null);
+      setSelectedAttributeForValue(null);
+    } else {
+      setEditingAttribute(null);
+      setEditingAttributeValue(attributeValue || null);
+      setSelectedAttributeForValue(attribute || null);
+    }
   };
 
   const handleCloseModal = () => {

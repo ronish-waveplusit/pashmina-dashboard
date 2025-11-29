@@ -1,9 +1,12 @@
+// api/attribute.ts
 import http from "../utils/helper/http";
-import { AttributePayload, AttributeValuePayload } from "../types/attribute";
+import { AttributePayload, AttributeValuePayload, AttributeWithValues } from "../types/attribute";
 import { PaginatedResponse } from "../types/pagination";
 
 // Attribute API calls
-export async function getAttributes(params?: Record<string, any>): Promise<PaginatedResponse<AttributePayload>> {
+export async function getAttributes(
+  params?: Record<string, any>
+): Promise<PaginatedResponse<AttributeWithValues>> {
   const response = await http({
     url: "/product/attributes",
     method: "get",
@@ -12,7 +15,9 @@ export async function getAttributes(params?: Record<string, any>): Promise<Pagin
   return response.data;
 }
 
-export async function getAttributeById(id: string | number): Promise<{ data: AttributePayload }> {
+export async function getAttributeById(
+  id: string | number
+): Promise<{ data: AttributeWithValues }> {
   const response = await http({
     url: `/product/attributes/${id}`,
     method: "get",
@@ -20,7 +25,9 @@ export async function getAttributeById(id: string | number): Promise<{ data: Att
   return response.data;
 }
 
-export async function createAttribute(formData: FormData): Promise<AttributePayload> {
+export async function createAttribute(
+  formData: FormData
+): Promise<AttributePayload> {
   const response = await http({
     url: "/product/attributes",
     method: "post",
@@ -58,7 +65,9 @@ export async function deleteAttribute(id: string | number): Promise<void> {
 }
 
 // Attribute Value API calls
-export async function getAttributeValues(params?: Record<string, any>): Promise<PaginatedResponse<AttributeValuePayload>> {
+export async function getAttributeValues(
+  params?: Record<string, any>
+): Promise<PaginatedResponse<AttributeValuePayload>> {
   const response = await http({
     url: "/product/attribute-values",
     method: "get",
@@ -67,7 +76,9 @@ export async function getAttributeValues(params?: Record<string, any>): Promise<
   return response.data;
 }
 
-export async function getAttributeValueById(id: string | number): Promise<{ data: AttributeValuePayload }> {
+export async function getAttributeValueById(
+  id: string | number
+): Promise<{ data: AttributeValuePayload }> {
   const response = await http({
     url: `/product/attribute-values/${id}`,
     method: "get",
@@ -75,7 +86,9 @@ export async function getAttributeValueById(id: string | number): Promise<{ data
   return response.data;
 }
 
-export async function createAttributeValue(formData: FormData): Promise<AttributeValuePayload> {
+export async function createAttributeValue(
+  formData: FormData
+): Promise<AttributeValuePayload> {
   const response = await http({
     url: "/product/attribute-values",
     method: "post",

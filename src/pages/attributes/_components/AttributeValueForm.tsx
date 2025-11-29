@@ -1,10 +1,11 @@
+// _components/AttributeValueForm.tsx
 import React, { useState, useEffect } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Loader2 } from "lucide-react";
 import * as Yup from "yup";
-import { AttributePayload, AttributeValuePayload } from "../../../types/attribute";
+import { AttributeValuePayload, AttributeWithValues } from "../../../types/attribute";
 import { AxiosError } from "axios";
 import { attributeValueSchema } from "../_hooks/attributeSchema";
 import {
@@ -17,8 +18,8 @@ import {
 
 interface AttributeValueFormProps {
   initialData?: AttributeValuePayload | null;
-  selectedAttribute?: AttributePayload | null;
-  attributes: AttributePayload[];
+  selectedAttribute?: AttributeWithValues | null;
+  attributes: AttributeWithValues[];
   onSubmit: (formData: FormData) => Promise<AttributeValuePayload>;
   isSubmitting: boolean;
   onCloseModal: () => void;
@@ -116,6 +117,7 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
       } else if (err instanceof AxiosError && err.response?.status === 422) {
         setErrors(err.response.data.errors);
       } else {
+        console.error(err);
         throw err;
       }
     }
