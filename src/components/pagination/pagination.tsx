@@ -1,5 +1,5 @@
 import  { useCallback } from "react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PaginatedResponse } from "../../types/pagination";
 
@@ -68,23 +68,28 @@ const Pagination = <T,>({
   // Don't render pagination if there's only one page
   if (!meta || meta.last_page <= 1) {
     return null;
-  }
+  } 
 
-  return (
+  const showPrevious = meta.current_page > 1;
+  const showNext = meta.current_page < meta.last_page;
+
+    return (
     <div className="flex items-center justify-between mt-6">
       <div className="text-sm text-muted-foreground">
         Showing {meta.from} to {meta.to} of {meta.total} {itemLabel}
       </div>
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handlePrevPage}
-          disabled={meta.current_page === 1 || isLoading}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Previous
-        </Button>
+        {showPrevious && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevPage}
+            disabled={isLoading}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+        )}
         <div className="flex gap-1">
           {generatePageNumbers().map((pageNum) => (
             <Button
@@ -98,15 +103,17 @@ const Pagination = <T,>({
             </Button>
           ))}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleNextPage}
-          disabled={meta.current_page === meta.last_page || isLoading}
-        >
-          Next
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        {showNext && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={isLoading}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        )}
       </div>
     </div>
   );

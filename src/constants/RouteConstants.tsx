@@ -4,7 +4,7 @@ export const apiRoutes = {
   GET_FORGET_PASSWORD: "/forget-password",
   //reset password
   GET_RESET_PASSWORD: "/reset-password",
-  GET_PRODUCT_CATEGORIES: "/inven/categories",
+  GET_PRODUCT_CATEGORIES: "/v1/st/categories",
   //logout
   AUTH_LOGOUT: "/logout",
   //refresh

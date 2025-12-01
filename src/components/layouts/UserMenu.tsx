@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
-import { Avatar } from "../../components/ui/avatar";
+} from "../ui/dropdown-menu";
+import { Avatar } from "../ui/avatar";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 const UserMenu = () => {

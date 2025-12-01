@@ -8,25 +8,24 @@ type loginDataType = {
 
 export async function userLogin(data: loginDataType) {
   try {
-    const response = await http({
-      url: apiRoutes.GET_TOKEN_BY_PASSOWORD,
-      method: "post",
-      data: data,
-    });
-    return response.data;
-  } catch (error: any) {
-    if (error.response && error.response.data) {
-      // Return the API's error response if available
-      return error.response.data;
+    const response = await http.post(apiRoutes.GET_TOKEN_BY_PASSOWORD, data);
+    const result = response.data;
+
+    if (result.message !== "SUCCESS") {
+      throw new Error(result.errors || result.message || "Login failed");
     }
-    // Handle cases where no response is available (e.g., network error)
-    return {
-      message: "ERROR",
-      errors: error.message || "Network error or server is unreachable",
-    };
+
+    return result;
+  } catch (error: any) {
+    // Re-throw with clean message for UI
+    throw new Error(
+      error.response?.data?.errors ||
+      error.response?.data?.message ||
+      error.message ||
+      "Login failed"
+    );
   }
 }
-
 export function getUser(uid: string) {
   return http({
     url: `/get-user/${uid}`,

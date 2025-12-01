@@ -13,14 +13,14 @@ export interface PaginationLink {
  * This is generic and not tied to any specific data model.
  */
 export interface PaginationMeta {
-  paginate:1;
+  paginate?: 1;
   current_page: number;
   last_page: number;
   from: number | null;
   to: number | null;
   total: number;
   per_page: number;
-  links: PaginationLink[]; // You can include this if you use it in the Pagination component
+  // links: PaginationLink[]; // You can include this if you use it in the Pagination component
 }
 
 /**

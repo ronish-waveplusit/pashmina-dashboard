@@ -73,6 +73,9 @@ export async function createTransactionCategory(
       url: apiRoutes.GET_PRODUCT_CATEGORIES,
       method: "post",
       data: data,
+       headers: {
+        'Content-Type': 'multipart/form-data', 
+      } 
     });
     return response.data.data;
   } catch (error) {

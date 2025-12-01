@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     (state: RootState) => state.auth
   );
  
-  const themeName = "Barista";
+  const themeName = "Pashmina";
   const themeLogo =  null;
   const { logout } = useAuth();
   const isMobile = useIsMobile();
@@ -160,8 +160,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         "fixed top-0 left-0 h-screen z-40",
         isMobile && !sidebarOpen && "-translate-x-full"
       )}
+       style={{ borderColor: "hsl(25 10% 90%)" }}
     >
-      <div className="p-6 flex items-center justify-between border-b shrink-0">
+      <div className="p-6 flex items-center justify-between border-b shrink-0"  style={{ borderColor: "hsl(25 10% 90%)" }}>
         <div className="flex items-center space-x-2">
           {themeLogo ? (
             <img
@@ -245,7 +246,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         ))}
       </nav>
 
-      <div className="p-4 border-t shrink-0">
+      <div className="p-4 border-t shrink-0"  style={{ borderColor: "hsl(25 10% 90%)" }}>
         <div className="flex items-center space-x-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">

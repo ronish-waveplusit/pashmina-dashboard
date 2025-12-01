@@ -16,9 +16,10 @@ import { CategoryForm } from "./_components/CategoryForm";
 import { CategoryPayload } from "../../types/category";
 import { useHasPermission } from "../../utils/helper/permissionUtils";
 import Pagination from "../../components/pagination/pagination";
-import { Label } from "../../components/ui/label";
+
 import { Input } from "../../components/ui/input";
 import { ITEMS_PER_PAGE } from "../../constants/common";
+import ImagePreview from "../../components/ui/ImagePreview";
 
 const Index = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,22 +110,22 @@ const Index = () => {
             <div className="space-y-6">
                 <div className="flex justify-between items-start sm:items-center sm:flex-row flex-col gap-4 mt-4">
                     <div>
-                        <h1 className="text-xl font-semibold md:font-3xl">
+                        <h1 className="text-2xl font-semibold md:font-4xl">
                             Product Category
                         </h1>
                         <p className="text-muted-foreground mt-1 ">
                             Track and manage Product Category
                         </p>
                     </div>
-                    {canCreate && (
-                        <Button
-                            onClick={() => setIsModalOpen(true)}
-                            className="flex items-center "
-                        >
-                            <Plus className="mr-2" />
-                            Add Product Category
-                        </Button>
-                    )}
+                    {/* {canCreate && ( */}
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center "
+                    >
+                        <Plus className="mr-2" />
+                        Add Product Category
+                    </Button>
+                    {/* )} */}
                 </div>
 
                 <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
@@ -153,13 +154,11 @@ const Index = () => {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Product Category</CardTitle>
+                        <CardTitle className="text-xl">Category List</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="relative flex-1 space-y-2 mb-4">
-                            <Label htmlFor="search" className="text-sm sm:text-base">
-                                Search Category
-                            </Label>
+
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -184,7 +183,8 @@ const Index = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="border-b">
+                                        <tr className="border-b " style={{ borderColor: "hsl(25 10% 90%)" }}>
+                                            <th className="py-3 px-4 font-medium">S.N</th>
                                             <th className="py-3 px-4 font-medium">Image</th>
                                             <th className="py-3 px-4 font-medium">Name</th>
                                             <th className="py-3 px-4 font-medium">Parent Category</th>
@@ -194,17 +194,19 @@ const Index = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {transactionCategories.map((transactionCategory) => (
+                                        {transactionCategories.map((transactionCategory, index) => (
+
                                             <tr
                                                 key={transactionCategory.id}
                                                 className="border-b border-muted last:border-0"
                                             >
+                                                <td className="py-3 px-4">{(page - 1) * ITEMS_PER_PAGE + index + 1}</td>
                                                 <td className="py-3 px-4">
                                                     {transactionCategory.featured_image ? (
-                                                        <img
+                                                        <ImagePreview
                                                             src={transactionCategory.featured_image}
                                                             alt={transactionCategory.name}
-                                                            className="w-12 h-12 object-cover rounded"
+                                                            size="md" 
                                                         />
                                                     ) : (
                                                         <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
@@ -220,7 +222,7 @@ const Index = () => {
                                                 </td>
                                                 <td className="py-3 px-4 text-right">
                                                     <div className="flex justify-end space-x-2">
-                                                        {canEdit && (
+                                                        {/* {canEdit && ( */}
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -228,8 +230,8 @@ const Index = () => {
                                                             >
                                                                 Edit
                                                             </Button>
-                                                        )}
-                                                        {canDelete && (
+                                                        {/* )} */}
+                                                        {/* {canDelete && ( */}
                                                             <Button
                                                                 variant="destructive"
                                                                 size="sm"
@@ -239,7 +241,7 @@ const Index = () => {
                                                             >
                                                                 Delete
                                                             </Button>
-                                                        )}
+                                                        {/* )} */}
                                                     </div>
                                                 </td>
                                             </tr>

@@ -62,7 +62,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   ]);
 
   const login = (data: any) => {
+    console.log("🔐 Data being passed to setTokens:", data);
     setTokens(data);
+    console.log("💾 After setTokens - localStorage token:", localStorage.getItem("token"));
+  console.log("💾 After setTokens - localStorage refreshToken:", localStorage.getItem("refreshToken"));
     setIsAuthenticated(true);
     navigate(ROUTES.DASHBOARD, { replace: true });
   };

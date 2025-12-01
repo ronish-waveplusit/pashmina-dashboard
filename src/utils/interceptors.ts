@@ -2,7 +2,7 @@ import { AxiosError, AxiosResponse } from "axios";
 
 import { fetchRefreshToken } from "../api/token-refresh";
 import * as authService from "../services/auth";
-import { getTokens, setTokens } from "../utils/helper/token";
+import { getTokens, setTokens } from "./helper/token";
 import http from "./helper/http";
 import { PUBLIC_ROUTES } from "../routes/url.constants";
 

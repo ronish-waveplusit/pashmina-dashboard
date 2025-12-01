@@ -19,7 +19,16 @@ const LoadingFallback = () => (
    <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-         <Route path="/category" element={<CategoryForm />} />
+         <Route
+            path="/category"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <CategoryForm />
+              </AuthGuard>
+            }
+          />
       </Routes>
     </Suspense>
    </AppProvider>

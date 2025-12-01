@@ -38,46 +38,60 @@ export function useLogin() {
     },
   });
 
-  const onLogin = async (payload: LoginPayload) => {
-    try {
-      setIsLoginPending(true);
-      const loginResponse = await userLogin(payload);
+// In useLogin.tsx
+// In useLogin.tsx
+const onLogin = async (payload: LoginPayload) => {
+  try {
+    setIsLoginPending(true);
+    const loginResponse = await userLogin(payload);
+    console.log("Login Response:", loginResponse);
+    
+    if (loginResponse?.message === "SUCCESS") {
+      // Create auth data matching the TokenData interface
+      const authData = {
+        accessToken: loginResponse.token, // Your API returns 'token' not 'accessToken'
+        refreshToken: loginResponse.refreshToken || "",
+        refreshTokenExp: loginResponse.refreshTokenExpiry || "", // Can be empty string if not provided
+        user: loginResponse.user,
+        groups: loginResponse.groups,
+        permissions: loginResponse.permissions,
+      };
+      
+      console.log("🔐 Calling login with:", authData);
+      
+      // This calls AuthContext.login() which calls setTokens()
+      login(authData);
+      dispatch(loginSuccess(authData));
 
-      if (loginResponse?.message === "SUCCESS") {
-        // Handle successful login
-        login(loginResponse.data);
-        dispatch(loginSuccess(loginResponse.data));
-
-        toast({
-          title: "Success",
-          description: "Logged In Successfully.",
-          variant: "default",
-        });
-        navigate(ROUTES.DASHBOARD, { replace: true });
-      } else {
-        // Handle API error response (e.g., { message: "FAILED", errors: "Invalid credentials" })
-        const errorMessage =
-          loginResponse?.errors ||
-          loginResponse?.message ||
-          "Invalid email or password.";
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
-    } catch (e) {
-      // Handle unexpected errors (should be rare with updated userLogin)
+      toast({
+        title: "Success",
+        description: "Logged In Successfully.",
+        variant: "default",
+      });
+      
+      // Don't navigate here - AuthContext.login() handles it
+    } else {
+      const errorMessage =
+        loginResponse?.errors ||
+        loginResponse?.message ||
+        "Invalid email or password.";
       toast({
         title: "Error",
-        description:
-          "An unexpected error occurred during login. Please try again later.",
+        description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoginPending(false);
     }
-  };
+  } catch (e) {
+    console.error("Login error:", e);
+    toast({
+      title: "Error",
+      description: "An unexpected error occurred during login. Please try again later.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoginPending(false);
+  }
+};
 
   return {
     register,

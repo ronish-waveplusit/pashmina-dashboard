@@ -11,7 +11,7 @@ import { cn } from "../../lib/utils";
 
 import { useIsMobile } from "../../hooks/use-mobile";
 import { useSelector } from "react-redux";
-import { RootState } from "../../components/store/store";
+import { RootState } from "../store/store";
 import { UserRole } from "../../constants/user-roles";
 
 const MobileNavigation = () => {

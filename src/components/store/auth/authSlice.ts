@@ -20,7 +20,7 @@ interface LoginResponse {
   permissions: string[]; // Permissions can be derived from groups or another source
   accessToken: string;
   refreshToken: string;
-  refreshTokenExpiry: number;
+  refreshTokenExp: number;
 }
 
 interface AuthState {
@@ -56,7 +56,7 @@ const authSlice = createSlice({
       state.userPermissions = action.payload.permissions; // Map groups to permissions (customize as needed)
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
-      state.refreshTokenExpiry = action.payload.refreshTokenExpiry;
+      state.refreshTokenExpiry = action.payload.refreshTokenExp;
     },
     updateUser(state, action: PayloadAction<UpdateUserPayload>) {
       if (state.user) {

@@ -7,9 +7,10 @@ import {
 
 interface TokenData {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   accessTokenExpiry?: number;
-  refreshTokenExpiry: number;
+  refreshTokenExpiry?: number;
+  refreshTokenExp?: string; // Added for compatibility
   isPasswordForceful?: boolean;
   isProfileComplete?: boolean;
 }
@@ -76,7 +77,7 @@ export const getMeta = () => {
 export const getTokens = () => {
   return {
     token: localStorage.getItem(ACCESS_TOKEN) || "",
-    accessToken: localStorage.getItem(ACCESS_TOKEN) || "", // Added for consistency
+    accessToken: localStorage.getItem(ACCESS_TOKEN) || "",
     refreshToken: localStorage.getItem(REFRESH_TOKEN) || "",
     refreshTokenExp: localStorage.getItem(REFRESH_TOKEN_EXPIRES_IN) || "",
     meta: getMeta(),
@@ -87,19 +88,37 @@ export const getTokens = () => {
  * Store tokens and metadata in localStorage
  */
 export const setTokens = (data: TokenData) => {
+  console.log("📝 setTokens called with:", data);
+
   // Store access token
-  localStorage.setItem(ACCESS_TOKEN, data.accessToken);
+  if (data.accessToken) {
+    localStorage.setItem(ACCESS_TOKEN, data.accessToken);
+    console.log("✅ Saved accessToken");
+  }
 
   // Store refresh token
-  localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
+  if (data.refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
+    console.log("✅ Saved refreshToken");
+  }
 
-  // Store refresh token expiry (convert from timestamp to milliseconds if needed)
-  const refreshExpiry =
-    data.refreshTokenExpiry > Date.now()
-      ? data.refreshTokenExpiry
-      : Date.now() + data.refreshTokenExpiry * 1000; // Convert seconds to milliseconds if needed
-
-  localStorage.setItem(REFRESH_TOKEN_EXPIRES_IN, refreshExpiry.toString());
+  // Store refresh token expiry
+  // Handle multiple possible formats: refreshTokenExpiry, refreshTokenExp
+  const refreshExpiry = data.refreshTokenExp || data.refreshTokenExpiry;
+  
+  if (refreshExpiry) {
+    // If it's a string, store it directly
+    if (typeof refreshExpiry === 'string') {
+      localStorage.setItem(REFRESH_TOKEN_EXPIRES_IN, refreshExpiry);
+    } else {
+      // If it's a number, ensure it's in milliseconds
+      const expiryInMs = refreshExpiry > Date.now() 
+        ? refreshExpiry 
+        : Date.now() + refreshExpiry * 1000;
+      localStorage.setItem(REFRESH_TOKEN_EXPIRES_IN, expiryInMs.toString());
+    }
+    console.log("✅ Saved refreshTokenExpiry");
+  }
 
   // Set metadata if provided
   if (
@@ -116,9 +135,16 @@ export const setTokens = (data: TokenData) => {
 export const isSessionExpired = (): boolean => {
   const { token, refreshToken, refreshTokenExp } = getTokens();
 
-  // If any critical token is missing, session is expired
-  if (!token || !refreshToken || !refreshTokenExp) {
+  // If access token is missing, session is expired
+  if (!token) {
+    console.log("❌ Session expired: No access token");
     return true;
+  }
+
+  // If no refresh token, check access token only
+  if (!refreshToken || !refreshTokenExp) {
+    console.log("⚠️ No refresh token, checking access token only");
+    return isTokenExpired(token);
   }
 
   // Check if refresh token is expired
@@ -127,8 +153,11 @@ export const isSessionExpired = (): boolean => {
     Number(refreshTokenExp)
   );
 
+  if (isRefreshExpired) {
+    console.log("❌ Session expired: Refresh token expired");
+  }
+
   // Session is expired only if refresh token is expired
-  // Access token expiry is handled by refresh mechanism
   return isRefreshExpired;
 };
 
@@ -248,12 +277,6 @@ export function clearAuthData(): void {
  */
 export async function logout(): Promise<void> {
   try {
-    // Optional: Call logout API endpoint to invalidate tokens on server
-    // const refreshToken = getRefreshToken();
-    // if (refreshToken) {
-    //   await logoutUser(refreshToken);
-    // }
-
     clearAuthData();
 
     // Redirect to login
@@ -275,6 +298,7 @@ export async function logout(): Promise<void> {
  */
 export function initializeAuth(loginResponse: any): void {
   const {
+    token,
     accessToken,
     refreshToken,
     accessTokenExpiry,
@@ -284,9 +308,9 @@ export function initializeAuth(loginResponse: any): void {
     groups,
   } = loginResponse;
 
-  // Store tokens
+  // Store tokens - use 'token' field if 'accessToken' not present
   setTokens({
-    accessToken,
+    accessToken: accessToken || token,
     refreshToken,
     accessTokenExpiry,
     refreshTokenExpiry,
