@@ -17,7 +17,7 @@ export const categorySchema = Yup.object().shape({
     .max(100, "Category name must not exceed 100 characters")
     .trim(),
   
-  parent_category_id: Yup.string()
+  parent_id: Yup.string()
     .nullable()
     .notRequired()
     .test(

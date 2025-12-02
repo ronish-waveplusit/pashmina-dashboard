@@ -143,7 +143,7 @@ export const isSessionExpired = (): boolean => {
 
   // If no refresh token, check access token only
   if (!refreshToken || !refreshTokenExp) {
-    console.log("⚠️ No refresh token, checking access token only");
+   
     return isTokenExpired(token);
   }
 

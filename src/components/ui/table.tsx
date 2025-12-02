@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -11,6 +11,7 @@ const Table = React.forwardRef<
       ref={ref}
       className={cn("w-full caption-bottom text-sm", className)}
       {...props}
+      style={{ borderColor: "hsl(25 10% 90%)" }}
     />
   </div>
 ));
@@ -20,7 +21,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props}  style={{ borderColor: "hsl(25 10% 90%)" }}/>
 ));
 TableHeader.displayName = "TableHeader";
 
@@ -32,6 +33,7 @@ const TableBody = React.forwardRef<
     ref={ref}
     className={cn("[&_tr:last-child]:border-0", className)}
     {...props}
+    style={{ borderColor: "hsl(25 10% 90%)" }}
   />
 ));
 TableBody.displayName = "TableBody";
@@ -47,6 +49,7 @@ const TableFooter = React.forwardRef<
       className,
     )}
     {...props}
+    style={{ borderColor: "hsl(25 10% 90%)" }}
   />
 ));
 TableFooter.displayName = "TableFooter";
@@ -61,6 +64,7 @@ const TableRow = React.forwardRef<
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className,
     )}
+    style={{ borderColor: "hsl(25 10% 90%)" }}
     {...props}
   />
 ));

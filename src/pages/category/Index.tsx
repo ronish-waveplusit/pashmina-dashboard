@@ -83,11 +83,11 @@ const Index = () => {
     };
 
     // Helper function to find parent category name
-    const getParentCategoryName = (parentId: string | number | null | undefined) => {
-        if (!parentId) return "—";
-        const parent = transactionCategories.find((cat) => cat.id === parentId);
-        return parent ? parent.name : "—";
-    };
+    // const getParentCategoryName = (parentId: string | number | null | undefined) => {
+    //     if (!parentId) return "—";
+    //     const parent = transactionCategories.find((cat) => cat.id === parentId);
+    //     return parent ? parent.name : "—";
+    // };
 
     if (isLoading) {
         return (
@@ -138,6 +138,7 @@ const Index = () => {
                             </DialogTitle>
                         </DialogHeader>
                         <CategoryForm
+                       key={editTransactionCategory?.id ?? "add"}
                             initialData={editTransactionCategory}
                             onSubmit={
                                 editTransactionCategory
@@ -145,7 +146,6 @@ const Index = () => {
                                     : actions.add
                             }
                             isSubmitting={editTransactionCategory ? isUpdating : isAdding}
-                            isModalOpen={isModalOpen}
                             onCloseModal={handleModalClose}
                             categories={transactionCategories}
                         />
@@ -181,7 +181,7 @@ const Index = () => {
 
                         {transactionCategories.length > 0 ? (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left">
+                                <table className="w-full text-left " >
                                     <thead>
                                         <tr className="border-b " style={{ borderColor: "hsl(25 10% 90%)" }}>
                                             <th className="py-3 px-4 font-medium">S.N</th>
@@ -218,7 +218,7 @@ const Index = () => {
                                                     {transactionCategory.name}
                                                 </td>
                                                 <td className="py-3 px-4">
-                                                    {getParentCategoryName(transactionCategory.parent_category_id)}
+                                                    {transactionCategory?.parent?.name}
                                                 </td>
                                                 <td className="py-3 px-4 text-right">
                                                     <div className="flex justify-end space-x-2">

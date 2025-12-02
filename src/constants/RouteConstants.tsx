@@ -1,12 +1,13 @@
 export const apiRoutes = {
-  GET_TOKEN_BY_PASSOWORD: "/login",
+  GET_TOKEN_BY_PASSOWORD: "/v1/login",
   //forget password
   GET_FORGET_PASSWORD: "/forget-password",
   //reset password
   GET_RESET_PASSWORD: "/reset-password",
   GET_PRODUCT_CATEGORIES: "/v1/st/categories",
+    GET_PRODUCT: "/v1/st/products",
   //logout
-  AUTH_LOGOUT: "/logout",
+  AUTH_LOGOUT: "/v1/logout",
   //refresh
   REFRESH_TOKEN: "/refresh",
   //instructors
@@ -34,7 +35,7 @@ export const apiRoutes = {
   GET_CLASS_SHIFTS: "/co/batch_shift",
   GET_REFERRALS: "/referer",
   //product
-  GET_PRODUCT: "inven/products",
+ 
   //Stock
   GET_STOCK: "inven/stocks",
   GET_INVOICES: "en/pay",

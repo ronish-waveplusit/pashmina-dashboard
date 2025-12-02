@@ -32,6 +32,14 @@ import {
 
 type ModalMode = "attribute" | "attributeValue" | null;
 
+// Utility function to generate slug from name
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 const Index = () => {
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editingAttribute, setEditingAttribute] = useState<AttributeWithValues | null>(null);
@@ -62,7 +70,7 @@ const Index = () => {
   );
 
   const {
-    attributes,
+    attributes: rawAttributes,
     isLoading,
     isError,
     isAdding,
@@ -73,6 +81,26 @@ const Index = () => {
     actions,
     meta,
   } = useAttribute(filters);
+
+  // Map API response to component format
+  const attributes: AttributeWithValues[] = useMemo(() => {
+    if (!rawAttributes) return [];
+
+    return rawAttributes.map((attr: any) => ({
+      id: attr.id,
+      name: attr.name,
+      slug: attr.slug || generateSlug(attr.name),
+      attributeValues: attr.attribute_values?.map((val: any) => ({
+        id: val.id,
+        attribute_id: val.attribute_id,
+        name: val.name,
+        created_at: val.created_at,
+        updated_at: val.updated_at,
+      })) || [],
+      created_at: attr.created_at,
+      updated_at: attr.updated_at,
+    }));
+  }, [rawAttributes]);
 
   // Permission checks
   const canCreate = useHasPermission("attribute:create");
@@ -85,7 +113,7 @@ const Index = () => {
     attributeValue?: AttributeValuePayload
   ) => {
     setModalMode(mode);
-    
+
     if (mode === "attribute") {
       setEditingAttribute(attribute || null);
       setEditingAttributeValue(null);
@@ -126,7 +154,7 @@ const Index = () => {
       <Layout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border mx-auto" ></div>
             <p className="mt-4 text-muted-foreground">Loading attributes...</p>
           </div>
         </div>
@@ -190,6 +218,7 @@ const Index = () => {
         </Dialog>
 
         {/* Attribute Value Modal */}
+        {/* Attribute Value Modal - around line 193 */}
         <Dialog open={modalMode === "attributeValue"} onOpenChange={handleCloseModal}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -248,7 +277,7 @@ const Index = () => {
             {/* Table */}
             {attributes.length > 0 ? (
               <div className="space-y-4">
-                <div className="rounded-md border">
+                <div className="rounded-md ">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -274,14 +303,25 @@ const Index = () => {
                                 {attribute.slug}
                               </code>
                             </TableCell>
+                            {/* In the TableCell for Values - around line 267 */}
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
                                 {attribute.attributeValues && attribute.attributeValues.length > 0 ? (
                                   <>
                                     {attribute.attributeValues.slice(0, 3).map((val) => (
-                                      <Badge key={val.id} variant="secondary">
-                                        {val.value}
-                                      </Badge>
+                                      <div key={val.id} className="relative group">
+                                        <Badge variant="secondary" className="pr-6">
+                                          {val.name}
+                                        </Badge>
+                                        {canDelete && (
+                                          <button
+                                            onClick={() => actions.confirmDeleteValue(val)}
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          >
+                                            <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                          </button>
+                                        )}
+                                      </div>
                                     ))}
                                     {attribute.attributeValues.length > 3 && (
                                       <Badge
@@ -349,15 +389,20 @@ const Index = () => {
                                         key={val.id}
                                         className="flex items-center justify-between p-2 border rounded-md bg-background"
                                       >
-                                        <Badge variant="secondary">{val.value}</Badge>
+                                        <Badge variant="secondary">{val.name}</Badge>
                                         <div className="flex gap-1">
                                           {canEdit && (
                                             <Button
                                               variant="ghost"
                                               size="sm"
-                                              onClick={() =>
-                                                handleOpenModal("attributeValue", attribute, val)
-                                              }
+                                              onClick={() => {
+                                                const valuePayload: AttributeValuePayload = {
+                                                  id: val.id,
+                                                  attribute_id: val.attribute_id,
+                                                  name: val.name,
+                                                };
+                                                handleOpenModal("attributeValue", attribute, valuePayload);
+                                              }}
                                             >
                                               <Edit className="h-3 w-3" />
                                             </Button>
@@ -456,7 +501,7 @@ const Index = () => {
             </DialogHeader>
             <div>
               <p>
-                Are you sure you want to delete the value "{valueToDelete?.value}
+                Are you sure you want to delete the value "{valueToDelete?.name}
                 "?
               </p>
             </div>

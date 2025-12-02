@@ -25,10 +25,6 @@ interface AttributeValueFormProps {
   onCloseModal: () => void;
 }
 
-type FormErrors = Partial<
-  Record<keyof Yup.InferType<typeof attributeValueSchema>, string | string[]>
->;
-
 export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
   initialData,
   selectedAttribute,
@@ -39,86 +35,90 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
 }) => {
   const isEditMode = !!initialData;
 
-  const [valueData, setValueData] = useState({
+  // Keep internal state as "value" for simplicity in form
+  const [formData, setFormData] = useState({
     attribute_id: "",
-    value: "",
+    value: "", // this is what user types → will be sent as "name"
   });
 
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<Record<string, string | string[]>>({});
 
+  // Sync initial data (API uses "name", we use "value" internally)
   useEffect(() => {
     if (isEditMode && initialData) {
-      setValueData({
+      setFormData({
         attribute_id: initialData.attribute_id.toString(),
-        value: initialData.value || "",
+        value: initialData.name || "", // ← API returns "name"
       });
     } else if (selectedAttribute) {
-      setValueData({
+      setFormData({
         attribute_id: selectedAttribute.id.toString(),
         value: "",
       });
     }
   }, [initialData, selectedAttribute, isEditMode]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
 
-    setValueData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Remove the error key entirely instead of setting to undefined
+  if (errors[name]) {
+    setErrors((prev) => {
+      const { [name]: _, ...rest } = prev;
+      return rest;
+    });
+  }
+};
 
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
+const handleSelectChange = (value: string) => {
+  setFormData((prev) => ({ ...prev, attribute_id: value }));
 
-  const handleSelectChange = (value: string) => {
-    setValueData((prev) => ({
-      ...prev,
-      attribute_id: value,
-    }));
-
-    if (errors.attribute_id) {
-      setErrors((prev) => ({ ...prev, attribute_id: undefined }));
-    }
-  };
+  if (errors.attribute_id) {
+    setErrors((prev) => {
+      const { attribute_id: _, ...rest } = prev;
+      return rest;
+    });
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
     try {
-      await attributeValueSchema.validate(valueData, {
-        abortEarly: false,
-      });
+      // Validate using schema (adjust schema to expect "value" or map here)
+      await attributeValueSchema.validate(
+        {
+          attribute_id: formData.attribute_id,
+          name: formData.value.trim(), // or rename in schema to "name"
+        },
+        { abortEarly: false }
+      );
 
-      const formData = new FormData();
-      formData.append("attribute_id", valueData.attribute_id);
-      formData.append("value", valueData.value.trim());
+      const payload = new FormData();
+      payload.append("attribute_id", formData.attribute_id);
+      payload.append("name", formData.value.trim()); // ← Send as "name"
 
       if (isEditMode) {
-        formData.append("_method", "PUT");
+        payload.append("_method", "PUT");
       }
 
-      await onSubmit(formData);
+      await onSubmit(payload);
       onCloseModal();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
-        const yupErrors: FormErrors = {};
+        const validationErrors: Record<string, string> = {};
         err.inner.forEach((error) => {
           if (error.path) {
-            yupErrors[error.path as keyof FormErrors] = error.message;
+            validationErrors[error.path] = error.message;
           }
         });
-        setErrors(yupErrors);
+        setErrors(validationErrors);
       } else if (err instanceof AxiosError && err.response?.status === 422) {
-        setErrors(err.response.data.errors);
+        setErrors(err.response.data.errors || {});
       } else {
-        console.error(err);
-        throw err;
+        console.error("Submission error:", err);
       }
     }
   };
@@ -131,13 +131,14 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
-        {/* Attribute Selection Field */}
+        {/* Attribute Selection */}
         <div className="space-y-2">
           <Label htmlFor="attribute_id">
             Attribute <span className="text-red-500">*</span>
           </Label>
           <Select
-            value={valueData.attribute_id}
+            key={formData.attribute_id} // fixes pre-select issue
+            value={formData.attribute_id}
             onValueChange={handleSelectChange}
             disabled={!!selectedAttribute || isEditMode}
           >
@@ -159,7 +160,7 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
           )}
         </div>
 
-        {/* Value Field */}
+        {/* Value → displayed as "Value", sent as "name" */}
         <div className="space-y-2">
           <Label htmlFor="value">
             Value <span className="text-red-500">*</span>
@@ -167,7 +168,7 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
           <Input
             id="value"
             name="value"
-            value={valueData.value}
+            value={formData.value}
             onChange={handleInputChange}
             placeholder="Enter value (e.g., Red, Large, 5kg)"
           />

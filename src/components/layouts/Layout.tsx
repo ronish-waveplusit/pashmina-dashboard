@@ -95,9 +95,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {children}
                 </main>
 
-                <div className="border-t p-2 text-xs text-center text-muted-foreground">
-                    Powered by: Waveplus
-                </div>
+                
 
                 {isMobile && <MobileNavigation />}
             </div>

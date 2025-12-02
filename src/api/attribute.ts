@@ -8,18 +8,18 @@ export async function getAttributes(
   params?: Record<string, any>
 ): Promise<PaginatedResponse<AttributeWithValues>> {
   const response = await http({
-    url: "/product/attributes",
+    url: "/v1/attributes",
     method: "get",
     params,
   });
-  return response.data;
+  return response.data.data;
 }
 
 export async function getAttributeById(
   id: string | number
 ): Promise<{ data: AttributeWithValues }> {
   const response = await http({
-    url: `/product/attributes/${id}`,
+    url: `/v1/attributes/${id}`,
     method: "get",
   });
   return response.data;
@@ -29,7 +29,7 @@ export async function createAttribute(
   formData: FormData
 ): Promise<AttributePayload> {
   const response = await http({
-    url: "/product/attributes",
+    url: "/v1/attributes",
     method: "post",
     data: formData,
     headers: {
@@ -47,7 +47,7 @@ export async function updateAttribute({
   formData: FormData;
 }): Promise<AttributePayload> {
   const response = await http({
-    url: `/product/attributes/${id}`,
+    url: `/v1/attributes/${id}`,
     method: "post",
     data: formData,
     headers: {
@@ -59,7 +59,7 @@ export async function updateAttribute({
 
 export async function deleteAttribute(id: string | number): Promise<void> {
   await http({
-    url: `/product/attributes/${id}`,
+    url: `/v1/attributes/${id}`,
     method: "delete",
   });
 }
@@ -69,7 +69,7 @@ export async function getAttributeValues(
   params?: Record<string, any>
 ): Promise<PaginatedResponse<AttributeValuePayload>> {
   const response = await http({
-    url: "/product/attribute-values",
+    url: "/v1/attribute-values",
     method: "get",
     params,
   });
@@ -80,7 +80,7 @@ export async function getAttributeValueById(
   id: string | number
 ): Promise<{ data: AttributeValuePayload }> {
   const response = await http({
-    url: `/product/attribute-values/${id}`,
+    url: `/v1/attribute-values/${id}`,
     method: "get",
   });
   return response.data;
@@ -90,7 +90,7 @@ export async function createAttributeValue(
   formData: FormData
 ): Promise<AttributeValuePayload> {
   const response = await http({
-    url: "/product/attribute-values",
+    url: "/v1/attribute-values",
     method: "post",
     data: formData,
     headers: {
@@ -108,7 +108,7 @@ export async function updateAttributeValue({
   formData: FormData;
 }): Promise<AttributeValuePayload> {
   const response = await http({
-    url: `/product/attribute-values/${id}`,
+    url: `/v1/attribute-values/${id}`,
     method: "post",
     data: formData,
     headers: {
@@ -120,7 +120,7 @@ export async function updateAttributeValue({
 
 export async function deleteAttributeValue(id: string | number): Promise<void> {
   await http({
-    url: `/product/attribute-values/${id}`,
+    url: `/v1/attribute-values/${id}`,
     method: "delete",
   });
 }

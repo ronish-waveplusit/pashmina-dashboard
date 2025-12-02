@@ -30,7 +30,7 @@ export const AttributeForm: React.FC<AttributeFormProps> = ({
 
   const [formData, setFormData] = useState({
     name: "",
-    slug: "",
+  
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -40,10 +40,10 @@ export const AttributeForm: React.FC<AttributeFormProps> = ({
     if (isEditMode && initialData) {
       setFormData({
         name: initialData.name || "",
-        slug: initialData.slug || "",
+       
       });
     } else {
-      setFormData({ name: "", slug: "" });
+      setFormData({ name: ""});
     }
   }, [initialData, isEditMode]);
 
@@ -75,10 +75,7 @@ export const AttributeForm: React.FC<AttributeFormProps> = ({
       data.append("name", formData.name.trim());
 
       // Only send slug if it's not empty (backend usually generates it)
-      if (formData.slug.trim()) {
-        data.append("slug", formData.slug.trim());
-      }
-
+     
       if (isEditMode) {
         data.append("_method", "PUT");
       }
@@ -132,27 +129,8 @@ export const AttributeForm: React.FC<AttributeFormProps> = ({
           )}
         </div>
 
-        {/* Slug Field (Optional) */}
-        <div className="space-y-2">
-          <Label htmlFor="slug">
-            Slug <span className="text-muted-foreground text-xs">(Optional)</span>
-          </Label>
-          <Input
-            id="slug"
-            name="slug"
-            value={formData.slug}
-            onChange={handleInputChange}
-            placeholder="e.g., color, shoe-size (auto-generated if empty)"
-          />
-          <p className="text-xs text-muted-foreground">
-            Used in URLs and filters. Leave empty to auto-generate from name.
-          </p>
-          {errors.slug && (
-            <p className="text-sm text-red-600 mt-1">
-              {getErrorMessage(errors.slug)}
-            </p>
-          )}
-        </div>
+       
+       
       </div>
 
       {/* Action Buttons */}

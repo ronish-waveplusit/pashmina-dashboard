@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/pages/category/_components/CategoryForm.tsx
+import React, { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -19,9 +20,8 @@ interface CategoryPayloadFormProps {
   initialData?: CategoryPayload | null;
   onSubmit: (formData: FormData) => Promise<CategoryPayload>;
   isSubmitting: boolean;
-  isModalOpen: boolean;
   onCloseModal: () => void;
-  categories: CategoryPayload[]; // All categories for parent selection
+  categories: CategoryPayload[];
 }
 
 type FormErrors = Partial<
@@ -37,111 +37,84 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
 }) => {
   const isEditMode = !!initialData;
 
+  // Initialize state directly from initialData (or empty for "Add")
   const [categoryData, setCategoryData] = useState({
-    name: "",
-    parent_category_id: "" as string | number,
+    name: initialData?.name ?? "",
+    parent_id: initialData?.parent?.id ? String(initialData.parent.id) : "",
   });
 
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [existingImageUrl] = useState<string | null>(initialData?.featured_image ?? null);
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialData?.featured_image ?? null
+  );
   const [errors, setErrors] = useState<FormErrors>({});
 
-  useEffect(() => {
-    if (isEditMode && initialData) {
-      setCategoryData({
-        name: initialData.name || "",
-        parent_category_id: initialData.parent_category_id || "",
-      });
-      
-      if (initialData.featured_image) {
-        setExistingImageUrl(initialData.featured_image);
-        setImagePreview(initialData.featured_image);
-      }
-    }
-  }, [initialData, isEditMode]);
+  console.log("Current categoryData:", categoryData);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    
-    setCategoryData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
+    setCategoryData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
   const handleSelectChange = (value: string) => {
-    setCategoryData((prev) => ({ 
-      ...prev, 
-      parent_category_id: value === "none" ? "" : value 
-    }));
-    
-    if (errors.parent_category_id) {
-      setErrors((prev) => ({ ...prev, parent_category_id: undefined }));
+    const newParentId = value === "none" ? "" : value;
+    setCategoryData((prev) => ({ ...prev, parent_id: newParentId }));
+    if (errors.parent_id) {
+      setErrors((prev) => ({ ...prev, parent_id: undefined }));
     }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        setErrors((prev) => ({ 
-          ...prev, 
-          featured_image: 'Please select a valid image file (JPEG, PNG, GIF, WEBP)' 
-        }));
-        return;
-      }
+    if (!file) return;
 
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        setErrors((prev) => ({ 
-          ...prev, 
-          featured_image: 'Image size must be less than 5MB' 
-        }));
-        return;
-      }
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setErrors((prev) => ({
+        ...prev,
+        featured_image: 'Please select a valid image file (JPEG, PNG, GIF, WEBP)',
+      }));
+      return;
+    }
 
-      setFeaturedImage(file);
-      setRemoveExistingImage(false);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setErrors((prev) => ({
+        ...prev,
+        featured_image: 'Image size must be less than 5MB',
+      }));
+      return;
+    }
 
-      if (errors.featured_image) {
-        setErrors((prev) => ({ ...prev, featured_image: undefined }));
-      }
+    setFeaturedImage(file);
+    setRemoveExistingImage(false);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    if (errors.featured_image) {
+      setErrors((prev) => ({ ...prev, featured_image: undefined }));
     }
   };
 
   const handleRemoveImage = () => {
     setFeaturedImage(null);
     setImagePreview(null);
-    
     if (existingImageUrl) {
       setRemoveExistingImage(true);
     }
-    
-    // Reset file input
-    const fileInput = document.getElementById('featured_image') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
+    const input = document.getElementById("featured_image") as HTMLInputElement;
+    if (input) input.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,31 +122,26 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     setErrors({});
 
     try {
-      await categorySchema.validate({
-        ...categoryData,
-        featured_image: featuredImage,
-        remove_featured_image: removeExistingImage ? "1" : null,
-      }, {
-        abortEarly: false,
-      });
+      await categorySchema.validate(
+        {
+          ...categoryData,
+          featured_image: featuredImage,
+          remove_featured_image: removeExistingImage ? "1" : null,
+        },
+        { abortEarly: false }
+       );
 
       const formData = new FormData();
       formData.append("name", categoryData.name);
-      
-      if (categoryData.parent_category_id) {
-        formData.append("parent_category_id", categoryData.parent_category_id.toString());
+      if (categoryData.parent_id) {
+        formData.append("parent_id", categoryData.parent_id);
       }
-
-      // Add featured image if a new one is selected
       if (featuredImage) {
         formData.append("featured_image", featuredImage);
       }
-
-      // Add remove flag if existing image should be removed
       if (removeExistingImage && !featuredImage) {
         formData.append("remove_featured_image", "1");
       }
-     
       if (isEditMode) {
         formData.append("_method", "PUT");
       }
@@ -191,8 +159,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
         setErrors(yupErrors);
       } else if (err instanceof AxiosError && err.response?.status === 422) {
         setErrors(err.response.data.errors);
-      } else {
-        throw err;
       }
     }
   };
@@ -202,7 +168,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     return error;
   };
 
-  // Filter out the current category from parent options to prevent circular references
   const availableParentCategories = categories.filter(
     (cat) => !isEditMode || cat.id !== initialData?.id
   );
@@ -223,17 +188,15 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
             placeholder="Enter category name"
           />
           {errors.name && (
-            <p className="text-sm text-red-600 mt-1">
-              {getErrorMessage(errors.name)}
-            </p>
+            <p className="text-sm text-red-600 mt-1">{getErrorMessage(errors.name)}</p>
           )}
         </div>
 
-        {/* Parent Category Field */}
+        {/* Parent Category */}
         <div className="space-y-2">
-          <Label htmlFor="parent_category_id">Parent Category</Label>
+          <Label htmlFor="parent_id">Parent Category</Label>
           <Select
-            value={categoryData.parent_category_id?.toString() || "none"}
+            value={categoryData.parent_id || "none"}   // This line is critical
             onValueChange={handleSelectChange}
           >
             <SelectTrigger>
@@ -242,23 +205,21 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
             <SelectContent>
               <SelectItem value="none">None (Top Level)</SelectItem>
               {availableParentCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
+                <SelectItem key={category.id} value={String(category.id)}>
                   {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors.parent_category_id && (
-            <p className="text-sm text-red-600 mt-1">
-              {getErrorMessage(errors.parent_category_id)}
-            </p>
+          {errors.parent_id && (
+            <p className="text-sm text-red-600 mt-1">{getErrorMessage(errors.parent_id)}</p>
           )}
         </div>
 
-        {/* Featured Image Field */}
+        {/* Featured Image */}
         <div className="space-y-2">
           <Label htmlFor="featured_image">Featured Image</Label>
-          
+
           {imagePreview && (
             <div className="relative w-full h-48 border rounded-lg overflow-hidden bg-gray-50">
               <img
@@ -282,7 +243,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
             <div className="relative">
               <Input
                 id="featured_image"
-                name="featured_image"
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                 onChange={handleImageChange}
@@ -294,9 +254,7 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
               >
                 <div className="text-center">
                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload image
-                  </p>
+                  <p className="text-sm text-muted-foreground">Click to upload image</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     PNG, JPG, GIF, WEBP (max 5MB)
                   </p>
@@ -313,13 +271,9 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
         </div>
       </div>
 
+      {/* Submit Buttons */}
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onCloseModal}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={onCloseModal} disabled={isSubmitting}>
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
