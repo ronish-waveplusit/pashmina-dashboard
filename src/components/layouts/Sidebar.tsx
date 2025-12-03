@@ -100,9 +100,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       const permissionMap: { [key: string]: string } = {
         Dashboard: "dashboard:view",
         Users: "user:view",
-        Instructors: "user:view",
-        Students: "student:view",
-        Enquiries: "enquiry:view",
+        Products: "user:view",
+        Categories: "category:view",
+        Attributes: "attribute:view",
         Contact: "lead:view",
         Reminders: "notifications:view",
         "Course Enrollments": "enrollment:view",
@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Attendance: "attendance:view",
         Referrers: "referer:view",
         POS: "pos:view",
-        Products: "product:view",
+       
         // Items: "item:view",
         // Vendors: "item:view",
         // Purchase: "item:view",

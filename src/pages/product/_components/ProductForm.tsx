@@ -12,7 +12,9 @@ import {ProductFormData} from "../../../types/product";
 
 const ProductForm = () => {
   const [formData, setFormData] = useState<ProductFormData>({
-    productName: "",
+    id: "",
+    category:"",
+    name: "",
     description: "",
     ingredients: "",
     details: "",
@@ -27,7 +29,7 @@ const ProductForm = () => {
   });
 
   const handleSubmit = () => {
-    if (!formData.productName) {
+    if (!formData.name) {
       toast.error("Please enter a product name");
       return;
     }

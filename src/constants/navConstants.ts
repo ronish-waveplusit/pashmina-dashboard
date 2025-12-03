@@ -3,7 +3,7 @@ import {
   UserCog,
   Users,
   BookOpen,
-  Calendar,
+ 
   DollarSign,
   Landmark,
   MessageSquare,
@@ -15,15 +15,16 @@ import {
   PhoneIncoming,
   CirclePlusIcon,
   User,
-  UserPen,
-  Columns3,
+ 
   FileText,
   ClipboardList,
   Shield,
   BarChart3,
-  FileImage,
-  MenuSquare,
-  Newspaper,
+  
+  Package,
+ 
+  SlidersHorizontal,
+  Tags,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -32,15 +33,15 @@ export const NAV_GROUPS = [
     items: [{ name: "Dashboard", path: "/dashboard", icon: Home }],
   },
   {
-    title: "Enquiry & Notifications",
+    title: "Product Management",
     items: [
-      { name: "Contact", path: "/contacts", icon: UserPen },
-      { name: "Enquiries", path: "/enquiries", icon: Calendar },
+      { name: "Products", path: "/product-form", icon: Package },
+      { name: "Categories", path: "/category", icon: Tags },
       // { name: "Reminders", path: "/reminders", icon: Bell },
       {
-        name: "Course Enrollments",
-        path: "/student-enrollments",
-        icon: Users,
+        name: "Attributes",
+        path: "/attributes",
+        icon: SlidersHorizontal,
       },
     ],
   },

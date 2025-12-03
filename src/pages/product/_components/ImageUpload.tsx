@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { ProductFormData } from "./ProductForm";
+import { ProductFormData } from "../../../types/product";
 
 interface Props {
   formData: ProductFormData;

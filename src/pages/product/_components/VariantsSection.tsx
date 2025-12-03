@@ -41,7 +41,7 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
 
   const generateVariations = () => {
     const variationAttributes = formData.attributes.filter(attr => attr.usedForVariations);
-    
+
     if (variationAttributes.length === 0) {
       toast.error("Please add at least one attribute marked for variations");
       return;
@@ -91,7 +91,7 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
       ...formData,
       variations: newVariations,
     });
-    
+
     setActiveTab("variations");
     toast.success(`Generated ${newVariations.length} variations`);
   };
@@ -136,6 +136,18 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
           <AddAttributesDialog
             existingAttributeIds={formData.attributes.map(a => a.id)}
             onAdd={addAttributes}
+            selectedProductAttributes={formData.attributes}
+            onUpdateAttributeValues={(attributeId, selectedValueIds) => {
+              // Find the attribute to update
+              const attribute = formData.attributes.find(a => a.id === attributeId);
+              if (!attribute) return;
+
+              // You'll need access to the full attributes list to map IDs back to names
+              // This is a simplified version - you may need to adjust based on your data structure
+              updateAttribute(attributeId, {
+                values: selectedValueIds.join(", ") // Or however you want to format the values
+              });
+            }}
           />
           {formData.attributes.length > 0 && (
             <Button onClick={generateVariations}>
@@ -156,6 +168,7 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
               <AttributeCard
                 key={attribute.id}
                 attribute={attribute}
+                
                 onUpdate={updateAttribute}
                 onRemove={removeAttribute}
               />

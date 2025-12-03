@@ -21,7 +21,8 @@ export interface ProductVariation {
 }
 
 export interface ProductFormData {
-  productName: string;
+  id:string|number;
+  name: string;
   description: string;
   ingredients: string;
   details: string;
@@ -33,4 +34,5 @@ export interface ProductFormData {
   status: string;
   attributes: ProductAttribute[];
   variations: ProductVariation[];
+  category:string;
 }

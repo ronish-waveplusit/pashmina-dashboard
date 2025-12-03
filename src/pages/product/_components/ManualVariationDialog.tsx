@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
 import { Button } from "../../../components/ui/button";
-
 import { Label } from "../../../components/ui/label";
 import { Plus } from "lucide-react";
-import {ProductAttribute,ProductVariation} from "../../../types/product";
+import { ProductAttribute, ProductVariation } from "../../../types/product";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 
 interface Props {
   attributes: ProductAttribute[];
-  onAdd: (variation: ProductAttribute) => void;
+  onAdd: (variation: ProductVariation) => void; // Changed from ProductAttribute to ProductVariation
 }
 
 const ManualVariationDialog = ({ attributes, onAdd }: Props) => {

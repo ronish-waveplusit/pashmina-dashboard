@@ -89,13 +89,10 @@ export async function createProduct(
  * @param productId The ID of the course to update.
  * @param data The data to update. Can be a partial object.
  */
-export async function updateProduct({
-  id,
-  formData,
-}: {
-  id: string | number;
-  formData: FormData;
-}): Promise<ProductFormData> {
+export async function updateProduct(
+  id: string | number,
+  formData: FormData
+): Promise<ProductFormData> {
   try {
     const response = await http({
       url: `${apiRoutes.GET_PRODUCT}/${id}`,
@@ -104,7 +101,7 @@ export async function updateProduct({
     });
     return response.data.data;
   } catch (error) {
-    console.error(`Failed to update course with id ${id}:`, error);
+    console.error(`Failed to update product with id ${id}:`, error);
     throw error;
   }
 }
