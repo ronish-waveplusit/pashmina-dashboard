@@ -35,7 +35,7 @@ export const NAV_GROUPS = [
   {
     title: "Product Management",
     items: [
-      { name: "Products", path: "/product-form", icon: Package },
+      { name: "Products", path: "/products", icon: Package },
       { name: "Categories", path: "/category", icon: Tags },
       // { name: "Reminders", path: "/reminders", icon: Bell },
       {

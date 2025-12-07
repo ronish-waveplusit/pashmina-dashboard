@@ -1,38 +1,49 @@
 import { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/ui/dialog";
 import { Button } from "../../../components/ui/button";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { useAttribute } from "../../attributes/_hooks/useAttribute";
-import { ProductAttribute } from "../../../types/product";
 import { AttributeWithValues } from "../../../types/attribute";
+
+interface LocalAttribute {
+  id: string;
+  name: string;
+  values: string;
+  visibleOnProduct: boolean;
+  usedForVariations: boolean;
+  attribute_id: number;
+  attribute_value_ids: number[];
+}
 
 interface Props {
   existingAttributeIds: string[];
-  selectedProductAttributes: ProductAttribute[];
-  onAdd: (attributes: ProductAttribute[]) => void;
-  onUpdateAttributeValues: (attributeId: string, selectedValueIds: string[]) => void;
+  selectedProductAttributes: LocalAttribute[];
+  onAdd: (attributes: any[]) => void;
+  onUpdateAttributeValues: (attributeId: string, selectedValueIds: number[]) => void;
 }
 
 interface SelectedAttributeValues {
   [attributeId: string]: Set<string>;
 }
 
-const AddAttributesDialog = ({ 
-  existingAttributeIds, 
+const AddAttributesDialog = ({
+  existingAttributeIds,
   selectedProductAttributes,
   onAdd,
-  onUpdateAttributeValues 
+  onUpdateAttributeValues,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [selectedAttributes, setSelectedAttributes] = useState<Set<string>>(new Set());
   const [selectedValues, setSelectedValues] = useState<SelectedAttributeValues>({});
-  
-  const {
-    attributes: rawAttributes,
-    isLoading,
-    isError,
-  } = useAttribute();
+
+  const { attributes: rawAttributes, isLoading, isError } = useAttribute();
 
   const attributes: AttributeWithValues[] = useMemo(() => {
     if (!rawAttributes) return [];
@@ -41,13 +52,14 @@ const AddAttributesDialog = ({
       id: attr.id,
       name: attr.name,
       slug: attr.slug,
-      attributeValues: attr.attribute_values?.map((val: any) => ({
-        id: val.id,
-        attribute_id: val.attribute_id,
-        name: val.name,
-        created_at: val.created_at,
-        updated_at: val.updated_at,
-      })) || [],
+      attributeValues:
+        attr.attribute_values?.map((val: any) => ({
+          id: val.id,
+          attribute_id: val.attribute_id,
+          name: val.name,
+          created_at: val.created_at,
+          updated_at: val.updated_at,
+        })) || [],
       created_at: attr.created_at,
       updated_at: attr.updated_at,
     }));
@@ -56,78 +68,76 @@ const AddAttributesDialog = ({
   const handleToggleAttribute = (attributeId: string) => {
     const newSelected = new Set(selectedAttributes);
     const newSelectedValues = { ...selectedValues };
-    
+
     if (newSelected.has(attributeId)) {
       newSelected.delete(attributeId);
       delete newSelectedValues[attributeId];
     } else {
       newSelected.add(attributeId);
       // Initialize with all values selected by default
-      const attribute = attributes.find(a => String(a.id) === attributeId);
+      const attribute = attributes.find((a) => String(a.id) === attributeId);
       if (attribute && attribute.attributeValues) {
         newSelectedValues[attributeId] = new Set(
-          attribute.attributeValues.map(v => String(v.id))
+          attribute.attributeValues.map((v) => String(v.id))
         );
       }
     }
-    
+
     setSelectedAttributes(newSelected);
     setSelectedValues(newSelectedValues);
   };
 
   const handleToggleValue = (attributeId: string, valueId: string) => {
     const newSelectedValues = { ...selectedValues };
-    
+
     if (!newSelectedValues[attributeId]) {
       newSelectedValues[attributeId] = new Set();
     }
-    
+
     if (newSelectedValues[attributeId].has(valueId)) {
       newSelectedValues[attributeId].delete(valueId);
     } else {
       newSelectedValues[attributeId].add(valueId);
     }
-    
+
     setSelectedValues(newSelectedValues);
   };
 
   const handleToggleExistingValue = (attributeId: string, valueId: string) => {
-    const attribute = attributes.find(a => String(a.id) === attributeId);
-    if (!attribute || !attribute.attributeValues) return;
-
-    const productAttr = selectedProductAttributes.find(a => a.id === attributeId);
+    const productAttr = selectedProductAttributes.find((a) => a.id === attributeId);
     if (!productAttr) return;
 
-    // Get current selected value IDs from the product attribute
-    const currentValueNames = productAttr.values.split(", ").filter(Boolean);
-    const currentValueIds = attribute.attributeValues
-      .filter(v => currentValueNames.includes(v.name))
-      .map(v => String(v.id));
+    const currentValueIds = productAttr.attribute_value_ids;
+    const valueIdNum = parseInt(valueId);
 
     // Toggle the value
-    const updatedValueIds = currentValueIds.includes(valueId)
-      ? currentValueIds.filter(id => id !== valueId)
-      : [...currentValueIds, valueId];
+    const updatedValueIds = currentValueIds.includes(valueIdNum)
+      ? currentValueIds.filter((id) => id !== valueIdNum)
+      : [...currentValueIds, valueIdNum];
 
     onUpdateAttributeValues(attributeId, updatedValueIds);
   };
 
   const handleAdd = () => {
-    const attributesToAdd: ProductAttribute[] = attributes
-      .filter(attr => selectedAttributes.has(String(attr.id)))
-      .map(attr => {
+    const attributesToAdd = attributes
+      .filter((attr) => selectedAttributes.has(String(attr.id)))
+      .map((attr) => {
         const attrId = String(attr.id);
         const selectedValueIds = selectedValues[attrId] || new Set();
         const selectedValueNames = (attr.attributeValues || [])
-          .filter(v => selectedValueIds.has(String(v.id)))
-          .map(v => v.name);
+          .filter((v) => selectedValueIds.has(String(v.id)))
+          .map((v) => v.name);
         
+        const selectedValueIdsArray = Array.from(selectedValueIds).map(id => parseInt(id));
+
         return {
           id: attrId,
           name: attr.name,
           values: selectedValueNames.join(", "),
           visibleOnProduct: true,
           usedForVariations: true,
+          attribute_id: parseInt(attrId),
+          attribute_value_ids: selectedValueIdsArray,
         };
       });
 
@@ -138,7 +148,7 @@ const AddAttributesDialog = ({
   };
 
   const availableAttributes = attributes.filter(
-    attr => !existingAttributeIds.includes(String(attr.id))
+    (attr) => !existingAttributeIds.includes(String(attr.id))
   );
 
   const getTotalSelectedCount = () => {
@@ -148,27 +158,17 @@ const AddAttributesDialog = ({
   };
 
   const getSelectedValueCount = (attributeId: string) => {
-    const attribute = attributes.find(a => String(a.id) === attributeId);
-    if (!attribute || !attribute.attributeValues) return 0;
-
-    const productAttr = selectedProductAttributes.find(a => a.id === attributeId);
+    const productAttr = selectedProductAttributes.find((a) => a.id === attributeId);
     if (!productAttr) return 0;
-
-    const valueNames = productAttr.values.split(", ").filter(Boolean);
-    return valueNames?.length;
+    return productAttr.attribute_value_ids.length;
   };
 
   const isValueSelected = (attributeId: string, valueId: string) => {
-    const attribute = attributes.find(a => String(a.id) === attributeId);
-    if (!attribute || !attribute.attributeValues) return false;
-
-    const productAttr = selectedProductAttributes.find(a => a.id === attributeId);
+    const productAttr = selectedProductAttributes.find((a) => a.id === attributeId);
     if (!productAttr) return false;
 
-    const valueNames = productAttr.values.split(", ").filter(Boolean);
-    const value = attribute.attributeValues.find(v => String(v.id) === valueId);
-    
-    return value ? valueNames.includes(value.name) : false;
+    const valueIdNum = parseInt(valueId);
+    return productAttr.attribute_value_ids.includes(valueIdNum);
   };
 
   return (
@@ -187,9 +187,13 @@ const AddAttributesDialog = ({
           {/* Existing Attributes with Value Selection */}
           {selectedProductAttributes?.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground">Selected Attributes</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                Selected Attributes
+              </h3>
               {selectedProductAttributes.map((productAttr) => {
-                const attribute = attributes.find(a => String(a.id) === productAttr.id);
+                const attribute = attributes.find(
+                  (a) => String(a.id) === productAttr.id
+                );
                 if (!attribute || !attribute.attributeValues) return null;
 
                 const selectedCount = getSelectedValueCount(productAttr.id);
@@ -221,7 +225,9 @@ const AddAttributesDialog = ({
                               <Checkbox
                                 id={`existing-${productAttr.id}-${valueId}`}
                                 checked={isChecked}
-                                onCheckedChange={() => handleToggleExistingValue(productAttr.id, valueId)}
+                                onCheckedChange={() =>
+                                  handleToggleExistingValue(productAttr.id, valueId)
+                                }
                               />
                               <label
                                 htmlFor={`existing-${productAttr.id}-${valueId}`}
@@ -246,10 +252,14 @@ const AddAttributesDialog = ({
           ) : isError ? (
             <p className="text-sm text-destructive">Error loading attributes</p>
           ) : availableAttributes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No more attributes available</p>
+            <p className="text-sm text-muted-foreground">
+              No more attributes available
+            </p>
           ) : (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground">Available Attributes</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                Available Attributes
+              </h3>
               {availableAttributes.map((attr) => {
                 const attrId = String(attr.id);
                 const isSelected = selectedAttributes.has(attrId);
@@ -279,35 +289,40 @@ const AddAttributesDialog = ({
                       </div>
                     </div>
 
-                    {isSelected && attr.attributeValues && attr.attributeValues.length > 0 && (
-                      <div className="p-3 pt-0">
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {attr.attributeValues.map((value) => {
-                            const valueId = String(value.id);
-                            const isValueSelected = selectedValues[attrId]?.has(valueId) || false;
+                    {isSelected &&
+                      attr.attributeValues &&
+                      attr.attributeValues.length > 0 && (
+                        <div className="p-3 pt-0">
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {attr.attributeValues.map((value) => {
+                              const valueId = String(value.id);
+                              const isValueSelected =
+                                selectedValues[attrId]?.has(valueId) || false;
 
-                            return (
-                              <div
-                                key={value.id}
-                                className="flex items-center space-x-2 rounded border border-border/50 p-2 hover:bg-muted/50"
-                              >
-                                <Checkbox
-                                  id={`${attrId}-${valueId}`}
-                                  checked={isValueSelected}
-                                  onCheckedChange={() => handleToggleValue(attrId, valueId)}
-                                />
-                                <label
-                                  htmlFor={`${attrId}-${valueId}`}
-                                  className="text-xs cursor-pointer flex-1"
+                              return (
+                                <div
+                                  key={value.id}
+                                  className="flex items-center space-x-2 rounded border border-border/50 p-2 hover:bg-muted/50"
                                 >
-                                  {value.name}
-                                </label>
-                              </div>
-                            );
-                          })}
+                                  <Checkbox
+                                    id={`${attrId}-${valueId}`}
+                                    checked={isValueSelected}
+                                    onCheckedChange={() =>
+                                      handleToggleValue(attrId, valueId)
+                                    }
+                                  />
+                                  <label
+                                    htmlFor={`${attrId}-${valueId}`}
+                                    className="text-xs cursor-pointer flex-1"
+                                  >
+                                    {value.name}
+                                  </label>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 );
               })}
@@ -316,7 +331,8 @@ const AddAttributesDialog = ({
         </div>
         <div className="flex justify-between items-center pt-4 border-t">
           <p className="text-sm text-muted-foreground">
-            {selectedAttributes.size} new attributes, {getTotalSelectedCount()} values selected
+            {selectedAttributes.size} new attributes, {getTotalSelectedCount()} values
+            selected
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
@@ -324,7 +340,9 @@ const AddAttributesDialog = ({
             </Button>
             <Button
               onClick={handleAdd}
-              disabled={selectedAttributes.size === 0 || getTotalSelectedCount() === 0}
+              disabled={
+                selectedAttributes.size === 0 || getTotalSelectedCount() === 0
+              }
             >
               Add Selected
             </Button>

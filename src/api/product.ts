@@ -1,103 +1,112 @@
 import http from "../utils/helper/http";
 import { apiRoutes } from "../constants/RouteConstants";
-
 import { PaginatedResponse } from "../types/pagination";
-import { ProductFormData } from "../types/product";
+import {
+  ProductResponse,
+  ProductFormData,
+  ProductFormDataWithId,
+  productFormDataToFormData,
+} from "../types/product";
 
 interface GetProductParams {
   page?: number;
   search?: string;
   per_page?: number;
+  paginate?: boolean;
+  status?: string;
+  category?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
 }
+
 /**
- * Fetches a list of all TransactionCategory. (GET /transaction-categories)
- * This is an improved version of your original function.
+ * Fetches a paginated list of products
  */
 export async function getProduct(
   params: GetProductParams
-): Promise<PaginatedResponse<ProductFormData>> {
+): Promise<PaginatedResponse<ProductResponse>> {
   const response = await http({
     url: apiRoutes.GET_PRODUCT,
     method: "get",
     params: params,
   });
-  // The API nests the paginated object under a "data" key
   return response.data.data;
 }
 
-
+/**
+ * Fetches products by branch ID
+ */
 export async function getProductByBranchId(
   branch_id: string | number,
   params?: GetProductParams
-): Promise<PaginatedResponse<ProductFormData>> {
+): Promise<PaginatedResponse<ProductResponse>> {
   const response = await http({
-    url: apiRoutes.GET_PRODUCT + `/branch/${branch_id}`,
+    url: `${apiRoutes.GET_PRODUCT}/branch/${branch_id}`,
     method: "get",
     params: params,
   });
-  // The API nests the paginated object under a "data" key
   return response.data.data;
 }
+
 /**
- * Fetches a single course by its ID. (GET /transaction-categories)/{id})
- * @param productId The ID of the course to retrieve.
+ * Fetches a single product by its ID
  */
 export async function getProductById(
   productId: string | number
-) {
+): Promise<ProductResponse> {
   try {
     const response = await http({
-      // Dynamically construct the URL with the course ID
       url: `${apiRoutes.GET_PRODUCT}/${productId}`,
       method: "get",
     });
     return response.data.data;
   } catch (error) {
-    console.error(
-      `Failed to fetch course with id ${productId}:`,
-      error
-    );
+    console.error(`Failed to fetch product with id ${productId}:`, error);
     throw error;
   }
 }
 
 /**
- * Creates a new course. (POST /transaction-categories)
- * @param data The course data matching the CoursePayload type.
+ * Creates a new product
  */
 export async function createProduct(
   data: ProductFormData | FormData
-) {
+): Promise<ProductResponse> {
   try {
+    const formData = data instanceof FormData ? data : productFormDataToFormData(data);
+
     const response = await http({
       url: apiRoutes.GET_PRODUCT,
       method: "post",
-      data: data,
-       headers: {
-        'Content-Type': 'multipart/form-data', 
-      } 
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     return response.data.data;
   } catch (error) {
-    console.error("Failed to create course:", error);
+    console.error("Failed to create product:", error);
     throw error;
   }
 }
 
 /**
- * Updates an existing course by its ID. (PUT /transaction-categories)/{id})
- * @param productId The ID of the course to update.
- * @param data The data to update. Can be a partial object.
+ * Updates an existing product by its ID
  */
 export async function updateProduct(
   id: string | number,
-  formData: FormData
-): Promise<ProductFormData> {
+  data: ProductFormData | ProductFormDataWithId | FormData
+): Promise<ProductResponse> {
   try {
+    const formData = data instanceof FormData ? data : productFormDataToFormData(data);
+
     const response = await http({
       url: `${apiRoutes.GET_PRODUCT}/${id}`,
       method: "put",
       data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     return response.data.data;
   } catch (error) {
@@ -107,24 +116,17 @@ export async function updateProduct(
 }
 
 /**
- * Deletes a course by its ID. (DELETE /transaction-categories)/{id})
- * @param productId The ID of the course to delete.
+ * Deletes a product by its ID
  */
-export async function deleteProduct(
-  productId: string | number
-) {
+export async function deleteProduct(productId: string | number): Promise<void> {
   try {
     const response = await http({
       url: `${apiRoutes.GET_PRODUCT}/${productId}`,
       method: "delete",
     });
-    // DELETE requests often return a 204 No Content status with an empty body
     return response.data;
   } catch (error) {
-    console.error(
-      `Failed to delete course with id ${productId}:`,
-      error
-    );
+    console.error(`Failed to delete product with id ${productId}:`, error);
     throw error;
   }
 }

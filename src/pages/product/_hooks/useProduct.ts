@@ -2,10 +2,10 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../../components/ui/use-toast";
+import { AxiosError } from "axios";
 
 import {
   getProduct,
-
   createProduct,
   updateProduct,
   deleteProduct,
@@ -13,14 +13,21 @@ import {
 } from "../../../api/product";
 
 import { PaginatedResponse } from "../../../types/pagination";
-import { ProductFormData } from "../../../types/product"; // assuming you have this type
-import { AxiosError } from "axios";
+import {
+  ProductResponse,
+  ProductFormData,
+  ProductFormDataWithId,
+} from "../../../types/product";
 
 interface ProductFilters {
   branchId?: string | number;
   page?: number;
   search?: string;
   per_page?: number;
+  status?: string;
+  category?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
 }
 
 /* ---------- Query Keys ---------- */
@@ -35,21 +42,24 @@ export const ProductQueryKeys = {
 };
 
 interface UseProductReturn {
-  products: ProductFormData[];
-  meta?: Omit<PaginatedResponse<ProductFormData>, "data">;
+  products: ProductResponse[];
+  meta?: Omit<PaginatedResponse<ProductResponse>, "data">;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
   isAdding: boolean;
   isUpdating: boolean;
   isDeleting: boolean;
-  productToDelete: ProductFormData | null;
+  productToDelete: ProductResponse | null;
 
   actions: {
     view: (id: string | number) => void;
     edit: (id: string | number) => void;
-    add: (data: FormData) => Promise<ProductFormData>;
-    update: (id: string | number, data: FormData) => Promise<ProductFormData>;
+    add: (data: ProductFormData | FormData) => Promise<ProductResponse>;
+    update: (
+      id: string | number,
+      data: ProductFormData | ProductFormDataWithId | FormData
+    ) => Promise<ProductResponse>;
     confirmDelete: (id: string | number) => void;
     cancelDelete: () => void;
     handleDelete: () => void;
@@ -59,22 +69,33 @@ interface UseProductReturn {
 /**
  * Custom hook for managing products (list + CRUD)
  */
-export const useProduct = (
-  filters: ProductFilters = {}
-): UseProductReturn => {
+export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { branchId, page = 1, search = "", per_page = 10 } = filters;
+  const {
+    branchId,
+    page = 1,
+    search = "",
+    per_page = 10,
+    status,
+    category,
+    sort_by,
+    sort_order,
+  } = filters;
 
   const queryParams = {
     page,
     paginate: true,
     per_page,
     ...(search && { search }),
+    ...(status && { status }),
+    ...(category && { category }),
+    ...(sort_by && { sort_by }),
+    ...(sort_order && { sort_order }),
   };
 
-  const [productToDelete, setProductToDelete] = useState<ProductFormData | null>(
+  const [productToDelete, setProductToDelete] = useState<ProductResponse | null>(
     null
   );
 
@@ -84,7 +105,7 @@ export const useProduct = (
     isLoading,
     isFetching,
     isError,
-  } = useQuery<PaginatedResponse<ProductFormData>, Error>({
+  } = useQuery<PaginatedResponse<ProductResponse>, Error>({
     queryKey: branchId
       ? ProductQueryKeys.byBranchIdList({ ...queryParams, branchId })
       : ProductQueryKeys.list(queryParams),
@@ -93,7 +114,7 @@ export const useProduct = (
         ? getProductByBranchId(branchId, queryParams)
         : getProduct(queryParams),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    placeholderData: (previousData) => previousData, // keeps old data while fetching new page
+    placeholderData: (previousData) => previousData,
     refetchOnMount: "always",
   });
 
@@ -121,7 +142,7 @@ export const useProduct = (
 
   /* ---------- Create mutation ---------- */
   const { mutateAsync: performAdd, isPending: isAdding } = useMutation({
-    mutationFn: (formData: FormData) => createProduct(formData),
+    mutationFn: (data: ProductFormData | FormData) => createProduct(data),
     onSuccess: (data) => {
       toast({
         title: "Product Added",
@@ -142,7 +163,7 @@ export const useProduct = (
         title: "Creation Failed",
         description: message,
       });
-      throw err; // so calling code can handle rejection if needed
+      throw err;
     },
   });
 
@@ -150,18 +171,20 @@ export const useProduct = (
   const { mutateAsync: performUpdate, isPending: isUpdating } = useMutation({
     mutationFn: ({
       id,
-      formData,
+      data,
     }: {
       id: string | number;
-      formData: FormData;
-    }) => updateProduct(id, formData),
+      data: ProductFormData | ProductFormDataWithId | FormData;
+    }) => updateProduct(id, data),
     onSuccess: (data) => {
       toast({
         title: "Product Updated",
         description: `Product "${data.name}" has been saved.`,
       });
       queryClient.invalidateQueries({ queryKey: ProductQueryKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: ProductQueryKeys.detail(data.id) });
+      queryClient.invalidateQueries({
+        queryKey: ProductQueryKeys.detail(data.id),
+      });
     },
     onError: (err: unknown) => {
       const message =
@@ -190,7 +213,7 @@ export const useProduct = (
 
   const handleEdit = useCallback(
     (id: string | number) => {
-      navigate(`/products/edit/${id}`);
+      navigate(`/product-form/${id}`);
     },
     [navigate]
   );
@@ -223,8 +246,10 @@ export const useProduct = (
       view: handleView,
       edit: handleEdit,
       add: performAdd,
-      update: (id: string | number, formData: FormData) =>
-        performUpdate({ id, formData }),
+      update: (
+        id: string | number,
+        data: ProductFormData | ProductFormDataWithId | FormData
+      ) => performUpdate({ id, data }),
       confirmDelete,
       cancelDelete,
       handleDelete,

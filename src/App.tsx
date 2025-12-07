@@ -8,6 +8,7 @@ const CategoryForm = lazy(() => import("./pages/category/Index"));
 const LoginPage = lazy(() => import("./pages/login/Page")); 
 const Attributes = lazy(() => import("./pages/attributes/Index")); 
 const ProductForm = lazy(() => import("./pages/product/_components/ProductForm"));
+const ProductIndex = lazy(() => import("./pages/product/Index"));
 function App() {
 
 const LoadingFallback = () => (
@@ -48,6 +49,16 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <ProductForm />
+              </AuthGuard>
+            }
+          />
+             <Route
+            path="/products"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ProductIndex />
               </AuthGuard>
             }
           />

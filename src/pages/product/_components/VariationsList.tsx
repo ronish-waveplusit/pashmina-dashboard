@@ -1,53 +1,88 @@
 import { useState } from "react";
-import { ProductVariation, ProductAttribute } from "../../../types/product";
 import { Button } from "../../../components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 import { Edit, Trash2, X } from "lucide-react";
 
+interface VariationAttribute {
+  attribute_id: number;
+  attribute_value_id: number;
+}
+
+interface Variation {
+  sku: string;
+  price: string;
+  sale_price: string;
+  quantity: number;
+  low_stock_threshold: number;
+  status: string;
+  attributes: VariationAttribute[];
+  image?: File;
+}
+
+interface LocalAttribute {
+  id: string;
+  name: string;
+  values: string;
+  attribute_id: number;
+  attribute_value_ids: number[];
+  usedForVariations: boolean;
+}
+
 interface Props {
-  variations: ProductVariation[];
-  attributes: ProductAttribute[];
-  onUpdate: (id: string, updates: Partial<ProductVariation>) => void;
-  onRemove: (id: string) => void;
+  variations: Variation[];
+  attributes: LocalAttribute[];
+  onUpdate: (index: number, updates: Partial<Variation>) => void;
+  onRemove: (index: number) => void;
 }
 
 const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) => {
-  const [editingVariation, setEditingVariation] = useState<ProductVariation | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const attributeNames = attributes
-    .filter(attr => attr.usedForVariations)
-    .map(attr => attr.name);
+  const variationAttributes = attributes.filter((attr) => attr.usedForVariations);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, variationId: string) => {
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      onUpdate(variationId, { image: imageUrl });
-      // Update the editing variation state
-      if (editingVariation?.id === variationId) {
-        setEditingVariation({ ...editingVariation, image: imageUrl });
-      }
+      onUpdate(index, { image: file });
     }
   };
 
-  const handleUpdate = (field: keyof ProductVariation, value: any) => {
-    if (editingVariation) {
-      const updated = { ...editingVariation, [field]: value };
-      setEditingVariation(updated);
-      onUpdate(editingVariation.id, { [field]: value });
+  const handleUpdate = (field: keyof Variation, value: any) => {
+    if (editingIndex !== null) {
+      onUpdate(editingIndex, { [field]: value });
     }
   };
 
-  const getAttributeValue = (variation: ProductVariation, attrName: string) => {
-    return variation.attributes[attrName] || "";
+  const getAttributeValueName = (variation: Variation, attrId: number): string => {
+    const attr = attributes.find((a) => a.attribute_id === attrId);
+    if (!attr) return "";
+
+    const varAttr = variation.attributes.find((a) => a.attribute_id === attrId);
+    if (!varAttr) return "";
+
+    const valueNames = attr.values.split(",").map((v) => v.trim());
+    const valueIndex = attr.attribute_value_ids.indexOf(varAttr.attribute_value_id);
+
+    return valueIndex >= 0 ? valueNames[valueIndex] : "";
   };
+
+  const editingVariation = editingIndex !== null ? variations[editingIndex] : null;
 
   return (
     <div className="flex gap-4 h-[calc(100vh-250px)]">
-      {/* Variations List - Retracts when editing */}
-      <div 
+      {/* Variations List */}
+      <div
         className={`transition-all duration-300 ease-in-out ${
-          editingVariation ? 'w-[250px]' : 'w-full'
+          editingVariation ? "w-[250px]" : "w-full"
         }`}
       >
         <div className="rounded border border-border bg-card h-full flex flex-col">
@@ -55,49 +90,59 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
             <h3 className="font-semibold text-foreground">Variants</h3>
           </div>
           <div className="divide-y divide-border overflow-y-auto flex-1">
-            {variations.map((variation) => {
-              const isEditing = editingVariation?.id === variation.id;
-              
+            {variations.map((variation, index) => {
+              const isEditing = editingIndex === index;
+
               return (
-                <div 
-                  key={variation.id} 
+                <div
+                  key={index}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors ${
-                    isEditing ? 'bg-accent border-l-4 border-l-primary' : ''
+                    isEditing ? "bg-accent border-l-4 border-l-primary" : ""
                   }`}
                 >
                   <div className="flex-1 flex items-center gap-4 min-w-0">
-                    {attributeNames.map((attrName, index) => (
-                      <div key={index} className="flex items-center gap-1">
-                        {!editingVariation && (
-                          <>
-                            <span className="text-xs text-muted-foreground">{attrName}:</span>
-                            <span className="text-sm font-medium">{getAttributeValue(variation, attrName)}</span>
-                          </>
-                        )}
-                        {editingVariation && (
-                          <div className="text-xs">
-                            <span className="text-muted-foreground">{attrName.slice(0, 1)}:</span>
-                            <span className="font-medium ml-1">{getAttributeValue(variation, attrName)}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {variationAttributes.map((attr) => {
+                      const valueName = getAttributeValueName(
+                        variation,
+                        attr.attribute_id
+                      );
+                      return (
+                        <div key={attr.id} className="flex items-center gap-1">
+                          {!editingVariation && (
+                            <>
+                              <span className="text-xs text-muted-foreground">
+                                {attr.name}:
+                              </span>
+                              <span className="text-sm font-medium">{valueName}</span>
+                            </>
+                          )}
+                          {editingVariation && (
+                            <div className="text-xs">
+                              <span className="text-muted-foreground">
+                                {attr.name.slice(0, 1)}:
+                              </span>
+                              <span className="font-medium ml-1">{valueName}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center  flex-shrink-0">
+                  <div className="flex items-center flex-shrink-0">
                     {!isEditing && (
                       <>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onRemove(variation.id)}
+                          onClick={() => onRemove(index)}
                           className="text-destructive hover:text-destructive h-8"
                         >
-                         <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingVariation(variation)}
+                          onClick={() => setEditingIndex(index)}
                           className="h-8"
                         >
                           <Edit className="h-4 w-4" />
@@ -108,7 +153,7 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditingVariation(null)}
+                        onClick={() => setEditingIndex(null)}
                         className="h-8"
                       >
                         <X className="h-4 w-4" />
@@ -122,146 +167,203 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
         </div>
       </div>
 
-      {/* Edit Form - Appears in the space created */}
-      {editingVariation && (
+      {/* Edit Form */}
+      {editingVariation && editingIndex !== null && (
         <div className="flex-1 rounded border border-border bg-card overflow-hidden animate-in slide-in-from-right duration-300">
           <div className="border-b border-border bg-accent px-4 py-3 flex items-center justify-between">
             <h3 className="font-semibold text-foreground">Edit Variation</h3>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setEditingVariation(null)}
+              onClick={() => setEditingIndex(null)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <div className="p-6 overflow-y-auto h-[calc(100%-57px)]">
             <div className="space-y-6">
-  {/* Attribute Values Display */}
-  <div className="rounded-lg border border-border bg-accent/30 p-4">
-    <h4 className="text-sm font-semibold mb-3">Attributes</h4>
-    <div className="space-y-2">
-      {attributeNames.map((attrName) => (
-        <div key={attrName} className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{attrName}:</span>
-          <span className="font-medium">{getAttributeValue(editingVariation, attrName)}</span>
-        </div>
-      ))}
-    </div>
-  </div>
+              {/* Attribute Values Display */}
+              <div className="rounded-lg border border-border bg-accent/30 p-4">
+                <h4 className="text-sm font-semibold mb-3">Attributes</h4>
+                <div className="space-y-2">
+                  {variationAttributes.map((attr) => (
+                    <div
+                      key={attr.id}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-muted-foreground">{attr.name}:</span>
+                      <span className="font-medium">
+                        {getAttributeValueName(editingVariation, attr.attribute_id)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-  {/* Image Upload */}
-  <div>
-    <label className="text-sm font-medium text-foreground block mb-2">Featured Image</label>
-    <div className="flex items-center gap-4">
-      {editingVariation.image && (
-        <div className="h-24 w-24 overflow-hidden rounded border border-input">
-          <img
-            src={editingVariation.image}
-            alt="Variation"
-            className="h-full w-full object-cover"
-          />
-        </div>
-      )}
-      <div className="flex flex-col gap-2">
-        <label className="cursor-pointer rounded border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent">
-          {editingVariation.image ? "Change Image" : "Upload Image"}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageUpload(e, editingVariation.id)}
-            className="hidden"
-          />
-        </label>
-        {editingVariation.image && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleUpdate("image", "")}
-            className="text-destructive"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Remove Image
-          </Button>
-        )}
-      </div>
-    </div>
-  </div>
+              {/* SKU */}
+              <div>
+                <label className="text-sm font-medium text-foreground block mb-2">
+                  SKU <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editingVariation.sku}
+                  onChange={(e) => handleUpdate("sku", e.target.value)}
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="SKU-001"
+                />
+              </div>
 
-  {/* Two Column Grid for Other Fields */}
-  <div className="grid grid-cols-2 gap-4">
-    {/* Price */}
-    <div>
-      <label className="text-sm font-medium text-foreground block mb-2">Price</label>
-      <input
-        type="text"
-        value={editingVariation.costPrice}
-        onChange={(e) => handleUpdate("costPrice", e.target.value)}
-        className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="0.00"
-      />
-    </div>
+              {/* Image Upload */}
+              <div>
+                <label className="text-sm font-medium text-foreground block mb-2">
+                  Variation Image
+                </label>
+                <div className="flex items-center gap-4">
+                  {editingVariation.image && (
+                    <div className="h-24 w-24 overflow-hidden rounded border border-input">
+                      <img
+                        src={
+                          editingVariation.image instanceof File
+                            ? URL.createObjectURL(editingVariation.image)
+                            : editingVariation.image
+                        }
+                        alt="Variation"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer rounded border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent">
+                      {editingVariation.image ? "Change Image" : "Upload Image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, editingIndex)}
+                        className="hidden"
+                      />
+                    </label>
+                    {editingVariation.image && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdate("image", undefined)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-    {/* Sale Price */}
-    <div>
-      <label className="text-sm font-medium text-foreground block mb-2">Sale Price</label>
-      <input
-        type="text"
-        value={editingVariation.salePrice}
-        onChange={(e) => handleUpdate("salePrice", e.target.value)}
-        className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="0.00"
-      />
-    </div>
+              {/* Price Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    Price <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingVariation.price}
+                    onChange={(e) => handleUpdate("price", e.target.value)}
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="0.00"
+                  />
+                </div>
 
-    {/* Stock Quantity */}
-    <div>
-      <label className="text-sm font-medium text-foreground block mb-2">Stock Quantity</label>
-      <input
-        type="text"
-        value={editingVariation.stock}
-        onChange={(e) => handleUpdate("stock", e.target.value)}
-        className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="0"
-      />
-    </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    Sale Price
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingVariation.sale_price}
+                    onChange={(e) => handleUpdate("sale_price", e.target.value)}
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="0.00"
+                  />
+                </div>
 
-    {/* Low Stock Threshold */}
-    <div>
-      <label className="text-sm font-medium text-foreground block mb-2">Low Stock Threshold</label>
-      <input
-        type="text"
-        value={editingVariation.lst}
-        onChange={(e) => handleUpdate("lst", e.target.value)}
-        className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="5"
-      />
-    </div>
-  </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    Stock Quantity <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={editingVariation.quantity}
+                    onChange={(e) =>
+                      handleUpdate("quantity", parseInt(e.target.value) || 0)
+                    }
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="0"
+                  />
+                </div>
 
-  {/* Action Buttons */}
-  <div className="flex gap-2 pt-4 border-t">
-    <Button
-      variant="outline"
-      className="flex-1"
-      onClick={() => setEditingVariation(null)}
-    >
-      Close
-    </Button>
-    <Button
-      variant="destructive"
-      className="flex-1"
-      onClick={() => {
-        onRemove(editingVariation.id);
-        setEditingVariation(null);
-      }}
-    >
-      <Trash2 className="h-4 w-4 mr-2" />
-      Delete
-    </Button>
-  </div>
-</div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    Low Stock Threshold
+                  </label>
+                  <input
+                    type="number"
+                    value={editingVariation.low_stock_threshold}
+                    onChange={(e) =>
+                      handleUpdate(
+                        "low_stock_threshold",
+                        parseInt(e.target.value) || 0
+                      )
+                    }
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="5"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="text-sm font-medium text-foreground block mb-2">
+                  Status
+                </label>
+                <Select
+                  value={editingVariation.status}
+                  onValueChange={(value) => handleUpdate("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setEditingIndex(null)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => {
+                    onRemove(editingIndex);
+                    setEditingIndex(null);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
