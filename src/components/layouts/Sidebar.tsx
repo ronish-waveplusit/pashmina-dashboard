@@ -101,6 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Dashboard: "dashboard:view",
         Users: "user:view",
         Products: "user:view",
+        Inventory:"user:view",
         Categories: "category:view",
         Attributes: "attribute:view",
         Contact: "lead:view",

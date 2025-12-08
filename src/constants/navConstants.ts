@@ -25,6 +25,7 @@ import {
  
   SlidersHorizontal,
   Tags,
+  Warehouse,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -36,6 +37,7 @@ export const NAV_GROUPS = [
     title: "Product Management",
     items: [
       { name: "Products", path: "/products", icon: Package },
+       { name: "Inventory", path: "/inventory", icon: Warehouse },
       { name: "Categories", path: "/category", icon: Tags },
       // { name: "Reminders", path: "/reminders", icon: Bell },
       {

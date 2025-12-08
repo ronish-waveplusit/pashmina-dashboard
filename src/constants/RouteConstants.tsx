@@ -2,7 +2,7 @@ export const apiRoutes = {
   GET_TOKEN_BY_PASSOWORD: "/v1/login",
   //forget password
   GET_FORGET_PASSWORD: "/forget-password",
-  //reset password
+ GET_LOT:"/v1/lot",
   GET_RESET_PASSWORD: "/reset-password",
   GET_PRODUCT_CATEGORIES: "/v1/st/categories",
     GET_PRODUCT: "/v1/products",
@@ -73,6 +73,7 @@ export const apiRoutes = {
   GET_PUBLIC_THEME: "cms/public/web-settings",
   //Certficate
   GET_CERTIFICATE: "en/certificates",
+  GET_PRODUCT_VARIATIONS:"/v1/product-variations",
   //menus
   GET_MENUS: "/v1/menu",
   GET_MENU_ITEMS: "/v1/menuItems",

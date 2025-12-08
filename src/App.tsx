@@ -9,6 +9,8 @@ const LoginPage = lazy(() => import("./pages/login/Page"));
 const Attributes = lazy(() => import("./pages/attributes/Index")); 
 const ProductForm = lazy(() => import("./pages/product/_components/ProductForm"));
 const ProductIndex = lazy(() => import("./pages/product/Index"));
+const ProductVariation=lazy(()=>import("./pages/inventory/Index"));
+const LotView=lazy(()=>import("./pages/inventory/_components/ViewLotModal"))
 function App() {
 
 const LoadingFallback = () => (
@@ -59,6 +61,26 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <ProductIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/inventory"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ProductVariation />
+              </AuthGuard>
+            }
+          />
+           <Route
+            path="/lot-view"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <LotView />
               </AuthGuard>
             }
           />
