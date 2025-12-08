@@ -96,7 +96,7 @@ const LoadingFallback = () => (
             }
           />
            <Route
-            path="/lot-view"
+            path="/lot-view/:id"
             element={
               <AuthGuard
                 requiredPermissions={[]}

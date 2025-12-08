@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Access themeData from Redux store
 
     const themeName = "Pashmina";
-    const themeLogo = "/fav.png";
+    const themeLogo = "/favicon.png";
 
     return (
         <div className="flex min-h-screen bg-background w-full">

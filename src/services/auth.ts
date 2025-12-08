@@ -96,7 +96,7 @@ export function setRefreshToken(refreshToken: string) {
  */
 // const {errorToast} = useCustomToast()
 export async function logout() {
-  const refreshToken = await getRefreshToken();
+  // const refreshToken = await getRefreshToken();
   // logoutUser(refreshToken || "");
   //do not clear language from local storage.
 

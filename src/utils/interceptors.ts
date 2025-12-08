@@ -37,7 +37,7 @@ export function requestInterceptor(request: any) {
 }
 /*** Success response Interceptor for refresh token.** @param sucess* @returns {object}*/
 export async function responseSuccessInterceptor(response: AxiosResponse) {
-  const originalRequest = response.config;
+  // const originalRequest = response.config;
   const isPasswordForceful =
     Boolean(Number(localStorage.getItem("_meta_pwd_frc"))) || false;
   const isPasswordReset =

@@ -7,7 +7,7 @@ import { Plus, Search, X, Package, ArrowUpDown, ArrowUp, ArrowDown, Eye } from "
 import { ITEMS_PER_PAGE } from "../../constants/common";
 import Pagination from "../../components/pagination/pagination";
 import { useProductVariation } from "./_hooks/useProductVariation";
-import {  ProductVariation } from "../../types/product-variation";
+import { ProductVariation } from "../../types/product-variation";
 
 import AddLotModal from "./_components/AddLotModal";
 import { useNavigate } from "react-router-dom";
@@ -20,9 +20,10 @@ const Index = () => {
     const [sortBy, setSortBy] = useState<"none" | "asc" | "desc">("none");
     
     const [isLotModalOpen, setIsLotModalOpen] = useState(false);
-    const [isViewLotsModalOpen, setIsViewLotsModalOpen] = useState(false);
+    const [isViewLotsModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | number | null>(null);
-const navigate=useNavigate();
+    const navigate = useNavigate();
+    
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -58,7 +59,6 @@ const navigate=useNavigate();
         isFetching,
         isError,
         meta,
-     
         addLot,
         isAddingLot,
     } = useProductVariation(filters, lotFilters, isViewLotsModalOpen);
@@ -72,33 +72,50 @@ const navigate=useNavigate();
 
     const handleLotSubmit = async (lotData: any) => {
         try {
-            // Convert the array of lot items to FormData
             const formData = new FormData();
             
-            // If lotData is an array, we need to handle multiple items
-            if (Array.isArray(lotData)) {
-                lotData.forEach((item, index) => {
-                    formData.append(`lots[${index}][lotable_type]`, item.lotable_type);
-                    formData.append(`lots[${index}][lotable_id]`, item.lotable_id);
-                    formData.append(`lots[${index}][imported_date]`, item.imported_date);
-                    formData.append(`lots[${index}][quantity_received]`, item.quantity_received.toString());
+            // Check if it's a single item or multiple items
+            if (lotData.items) {
+                // Multiple items
+                formData.append('lotable_type', lotData.lotable_type);
+                formData.append('imported_date', lotData.imported_date);
+                lotData.items.forEach((item: any, index: number) => {
+                    formData.append(`items[${index}][lotable_id]`, item.lotable_id.toString());
+                    formData.append(`items[${index}][quantity_received]`, item.quantity_received.toString());
                 });
             } else {
+                // Single item
                 formData.append('lotable_type', lotData.lotable_type);
-                formData.append('lotable_id', lotData.lotable_id);
+                formData.append('lotable_id', lotData.lotable_id.toString());
                 formData.append('imported_date', lotData.imported_date);
                 formData.append('quantity_received', lotData.quantity_received.toString());
             }
 
             await addLot(formData);
             setIsLotModalOpen(false);
+            setSelectedProductId(null); // Reset selected product
         } catch (error) {
             console.error("Error creating lot:", error);
         }
     };
 
-    const handleViewProduct = () => {
-        navigate('/lot-view')
+    const handleViewProduct = (id: string | number) => {
+        navigate(`/lot-view/${id}`);
+    };
+
+    const handleAddToLot = (productId: string | number) => {
+        setSelectedProductId(productId);
+        setIsLotModalOpen(true);
+    };
+
+    const handleAddLotFromHeader = () => {
+        setSelectedProductId(null);
+        setIsLotModalOpen(true);
+    };
+
+    const handleCloseLotModal = () => {
+        setIsLotModalOpen(false);
+        setSelectedProductId(null);
     };
 
     const toggleSort = () => {
@@ -141,7 +158,7 @@ const navigate=useNavigate();
                         <p className="text-gray-600 mt-1">Manage all product SKUs and stock</p>
                     </div>
                     <Button
-                        onClick={() => setIsLotModalOpen(true)}
+                        onClick={handleAddLotFromHeader}
                         className="flex items-center gap-2 shadow-lg"
                         disabled={isAddingLot}
                     >
@@ -301,14 +318,14 @@ const navigate=useNavigate();
                                                 <td className="py-4 px-4">
                                                     <div className="flex gap-2">
                                                         <button
-                                                            onClick={() => handleViewProduct()}
+                                                            onClick={() => handleViewProduct(variation.id)}
                                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                                             title="View Lots"
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => setIsLotModalOpen(true)}
+                                                            onClick={() => handleAddToLot(variation.id)}
                                                             className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
                                                             title="Add to Lot"
                                                         >
@@ -347,13 +364,12 @@ const navigate=useNavigate();
 
             <AddLotModal
                 isOpen={isLotModalOpen}
-                onClose={() => setIsLotModalOpen(false)}
+                onClose={handleCloseLotModal}
                 onSubmit={handleLotSubmit}
                 products={variations || []}
                 isLoading={isLoading}
+                preSelectedProductId={selectedProductId}
             />
-
-            
         </Layout>
     );
 };

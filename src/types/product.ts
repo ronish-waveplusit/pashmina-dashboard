@@ -39,11 +39,24 @@ export interface ProductResponse {
   categories?: Array<{ id: number; name: string }> | { id: number; name: string } | string;
   created_at: string;
   updated_at: string;
+   status: string; // 
+    attributes?: Array<{
+    attribute: {
+      id: number;
+      name: string;
+      attribute_values?: Array<{
+        id: number;
+        name: string;
+      }>;
+    };
+  }>;
+ 
+
 }
 
 // Attribute structure for size_color products
 export interface ProductAttribute {
-  id:number;
+  id?:number;
   attribute_id: number;
   attribute_value_ids: number[];
 }

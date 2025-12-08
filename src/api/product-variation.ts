@@ -40,7 +40,14 @@ export async function getLot(
  
   return response.data.data;
 }
-
+export async function getLotById(id: string | number): Promise<ProductVariation> {
+  const response = await http({
+    url: `${apiRoutes.GET_PRODUCT_VARIATIONS}/${id}`,
+    method: "get",
+  });
+  
+  return response.data.data;
+}
 export async function createLot(
   data: Lot | FormData
 ) {

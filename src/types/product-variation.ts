@@ -9,7 +9,8 @@ export interface ProductVariation {
   stock_status: "low_stock" | "in_stock" | "out_of_stock"; 
   status: "active" | "inactive"; 
   created_at: string;   
-  updated_at: string;  
+  updated_at: string;
+  lots?: Lot[];  // Add this line
 }
 
 export interface Lot {
@@ -18,4 +19,6 @@ export interface Lot {
   lotable_type: string; 
   imported_date: string;
   quantity_received: number;
+  created_at: string;  // Add this line
+  updated_at?: string; // Optional, in case you need it later
 }

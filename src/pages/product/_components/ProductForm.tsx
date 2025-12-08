@@ -79,7 +79,15 @@ const ProductForm = () => {
       setVariationType(varType);
 
       // Extract category IDs
-      const categoryIds = product.categories?.map((cat: any) => cat.id) || [];
+      const categoryIds = (() => {
+  if (!product.categories) return [];
+  if (typeof product.categories === 'string') return [];
+  if (Array.isArray(product.categories)) {
+    return product.categories.map(cat => cat.id);
+  }
+  // Single category object
+  return [product.categories.id];
+})();
 
       // Set images if available
       if (product.featured_image) {

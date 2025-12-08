@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   );
  
   const themeName = "Pashmina";
-  const themeLogo =  "/fav.png";
+  const themeLogo =  "/favicon.png";
   const { logout } = useAuth();
   const isMobile = useIsMobile();
   
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
       const permissionMap: { [key: string]: string } = {
         Dashboard: "dashboard:view",
-        Users: "user:view",
+        // Users: "user:view",
         Products: "user:view",
         Inventory:"user:view",
         Categories: "category:view",
@@ -136,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Support: "support:view",
         "Study Materials": "student-course:view",
         Assignments: "student-assignment:view",
-        Permissions: "permission:view",
+        // Permissions: "permission:view",
       };
 
       const permissionName =
@@ -164,12 +164,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
        style={{ borderColor: "hsl(25 10% 90%)" }}
     >
       <div className="p-6 flex items-center justify-between border-b shrink-0"  style={{ borderColor: "hsl(25 10% 90%)" }}>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 ">
           {themeLogo ? (
             <img
               src={themeLogo}
               alt={`${themeName} Logo`}
-              className="h-[2.4rem] w-[4rem] object-cover"
+              className="h-[2.5rem] w-[4rem] object-fit"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                

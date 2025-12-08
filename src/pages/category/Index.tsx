@@ -14,7 +14,7 @@ import { Plus, Search, UserPlus, X } from "lucide-react";
 import { useTransactionCategory } from "./_hooks/useCategory";
 import { CategoryForm } from "./_components/CategoryForm";
 import { CategoryPayload } from "../../types/category";
-import { useHasPermission } from "../../utils/helper/permissionUtils";
+// import { useHasPermission } from "../../utils/helper/permissionUtils";
 import Pagination from "../../components/pagination/pagination";
 
 import { Input } from "../../components/ui/input";
@@ -62,10 +62,10 @@ const Index = () => {
     } = useTransactionCategory(filters);
 
     // Permission checks using the helper function
-    const canCreate = useHasPermission("transaction-category:create");
-    //   const canView = useHasPermission("transaction-category:view");
-    const canEdit = useHasPermission("transaction-category:update");
-    const canDelete = useHasPermission("transaction-category:delete");
+    // const canCreate = useHasPermission("transaction-category:create");
+    // //   const canView = useHasPermission("transaction-category:view");
+    // const canEdit = useHasPermission("transaction-category:update");
+    // const canDelete = useHasPermission("transaction-category:delete");
 
     const handleEdit = (TransactionCategory: CategoryPayload) => {
         setEditTransactionCategory(TransactionCategory);

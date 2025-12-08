@@ -131,7 +131,7 @@ const AddAttributesDialog = ({
 
       // Use the current attribute_value_ids which have been updated via onUpdateAttributeValues
       const selectedValueNames = (attribute.attributeValues || [])
-        .filter((v) => productAttr.attribute_value_ids.includes(v.id))
+        .filter((v) => productAttr.attribute_value_ids.includes(Number(v.id)))
         .map((v) => v.name);
 
       allChanges.push({
@@ -202,32 +202,6 @@ const AddAttributesDialog = ({
 
     const valueIdNum = parseInt(valueId);
     return productAttr.attribute_value_ids.includes(valueIdNum);
-  };
-
-  const hasAnyChanges = () => {
-    // Check if there are new attributes selected
-    if (selectedAttributes.size > 0 && getTotalSelectedCount() > 0) {
-      return true;
-    }
-
-    // Check if any existing attributes have been modified
-    return selectedProductAttributes.some(productAttr => {
-      const attribute = attributes.find((a) => String(a.id) === productAttr.id);
-      if (!attribute) return false;
-
-      // Compare current selection with original
-      const currentValueIds = new Set(productAttr.attribute_value_ids);
-      const allValueIds = new Set(attribute.attributeValues?.map(v => v.id) || []);
-
-      // If sizes don't match, there's a change
-      if (currentValueIds.size !== attribute.attributeValues?.filter(v => 
-        productAttr.attribute_value_ids.includes(v.id)
-      ).length) {
-        return true;
-      }
-
-      return false;
-    });
   };
 
   return (
