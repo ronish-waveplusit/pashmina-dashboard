@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { SizeColorProductFormData } from "../../../types/product";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 interface Props {
   formData: SizeColorProductFormData;
   setFormData: (data: SizeColorProductFormData) => void;
+  initialLocalAttributes?: LocalAttribute[];
 }
 
 interface LocalAttribute {
@@ -22,38 +23,97 @@ interface LocalAttribute {
   attribute_value_ids: number[];
 }
 
-const VariantsSection = ({ formData, setFormData }: Props) => {
+const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] }: Props) => {
   const [activeTab, setActiveTab] = useState("attributes");
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
 
+  // Initialize local attributes from props (for edit mode)
+  useEffect(() => {
+    if (initialLocalAttributes.length > 0 && localAttributes.length === 0) {
+      setLocalAttributes(initialLocalAttributes);
+    }
+  }, [initialLocalAttributes]);
+
   const addAttributes = (newAttributes: any[]) => {
-    console.log("Adding attributes:", newAttributes);
+    console.log("Adding/Updating attributes:", newAttributes);
     
-    // Convert ProductAttribute to LocalAttribute
-    const newLocalAttrs: LocalAttribute[] = newAttributes.map((attr) => {
-      return {
-        id: String(attr.id),
-        name: attr.name,
-        values: attr.values || "",
-        visibleOnProduct: attr.visibleOnProduct ?? true,
-        usedForVariations: attr.usedForVariations ?? true,
-        attribute_id: parseInt(String(attr.id)),
-        attribute_value_ids: attr.attribute_value_ids || [], // Use the IDs from dialog
-      };
+    // Separate new attributes from existing ones
+    const existingIds = new Set(localAttributes.map(a => String(a.attribute_id)));
+    const toUpdate: any[] = [];
+    const toAdd: any[] = [];
+    
+    newAttributes.forEach(attr => {
+      const attrId = String(attr.attribute_id);
+      if (existingIds.has(attrId)) {
+        toUpdate.push(attr);
+      } else {
+        toAdd.push(attr);
+      }
     });
 
-    setLocalAttributes([...localAttributes, ...newLocalAttrs]);
+    console.log("To update:", toUpdate);
+    console.log("To add:", toAdd);
 
-    // Update formData attributes
-    const formDataAttrs = newAttributes.map((attr) => ({
-      attribute_id: parseInt(String(attr.id)),
-      attribute_value_ids: attr.attribute_value_ids || [], // Use the IDs from dialog
-    }));
+    // Update existing attributes
+    if (toUpdate.length > 0) {
+      const updatedLocalAttrs = localAttributes.map(existing => {
+        const update = toUpdate.find(u => u.attribute_id === existing.attribute_id);
+        if (update) {
+          console.log("Updating attribute:", existing.name, "with values:", update.values);
+          return {
+            ...existing,
+            values: update.values || existing.values,
+            attribute_value_ids: update.attribute_value_ids || existing.attribute_value_ids,
+          };
+        }
+        return existing;
+      });
+      setLocalAttributes(updatedLocalAttrs);
 
-    setFormData({
-      ...formData,
-      attributes: [...formData.attributes, ...formDataAttrs],
-    });
+      // Update formData
+      const updatedFormDataAttrs = formData.attributes.map(existing => {
+        const update = toUpdate.find(u => u.attribute_id === existing.attribute_id);
+        if (update) {
+          return {
+            ...existing,
+            attribute_value_ids: update.attribute_value_ids || existing.attribute_value_ids,
+          };
+        }
+        return existing;
+      });
+      setFormData({
+        ...formData,
+        attributes: updatedFormDataAttrs,
+      });
+    }
+    
+    // Add new attributes
+    if (toAdd.length > 0) {
+      const newLocalAttrs: LocalAttribute[] = toAdd.map((attr) => {
+        return {
+          id: String(attr.attribute_id),
+          name: attr.name,
+          values: attr.values || "",
+          visibleOnProduct: attr.visibleOnProduct ?? true,
+          usedForVariations: attr.usedForVariations ?? true,
+          attribute_id: attr.attribute_id,
+          attribute_value_ids: attr.attribute_value_ids || [],
+        };
+      });
+
+      setLocalAttributes([...localAttributes, ...newLocalAttrs]);
+
+      // Update formData attributes
+      const formDataAttrs = toAdd.map((attr) => ({
+        attribute_id: attr.attribute_id,
+        attribute_value_ids: attr.attribute_value_ids || [],
+      }));
+
+      setFormData({
+        ...formData,
+        attributes: [...formData.attributes, ...formDataAttrs],
+      });
+    }
   };
 
   const removeAttribute = (id: string) => {
@@ -171,27 +231,55 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
     const combinations = generateCombinations(attributeData);
     console.log("Generated combinations:", combinations);
 
-    const newVariations = combinations.map((combo, index) => {
-      const sku = `SKU-${Date.now()}-${index}`;
-      
-      // Create a readable name from the combination
-      const variantName = combo.map(c => c.value).join(" / ");
-
-      return {
-        sku,
-        price: "",
-        sale_price: "",
-        quantity: 0,
-        low_stock_threshold: 5,
-        status: "active" as const,
-        attributes: combo.map((c) => ({
-          attribute_id: c.attr_id,
-          attribute_value_id: c.value_id,
-        })),
-      };
+    // Create a map of existing variations by their attribute combination
+    const existingVariationsMap = new Map();
+    formData.variations.forEach(variation => {
+      // Create a key from sorted attribute value IDs
+      const key = variation.attributes
+        .map(a => `${a.attribute_id}:${a.attribute_value_id}`)
+        .sort()
+        .join('|');
+      existingVariationsMap.set(key, variation);
     });
 
-    console.log("New variations:", newVariations);
+    console.log("Existing variations map:", existingVariationsMap);
+
+    // Generate variations, preserving existing ones
+    const newVariations = combinations.map((combo, index) => {
+      // Create key for this combination
+      const key = combo
+        .map(c => `${c.attr_id}:${c.value_id}`)
+        .sort()
+        .join('|');
+
+      // Check if this combination already exists
+      const existing = existingVariationsMap.get(key);
+
+      if (existing) {
+        // Keep existing variation data
+        console.log("Found existing variation for:", key);
+        return existing;
+      } else {
+        // Create new variation
+        console.log("Creating new variation for:", key);
+        const sku = `SKU-${Date.now()}-${index}`;
+        
+        return {
+          sku,
+          price: "",
+          sale_price: "",
+          quantity: 0,
+          low_stock_threshold: 5,
+          status: "active" as const,
+          attributes: combo.map((c) => ({
+            attribute_id: c.attr_id,
+            attribute_value_id: c.value_id,
+          })),
+        };
+      }
+    });
+
+    console.log("Final variations (preserved + new):", newVariations);
 
     setFormData({
       ...formData,
@@ -199,7 +287,7 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
     });
 
     setActiveTab("variations");
-    toast.success(`Generated ${newVariations.length} variations`);
+    toast.success(`Updated variations: ${newVariations.length} total (${newVariations.length - existingVariationsMap.size} new)`);
   };
 
   const updateVariation = (index: number, updates: any) => {
@@ -233,6 +321,7 @@ const VariantsSection = ({ formData, setFormData }: Props) => {
             onAdd={addAttributes}
             selectedProductAttributes={localAttributes}
             onUpdateAttributeValues={updateAttributeValues}
+            isEditMode={true}
           />
           {localAttributes.length > 0 && (
             <Button 

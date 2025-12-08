@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Access themeData from Redux store
 
     const themeName = "Pashmina";
-    const themeLogo = null;
+    const themeLogo = "/fav.png";
 
     return (
         <div className="flex min-h-screen bg-background w-full">
@@ -78,9 +78,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 <h1 className="text-sm font-semibold text-coffee-dark">
                                     {themeName}
                                 </h1>
-                                <p className="text-[10px] text-muted-foreground leading-none">
+                                {/* <p className="text-[10px] text-muted-foreground leading-none">
                                     Training Institute
-                                </p>
+                                </p> */}
                             </div>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 
 import {
   getProduct,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -254,5 +255,36 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       cancelDelete,
       handleDelete,
     },
+  };
+};
+
+/* ---------- Hook for single product detail ---------- */
+interface UseProductDetailReturn {
+  product: ProductResponse | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+}
+
+export const useProductDetail = (
+  productId: string | number
+): UseProductDetailReturn => {
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<ProductResponse, Error>({
+    queryKey: ProductQueryKeys.detail(productId),
+    queryFn: () => getProductById(productId),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!productId,
+  });
+
+  return {
+    product,
+    isLoading,
+    isError,
+    error,
   };
 };

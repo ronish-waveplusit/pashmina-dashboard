@@ -12,6 +12,7 @@ export interface ProductVariation {
   image?: string;
   created_at: string;
   updated_at: string;
+  stock_status:string;
 }
 
 // Variation with attributes for size_color type
@@ -34,7 +35,7 @@ export interface ProductResponse {
   featured_image: string;
   gallery_images: string[];
   variation_type: "color" | "size_color";
-  variations: ProductVariation[];
+  variations: ProductVariationWithAttributes[];
   categories?: Array<{ id: number; name: string }> | { id: number; name: string } | string;
   created_at: string;
   updated_at: string;
@@ -42,6 +43,7 @@ export interface ProductResponse {
 
 // Attribute structure for size_color products
 export interface ProductAttribute {
+  id:number;
   attribute_id: number;
   attribute_value_ids: number[];
 }

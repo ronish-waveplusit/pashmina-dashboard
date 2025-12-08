@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   );
  
   const themeName = "Pashmina";
-  const themeLogo =  null;
+  const themeLogo =  "/fav.png";
   const { logout } = useAuth();
   const isMobile = useIsMobile();
   
@@ -169,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             <img
               src={themeLogo}
               alt={`${themeName} Logo`}
-              className="h-8 w-8 object-contain"
+              className="h-[2.4rem] w-[4rem] object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                

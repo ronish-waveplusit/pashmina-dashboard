@@ -11,6 +11,7 @@ const ProductForm = lazy(() => import("./pages/product/_components/ProductForm")
 const ProductIndex = lazy(() => import("./pages/product/Index"));
 const ProductVariation=lazy(()=>import("./pages/inventory/Index"));
 const LotView=lazy(()=>import("./pages/inventory/_components/ViewLotModal"))
+const ProductView=lazy(()=>import("./pages/product/ViewProduct"))
 function App() {
 
 const LoadingFallback = () => (
@@ -54,6 +55,16 @@ const LoadingFallback = () => (
               </AuthGuard>
             }
           />
+            <Route
+            path="/product-form/:id"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ProductForm />
+              </AuthGuard>
+            }
+          />
              <Route
             path="/products"
             element={
@@ -61,6 +72,16 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <ProductIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/products/:id"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ProductView />
               </AuthGuard>
             }
           />

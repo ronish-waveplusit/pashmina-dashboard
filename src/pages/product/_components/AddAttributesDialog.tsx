@@ -8,7 +8,7 @@ import {
 } from "../../../components/ui/dialog";
 import { Button } from "../../../components/ui/button";
 import { Checkbox } from "../../../components/ui/checkbox";
-import { Plus } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { useAttribute } from "../../attributes/_hooks/useAttribute";
 import { AttributeWithValues } from "../../../types/attribute";
 
@@ -27,6 +27,7 @@ interface Props {
   selectedProductAttributes: LocalAttribute[];
   onAdd: (attributes: any[]) => void;
   onUpdateAttributeValues: (attributeId: string, selectedValueIds: number[]) => void;
+  isEditMode?: boolean;
 }
 
 interface SelectedAttributeValues {
@@ -38,6 +39,7 @@ const AddAttributesDialog = ({
   selectedProductAttributes,
   onAdd,
   onUpdateAttributeValues,
+  isEditMode = false,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [selectedAttributes, setSelectedAttributes] = useState<Set<string>>(new Set());
@@ -119,6 +121,31 @@ const AddAttributesDialog = ({
   };
 
   const handleAdd = () => {
+    // Collect all changes (both new attributes and updates to existing ones)
+    const allChanges: any[] = [];
+
+    // Handle updates to existing attributes - use the modified values from the dialog
+    selectedProductAttributes.forEach(productAttr => {
+      const attribute = attributes.find((a) => String(a.id) === productAttr.id);
+      if (!attribute) return;
+
+      // Use the current attribute_value_ids which have been updated via onUpdateAttributeValues
+      const selectedValueNames = (attribute.attributeValues || [])
+        .filter((v) => productAttr.attribute_value_ids.includes(v.id))
+        .map((v) => v.name);
+
+      allChanges.push({
+        id: productAttr.id,
+        name: productAttr.name,
+        values: selectedValueNames.join(", "),
+        visibleOnProduct: productAttr.visibleOnProduct,
+        usedForVariations: productAttr.usedForVariations,
+        attribute_id: parseInt(productAttr.id),
+        attribute_value_ids: productAttr.attribute_value_ids,
+      });
+    });
+
+    // Handle new attributes
     const attributesToAdd = attributes
       .filter((attr) => selectedAttributes.has(String(attr.id)))
       .map((attr) => {
@@ -141,7 +168,13 @@ const AddAttributesDialog = ({
         };
       });
 
-    onAdd(attributesToAdd);
+    // Add new attributes to the changes
+    allChanges.push(...attributesToAdd);
+
+    if (allChanges.length > 0) {
+      onAdd(allChanges);
+    }
+
     setSelectedAttributes(new Set());
     setSelectedValues({});
     setOpen(false);
@@ -171,24 +204,61 @@ const AddAttributesDialog = ({
     return productAttr.attribute_value_ids.includes(valueIdNum);
   };
 
+  const hasAnyChanges = () => {
+    // Check if there are new attributes selected
+    if (selectedAttributes.size > 0 && getTotalSelectedCount() > 0) {
+      return true;
+    }
+
+    // Check if any existing attributes have been modified
+    return selectedProductAttributes.some(productAttr => {
+      const attribute = attributes.find((a) => String(a.id) === productAttr.id);
+      if (!attribute) return false;
+
+      // Compare current selection with original
+      const currentValueIds = new Set(productAttr.attribute_value_ids);
+      const allValueIds = new Set(attribute.attributeValues?.map(v => v.id) || []);
+
+      // If sizes don't match, there's a change
+      if (currentValueIds.size !== attribute.attributeValues?.filter(v => 
+        productAttr.attribute_value_ids.includes(v.id)
+      ).length) {
+        return true;
+      }
+
+      return false;
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Attributes
+          {isEditMode ? (
+            <>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Attributes
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Attributes
+            </>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Select Product Attributes & Values</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Edit Product Attributes & Values" : "Select Product Attributes & Values"}
+          </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto py-4 space-y-6">
           {/* Existing Attributes with Value Selection */}
           {selectedProductAttributes?.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground">
-                Selected Attributes
+                Current Attributes (Click to modify values)
               </h3>
               {selectedProductAttributes.map((productAttr) => {
                 const attribute = attributes.find(
@@ -252,13 +322,15 @@ const AddAttributesDialog = ({
           ) : isError ? (
             <p className="text-sm text-destructive">Error loading attributes</p>
           ) : availableAttributes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No more attributes available
-            </p>
+            selectedProductAttributes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No attributes available
+              </p>
+            ) : null
           ) : (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground">
-                Available Attributes
+                Add New Attributes
               </h3>
               {availableAttributes.map((attr) => {
                 const attrId = String(attr.id);
@@ -331,8 +403,8 @@ const AddAttributesDialog = ({
         </div>
         <div className="flex justify-between items-center pt-4 border-t">
           <p className="text-sm text-muted-foreground">
-            {selectedAttributes.size} new attributes, {getTotalSelectedCount()} values
-            selected
+            {selectedAttributes.size > 0 && `${selectedAttributes.size} new attributes, ${getTotalSelectedCount()} values selected`}
+            {selectedProductAttributes.length > 0 && selectedAttributes.size === 0 && "Modify existing attribute values"}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
@@ -340,11 +412,8 @@ const AddAttributesDialog = ({
             </Button>
             <Button
               onClick={handleAdd}
-              disabled={
-                selectedAttributes.size === 0 || getTotalSelectedCount() === 0
-              }
             >
-              Add Selected
+              {isEditMode ? "Update" : "Add Selected"}
             </Button>
           </div>
         </div>

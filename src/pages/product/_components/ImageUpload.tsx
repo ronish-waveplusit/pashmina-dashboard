@@ -2,10 +2,10 @@ import { Plus, X } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
 interface Props {
-  featuredImage: File | null;
-  galleryImages: File[];
-  setFeaturedImage: (file: File | null) => void;
-  setGalleryImages: (files: File[]) => void;
+  featuredImage: File | string | null;
+  galleryImages: (File | string)[];
+  setFeaturedImage: (file: File | string | null) => void;
+  setGalleryImages: (files: (File | string)[]) => void;
 }
 
 const ImageUpload = ({
@@ -37,7 +37,14 @@ const ImageUpload = ({
     setGalleryImages(galleryImages.filter((_, i) => i !== index));
   };
 
-  const featuredImageUrl = featuredImage ? URL.createObjectURL(featuredImage) : null;
+  // Helper function to get image URL (works with both File and string)
+  const getImageUrl = (image: File | string | null): string | null => {
+    if (!image) return null;
+    if (typeof image === 'string') return image;
+    return URL.createObjectURL(image);
+  };
+
+  const featuredImageUrl = getImageUrl(featuredImage);
 
   return (
     <div className="space-y-6">
@@ -90,14 +97,14 @@ const ImageUpload = ({
 
         <div className="grid grid-cols-2 gap-2">
           {galleryImages.map((image, index) => {
-            const imageUrl = URL.createObjectURL(image);
+            const imageUrl = getImageUrl(image);
             return (
               <div
                 key={index}
                 className="relative h-32 w-full overflow-hidden rounded border border-input bg-accent"
               >
                 <img
-                  src={imageUrl}
+                  src={imageUrl || ''}
                   alt={`Gallery ${index + 1}`}
                   className="h-full w-full object-cover"
                 />
