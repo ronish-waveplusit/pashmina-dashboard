@@ -1,11 +1,20 @@
 import { Plus, X } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
+// Extended type to include uuid for existing images
+export interface GalleryImage {
+  file?: File;
+  url?: string;
+  uuid?: string;
+}
+
 interface Props {
   featuredImage: File | string | null;
-  galleryImages: (File | string)[];
+  galleryImages: GalleryImage[];
   setFeaturedImage: (file: File | string | null) => void;
-  setGalleryImages: (files: (File | string)[]) => void;
+  setGalleryImages: (files: GalleryImage[]) => void;
+  onDeleteFeaturedImage?: () => void;
+  onDeleteGalleryImage?: (uuid: string) => void;
 }
 
 const ImageUpload = ({
@@ -13,6 +22,8 @@ const ImageUpload = ({
   galleryImages,
   setFeaturedImage,
   setGalleryImages,
+  onDeleteFeaturedImage,
+  onDeleteGalleryImage,
 }: Props) => {
   const handleFeaturedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,24 +35,47 @@ const ImageUpload = ({
   const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newImages = Array.from(files).slice(0, 4 - galleryImages.length);
+      const newImages: GalleryImage[] = Array.from(files)
+        .slice(0, 4 - galleryImages.length)
+        .map(file => ({ file }));
       setGalleryImages([...galleryImages, ...newImages]);
     }
   };
 
   const removeFeaturedImage = () => {
+    // If it's an existing image (string URL), notify parent to track deletion
+    if (typeof featuredImage === 'string' && onDeleteFeaturedImage) {
+      onDeleteFeaturedImage();
+    }
     setFeaturedImage(null);
   };
 
   const removeGalleryImage = (index: number) => {
+    const imageToRemove = galleryImages[index];
+    
+    // If it's an existing image with uuid, notify parent to track deletion
+    if (imageToRemove.uuid && onDeleteGalleryImage) {
+      onDeleteGalleryImage(imageToRemove.uuid);
+    }
+    
     setGalleryImages(galleryImages.filter((_, i) => i !== index));
   };
 
-  // Helper function to get image URL (works with both File and string)
+  // Helper function to get image URL
   const getImageUrl = (image: File | string | null): string | null => {
     if (!image) return null;
     if (typeof image === 'string') return image;
-    return URL.createObjectURL(image);
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    }
+    return null;
+  };
+
+  // Helper function to get gallery image URL
+  const getGalleryImageUrl = (image: GalleryImage): string | null => {
+    if (image.url) return image.url;
+    if (image.file) return URL.createObjectURL(image.file);
+    return null;
   };
 
   const featuredImageUrl = getImageUrl(featuredImage);
@@ -97,17 +131,19 @@ const ImageUpload = ({
 
         <div className="grid grid-cols-2 gap-2">
           {galleryImages.map((image, index) => {
-            const imageUrl = getImageUrl(image);
+            const imageUrl = getGalleryImageUrl(image);
             return (
               <div
-                key={index}
+                key={image.uuid || index}
                 className="relative h-32 w-full overflow-hidden rounded border border-input bg-accent"
               >
-                <img
-                  src={imageUrl || ''}
-                  alt={`Gallery ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt={`Gallery ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                )}
                 <Button
                   variant="destructive"
                   size="sm"
@@ -141,7 +177,17 @@ const ImageUpload = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setGalleryImages([])}
+            onClick={() => {
+              // Notify parent about all deleted existing images
+              if (onDeleteGalleryImage) {
+                galleryImages.forEach(img => {
+                  if (img.uuid) {
+                    onDeleteGalleryImage(img.uuid);
+                  }
+                });
+              }
+              setGalleryImages([]);
+            }}
             className="mt-2 w-full text-destructive"
           >
             Clear All Gallery Images

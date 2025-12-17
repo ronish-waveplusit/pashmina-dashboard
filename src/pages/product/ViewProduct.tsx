@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
-import { ArrowLeft, Edit, Package, DollarSign, Layers } from "lucide-react";
+import { ArrowLeft, Edit, Package, Layers, ArrowDownUp } from "lucide-react";
 import Layout from "../../components/layouts/Layout";
 
 const ProductView = () => {
@@ -136,7 +136,8 @@ const ProductView = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
+                
+                  <ArrowDownUp className="h-5 w-5" />
                   Pricing & Stock
                 </CardTitle>
               </CardHeader>

@@ -29,7 +29,6 @@ const StatusSection = ({ formData, setFormData }: Props) => {
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground mt-2">

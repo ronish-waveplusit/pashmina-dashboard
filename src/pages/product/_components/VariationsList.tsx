@@ -15,6 +15,7 @@ interface VariationAttribute {
 }
 
 interface Variation {
+  id?: number; // Optional ID for existing variations
   sku: string;
   price: string;
   sale_price: string;
@@ -22,7 +23,7 @@ interface Variation {
   low_stock_threshold: number;
   status: string;
   attributes: VariationAttribute[];
-  image?: File;
+  image?: File | string; // Can be File or existing URL
 }
 
 interface LocalAttribute {
@@ -39,9 +40,16 @@ interface Props {
   attributes: LocalAttribute[];
   onUpdate: (index: number, updates: Partial<Variation>) => void;
   onRemove: (index: number) => void;
+  onVariationDeleted?: (variationId: number | undefined) => void; // Callback to notify parent
 }
 
-const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) => {
+const VariationsList = ({ 
+  variations, 
+  attributes, 
+  onUpdate, 
+  onRemove,
+  onVariationDeleted 
+}: Props) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const variationAttributes = attributes.filter((attr) => attr.usedForVariations);
@@ -62,6 +70,19 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
     }
   };
 
+  const handleDelete = (index: number) => {
+    const variation = variations[index];
+    
+    // Notify parent about the deletion if it's an existing variation
+    if (variation.id && onVariationDeleted) {
+      onVariationDeleted(variation.id);
+    }
+    
+    // Remove from local state
+    onRemove(index);
+    setEditingIndex(null);
+  };
+
   const getAttributeValueName = (variation: Variation, attrId: number): string => {
     const attr = attributes.find((a) => a.attribute_id === attrId);
     if (!attr) return "";
@@ -73,6 +94,13 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
     const valueIndex = attr.attribute_value_ids.indexOf(varAttr.attribute_value_id);
 
     return valueIndex >= 0 ? valueNames[valueIndex] : "";
+  };
+
+  const getImageUrl = (image: File | string | undefined): string | null => {
+    if (!image) return null;
+    if (typeof image === 'string') return image;
+    if (image instanceof File) return URL.createObjectURL(image);
+    return null;
   };
 
   const editingVariation = editingIndex !== null ? variations[editingIndex] : null;
@@ -95,7 +123,7 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
 
               return (
                 <div
-                  key={index}
+                  key={variation.id || index}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors ${
                     isEditing ? "bg-accent border-l-4 border-l-primary" : ""
                   }`}
@@ -134,7 +162,7 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onRemove(index)}
+                          onClick={() => handleDelete(index)}
                           className="text-destructive hover:text-destructive h-8"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -224,11 +252,7 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
                   {editingVariation.image && (
                     <div className="h-24 w-24 overflow-hidden rounded border border-input">
                       <img
-                        src={
-                          editingVariation.image instanceof File
-                            ? URL.createObjectURL(editingVariation.image)
-                            : editingVariation.image
-                        }
+                        src={getImageUrl(editingVariation.image) || ''}
                         alt="Variation"
                         className="h-full w-full object-cover"
                       />
@@ -354,10 +378,7 @@ const VariationsList = ({ variations, attributes, onUpdate, onRemove }: Props) =
                 <Button
                   variant="destructive"
                   className="flex-1"
-                  onClick={() => {
-                    onRemove(editingIndex);
-                    setEditingIndex(null);
-                  }}
+                  onClick={() => handleDelete(editingIndex)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete

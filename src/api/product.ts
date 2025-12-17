@@ -102,7 +102,7 @@ export async function updateProduct(
 
     const response = await http({
       url: `${apiRoutes.GET_PRODUCT}/${id}`,
-      method: "put",
+      method: "POST",
       data: formData,
       headers: {
         "Content-Type": "multipart/form-data",

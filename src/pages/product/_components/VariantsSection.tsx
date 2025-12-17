@@ -11,6 +11,7 @@ interface Props {
   formData: SizeColorProductFormData;
   setFormData: (data: SizeColorProductFormData) => void;
   initialLocalAttributes?: LocalAttribute[];
+  onVariationDeleted?: (variationId: number | undefined) => void;
 }
 
 interface LocalAttribute {
@@ -23,7 +24,7 @@ interface LocalAttribute {
   attribute_value_ids: number[];
 }
 
-const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] }: Props) => {
+const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , onVariationDeleted}: Props) => {
   const [activeTab, setActiveTab] = useState("attributes");
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
 
@@ -372,6 +373,7 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] }:
             attributes={localAttributes}
             onUpdate={updateVariation}
             onRemove={removeVariation}
+             onVariationDeleted={onVariationDeleted}
           />
         )}
       </TabsContent>

@@ -14,7 +14,7 @@ const Pagination = <T,>({
   meta,
   setPage,
   isLoading = false,
-  itemLabel = "items",
+  
 }: PaginationProps<T>) => {
   // Generate page numbers (e.g., show 5 pages at a time)
   const generatePageNumbers = useCallback(() => {
@@ -76,7 +76,7 @@ const Pagination = <T,>({
     return (
     <div className="flex items-center justify-between mt-6">
       <div className="text-sm text-muted-foreground">
-        Showing {meta.from} to {meta.to} of {meta.total} {itemLabel}
+        
       </div>
       <div className="flex items-center gap-2">
         {showPrevious && (

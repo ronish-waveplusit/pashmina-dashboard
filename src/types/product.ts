@@ -37,10 +37,11 @@ export interface ProductResponse {
   variation_type: "color" | "size_color";
   variations: ProductVariationWithAttributes[];
   categories?: Array<{ id: number; name: string }> | { id: number; name: string } | string;
+  category?: Array<{ id: number; name: string }> | { id: number; name: string } | string;
   created_at: string;
   updated_at: string;
-   status: string; // 
-    attributes?: Array<{
+  status: string;
+  attributes?: Array<{
     attribute: {
       id: number;
       name: string;
@@ -50,8 +51,6 @@ export interface ProductResponse {
       }>;
     };
   }>;
- 
-
 }
 
 // Attribute structure for size_color products
@@ -94,6 +93,7 @@ export interface SizeColorProductFormData {
   variation_type: "size_color";
   attributes: ProductAttribute[];
   variations: Array<{
+    id?: number; // Optional ID for existing variations
     sku: string;
     price: string;
     sale_price: string;
@@ -104,7 +104,7 @@ export interface SizeColorProductFormData {
       attribute_id: number;
       attribute_value_id: number;
     }>;
-    image?: File;
+    image?: File | string; // Can be File (new) or string (existing URL)
   }>;
   category_id?: number[];
   featured_image?: File;
@@ -175,12 +175,14 @@ export function productResponseToFormData(
       variation_type: "size_color",
       attributes: [],
       variations: product.variations.map(v => ({
+        id: v.id,
         sku: v.sku,
         price: v.price,
         sale_price: v.sale_price,
         quantity: v.quantity,
         low_stock_threshold: v.low_stock_threshold,
         status: v.status,
+        image: v.image,
         attributes: [],
       })),
     };
@@ -253,6 +255,10 @@ export function productFormDataToFormData(
     });
 
     data.variations.forEach((variation, varIdx) => {
+      if (variation.id) {
+        formData.append(`variations[${varIdx}][id]`, variation.id.toString());
+      }
+      
       formData.append(`variations[${varIdx}][sku]`, variation.sku);
       formData.append(`variations[${varIdx}][price]`, variation.price);
       formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);

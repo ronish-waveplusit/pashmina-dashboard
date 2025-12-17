@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "../../components/ui/dialog";
-import { Plus, Search, X, Package, ArrowUpDown, ArrowUp, ArrowDown, ShoppingBag, AlertCircle } from "lucide-react";
+import { Plus, Search, X, Package, ArrowUpDown, ArrowUp, ArrowDown, ShoppingBag } from "lucide-react";
 import { useProduct } from "./_hooks/useProduct";
 import { useTransactionCategory } from "../category/_hooks/useCategory";
 import { ITEMS_PER_PAGE } from "../../constants/common";
@@ -104,7 +104,7 @@ const Index = () => {
 
     // Calculate stats
     const activeProducts = allProducts.filter(p => getProductStatus(p) === "Active").length;
-    const partialProducts = allProducts.filter(p => getProductStatus(p) === "Partial").length;
+    // const partialProducts = allProducts.filter(p => getProductStatus(p) === "Partial").length;
     const inactiveProducts = allProducts.filter(p => getProductStatus(p) === "Inactive").length;
 
     const clearSearch = () => {
@@ -194,7 +194,7 @@ const Index = () => {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-l-4 border-l-yellow-500 shadow-sm hover:shadow-md transition-shadow">
+                    {/* <Card className="border-l-4 border-l-yellow-500 shadow-sm hover:shadow-md transition-shadow">
                         <CardContent className="pt-6">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -206,7 +206,7 @@ const Index = () => {
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
 
                     <Card className="border-l-4 border-l-red-500 shadow-sm hover:shadow-md transition-shadow">
                         <CardContent className="pt-6">

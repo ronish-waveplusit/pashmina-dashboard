@@ -1,11 +1,13 @@
 import { ColorProductFormData } from "../../../types/product";
-
+import { FieldError } from "../../../components/ui/field-error";
 interface Props {
   formData: ColorProductFormData;
   setFormData: (data: ColorProductFormData) => void;
+  errors?: Record<string, string[]>;
 }
 
-const PricingStock = ({ formData, setFormData }: Props) => {
+
+const PricingStock = ({ formData, setFormData, errors={} }: Props) => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
@@ -21,6 +23,7 @@ const PricingStock = ({ formData, setFormData }: Props) => {
           className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="0.00"
         />
+        <FieldError errors={errors?.price} />
       </div>
 
       <div>

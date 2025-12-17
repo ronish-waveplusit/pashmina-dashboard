@@ -5,7 +5,7 @@ import { Button } from "../../../components/ui/button";
 import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { Label } from "../../../components/ui/label";
 import GeneralInformation from "./GeneralInformation";
-import ImageUpload from "./ImageUpload";
+import ImageUpload, { GalleryImage } from "./ImageUpload";
 import PricingStock from "./PricingStock";
 import StatusSection from "./StatusSection";
 import VariantsSection from "./VariantsSection";
@@ -38,6 +38,11 @@ const ProductForm = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
   
+  // Track deletions
+  const [deleteFeaturedImage, setDeleteFeaturedImage] = useState(false);
+  const [deletedGalleryImageUuids, setDeletedGalleryImageUuids] = useState<string[]>([]);
+  const [deletedVariationIds, setDeletedVariationIds] = useState<number[]>([]);
+  
   // Color product state
   const [colorFormData, setColorFormData] = useState<ColorProductFormData>({
     name: "",
@@ -68,9 +73,10 @@ const ProductForm = () => {
     category_id: [],
   });
 
-  // Shared image state - can be File (new upload) or string (existing URL)
+  // Updated image state to use GalleryImage type
   const [featuredImage, setFeaturedImage] = useState<File | string | null>(null);
-  const [galleryImages, setGalleryImages] = useState<(File | string)[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
   // Populate form data when editing
   useEffect(() => {
@@ -80,25 +86,36 @@ const ProductForm = () => {
 
       // Extract category IDs
       const categoryIds = (() => {
-  if (!product.categories) return [];
-  if (typeof product.categories === 'string') return [];
-  if (Array.isArray(product.categories)) {
-    return product.categories.map(cat => cat.id);
-  }
-  // Single category object
-  return [product.categories.id];
-})();
+        const categories = product.category || product.categories;
+        
+        if (!categories) return [];
+        if (typeof categories === 'string') return [];
+        if (Array.isArray(categories)) {
+          return categories.map(cat => cat.id);
+        }
+        // Single category object
+        return [categories.id];
+      })();
 
       // Set images if available
       if (product.featured_image) {
         setFeaturedImage(product.featured_image);
       }
+      
+      // Parse gallery images with uuid and url
       if (product.gallery_images && Array.isArray(product.gallery_images)) {
-        setGalleryImages(product.gallery_images);
+        const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
+          if (typeof img === 'string') {
+            return { url: img };
+          } else if (img && typeof img === 'object' && img.url) {
+            return { url: img.url, uuid: img.uuid };
+          }
+          return { url: img };
+        });
+        setGalleryImages(parsedGalleryImages);
       }
 
       if (varType === "color") {
-        // For simple products, data is in the first variation
         const variation = product.variations?.[0];
         
         setColorFormData({
@@ -116,11 +133,8 @@ const ProductForm = () => {
           category_id: categoryIds,
         });
       } else {
-        // For variable products, we need to find which attribute values are actually used
-        // by checking the variations
         const usedAttributeValues = new Map<number, Set<number>>();
         
-        // Collect all attribute value IDs used in variations
         product.variations?.forEach((variation: any) => {
           variation.attributes?.forEach((attr: any) => {
             const attrId = attr.attribute.id;
@@ -133,7 +147,6 @@ const ProductForm = () => {
           });
         });
 
-        // Map attributes with only the used values
         const productAttributes = product.attributes?.map((attr: any) => {
           const attributeObj = attr.attribute;
           const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
@@ -144,12 +157,10 @@ const ProductForm = () => {
           };
         }) || [];
 
-        // Create local attributes for the VariantsSection
         const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
           const attributeObj = attr.attribute;
           const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
           
-          // Get names only for used values
           const usedValueNames = attributeObj.attribute_values
             ?.filter((v: any) => usedValueIds.includes(v.id))
             .map((v: any) => v.name)
@@ -168,7 +179,6 @@ const ProductForm = () => {
 
         setLocalAttributes(localAttrs);
 
-        // Map variations
         const mappedVariations = product.variations?.map((variation: any) => ({
           sku: variation.sku || "",
           price: variation.price?.toString() || "",
@@ -200,11 +210,19 @@ const ProductForm = () => {
     }
   }, [product, isEditMode, isInitialized]);
 
+  const handleDeleteFeaturedImage = () => {
+    setDeleteFeaturedImage(true);
+  };
+
+  const handleDeleteGalleryImage = (uuid: string) => {
+    setDeletedGalleryImageUuids(prev => [...prev, uuid]);
+  };
+
   const handleSubmit = async () => {
     try {
+      setValidationErrors({});
       const formData = new FormData();
       
-      // Add common fields
       const currentData = variationType === "color" ? colorFormData : sizeColorFormData;
       
       if (!currentData.name || !currentData.code) {
@@ -221,32 +239,42 @@ const ProductForm = () => {
       if (currentData.composition) formData.append("composition", currentData.composition);
       if (currentData.excerpt) formData.append("excerpt", currentData.excerpt);
 
-      // Add categories
       if (currentData.category_id && currentData.category_id.length > 0) {
         currentData.category_id.forEach(id => {
           formData.append("category_id[]", id.toString());
         });
       }
 
-      // Add images (only if they are new File uploads)
+      // Handle featured image deletion
+      if (deleteFeaturedImage && isEditMode) {
+        formData.append("delete_featured_image", "1");
+      }
+
+      // Add new featured image if it's a File
       if (featuredImage && featuredImage instanceof File) {
         formData.append("featured_image", featuredImage);
       }
 
+      // Handle gallery images deletion
+      if (deletedGalleryImageUuids.length > 0 && isEditMode) {
+        deletedGalleryImageUuids.forEach(uuid => {
+          formData.append("delete_gallery_image[]", uuid);
+        });
+      }
+
+      // Add new gallery images
       galleryImages.forEach(img => {
-        if (img instanceof File) {
-          formData.append("gallery_images[]", img);
+        if (img.file) {
+          formData.append("gallery_images[]", img.file);
         }
       });
 
-      // Add variation-specific fields
       if (variationType === "color") {
         formData.append("price", colorFormData.price);
         formData.append("sale_price", colorFormData.sale_price);
         formData.append("quantity", colorFormData.quantity.toString());
         formData.append("low_stock_threshold", colorFormData.low_stock_threshold.toString());
       } else {
-        // Add attributes
         sizeColorFormData.attributes.forEach((attr, attrIdx) => {
           formData.append(`attributes[${attrIdx}][attribute_id]`, attr.attribute_id.toString());
           attr.attribute_value_ids.forEach((valId, valIdx) => {
@@ -257,58 +285,76 @@ const ProductForm = () => {
           });
         });
 
-        // Add variations
         if (sizeColorFormData.variations.length === 0) {
           toast.error("Please generate or add at least one variation");
           return;
         }
 
         sizeColorFormData.variations.forEach((variation, varIdx) => {
-          formData.append(`variations[${varIdx}][sku]`, variation.sku);
-          formData.append(`variations[${varIdx}][price]`, variation.price);
-          formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);
-          formData.append(`variations[${varIdx}][quantity]`, variation.quantity.toString());
-          formData.append(
-            `variations[${varIdx}][low_stock_threshold]`,
-            variation.low_stock_threshold.toString()
-          );
-          formData.append(`variations[${varIdx}][status]`, variation.status);
-
-          variation.attributes.forEach((attr, attrIdx) => {
+          // Only send variations that don't have an ID (new) or have an ID but weren't deleted
+          if (!variation.id || !deletedVariationIds.includes(variation.id)) {
+            // If variation has an ID, include it for update
+            if (variation.id) {
+              formData.append(`variations[${varIdx}][id]`, variation.id.toString());
+            }
+            
+            formData.append(`variations[${varIdx}][sku]`, variation.sku);
+            formData.append(`variations[${varIdx}][price]`, variation.price);
+            formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);
+            formData.append(`variations[${varIdx}][quantity]`, variation.quantity.toString());
             formData.append(
-              `variations[${varIdx}][attributes][${attrIdx}][attribute_id]`,
-              attr.attribute_id.toString()
+              `variations[${varIdx}][low_stock_threshold]`,
+              variation.low_stock_threshold.toString()
             );
-            formData.append(
-              `variations[${varIdx}][attributes][${attrIdx}][attribute_value_id]`,
-              attr.attribute_value_id.toString()
-            );
-          });
+            formData.append(`variations[${varIdx}][status]`, variation.status);
 
-          if (variation.image instanceof File) {
-            formData.append(`variations[${varIdx}][image]`, variation.image);
+            variation.attributes.forEach((attr, attrIdx) => {
+              formData.append(
+                `variations[${varIdx}][attributes][${attrIdx}][attribute_id]`,
+                attr.attribute_id.toString()
+              );
+              formData.append(
+                `variations[${varIdx}][attributes][${attrIdx}][attribute_value_id]`,
+                attr.attribute_value_id.toString()
+              );
+            });
+
+            if (variation.image instanceof File) {
+              formData.append(`variations[${varIdx}][image]`, variation.image);
+            }
           }
         });
+
+        // Send deleted variation IDs
+        if (deletedVariationIds.length > 0 && isEditMode) {
+          deletedVariationIds.forEach(id => {
+            formData.append("delete_variation_ids[]", id.toString());
+          });
+        }
       }
 
       if (isEditMode && id) {
-        // Update existing product
+        formData.append("_method", "PUT"); 
         await actions.update(id, formData);
         toast.success("Product updated successfully!");
       } else {
-        // Create new product
         await actions.add(formData);
         toast.success("Product created successfully!");
       }
       
       navigate("/products");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} product:`, error);
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} product`);
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.status === 422 && axiosError.response?.data?.errors) {
+          setValidationErrors(axiosError.response.data.errors);
+        }
+      }
     }
   };
 
-  // Show loading state when fetching product data
   if (isEditMode && isLoadingProduct) {
     return (
       <Layout>
@@ -330,7 +376,6 @@ const ProductForm = () => {
           </h2>
         </div>
 
-        {/* Variation Type Selection - Disabled in edit mode */}
         <Card>
           <CardHeader>
             <CardTitle>Product Variation Type</CardTitle>
@@ -381,6 +426,7 @@ const ProductForm = () => {
                       setSizeColorFormData(data as SizeColorProductFormData);
                     }
                   }}
+                  errors={validationErrors}
                 />
               </CardContent>
             </Card>
@@ -394,6 +440,7 @@ const ProductForm = () => {
                   <PricingStock 
                     formData={colorFormData} 
                     setFormData={setColorFormData} 
+                    errors={validationErrors}
                   />
                 </CardContent>
               </Card>
@@ -407,6 +454,11 @@ const ProductForm = () => {
                     formData={sizeColorFormData}
                     setFormData={setSizeColorFormData}
                     initialLocalAttributes={localAttributes}
+                    onVariationDeleted={(variationId: number | undefined) => {
+                      if (variationId) {
+                        setDeletedVariationIds(prev => [...prev, variationId]);
+                      }
+                    }}
                   />
                 </CardContent>
               </Card>
@@ -424,6 +476,8 @@ const ProductForm = () => {
                   galleryImages={galleryImages}
                   setFeaturedImage={setFeaturedImage}
                   setGalleryImages={setGalleryImages}
+                  onDeleteFeaturedImage={handleDeleteFeaturedImage}
+                  onDeleteGalleryImage={handleDeleteGalleryImage}
                 />
               </CardContent>
             </Card>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../../components/ui/use-toast";
 import { AxiosError } from "axios";
+import { displayValidationErrors } from "../../../utils/helper/toastValidation";
 
 import {
   getProduct,
@@ -151,21 +152,15 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       });
       queryClient.invalidateQueries({ queryKey: ProductQueryKeys.lists() });
     },
-    onError: (err: unknown) => {
-      const message =
-        err instanceof AxiosError
-          ? err.response?.data?.message
-          : err instanceof Error
-          ? err.message
-          : "An unexpected error occurred.";
-
-      toast({
-        variant: "destructive",
-        title: "Creation Failed",
-        description: message,
-      });
-      throw err;
-    },
+   onError: (err: unknown) => {
+  if (err instanceof AxiosError && err.response?.status === 422) {
+    const errors = err.response?.data?.errors;
+    if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
+      displayValidationErrors(errors); // ✅ This is exported and ready to use
+    }
+  }
+  throw err;
+}
   });
 
   /* ---------- Update mutation ---------- */
@@ -188,18 +183,37 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       });
     },
     onError: (err: unknown) => {
-      const message =
-        err instanceof AxiosError
-          ? err.response?.data?.message
-          : err instanceof Error
-          ? err.message
-          : "An unexpected error occurred.";
+      console.log('Update error:', err);
+      
+      // Handle validation errors (422)
+      if (err instanceof AxiosError && err.response?.status === 422) {
+        const errors = err.response?.data?.errors;
+        console.log('Validation errors:', errors);
+        
+        if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
+          displayValidationErrors(errors);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Validation Failed",
+            description: err.response?.data?.message || "Please check your input and try again",
+          });
+        }
+      } else {
+        // Handle other errors
+        const message =
+          err instanceof AxiosError
+            ? err.response?.data?.message
+            : err instanceof Error
+            ? err.message
+            : "An unexpected error occurred.";
 
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: message,
-      });
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: message,
+        });
+      }
       throw err;
     },
   });
@@ -277,7 +291,7 @@ export const useProductDetail = (
   } = useQuery<ProductResponse, Error>({
     queryKey: ProductQueryKeys.detail(productId),
     queryFn: () => getProductById(productId),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime:  5, // 5 minutes
     enabled: !!productId,
   });
 

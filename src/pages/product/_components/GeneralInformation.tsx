@@ -9,13 +9,14 @@ import {
 } from "../../../components/ui/select";
 import { Badge } from "../../../components/ui/badge";
 import { X } from "lucide-react";
-
+import { FieldError } from "../../../components/ui/field-error";
 interface Props {
   formData: ColorProductFormData | SizeColorProductFormData;
   setFormData: (data: ColorProductFormData | SizeColorProductFormData) => void;
+  errors?: Record<string, string[]>;
 }
 
-const GeneralInformation = ({ formData, setFormData }: Props) => {
+const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
   const { transactionCategories, isLoading, isError } = useTransactionCategory();
 
   const selectedCategoryIds = formData.category_id || [];
@@ -56,6 +57,7 @@ const GeneralInformation = ({ formData, setFormData }: Props) => {
             className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Enter product name"
           />
+          <FieldError errors={errors?.name} />
         </div>
 
         <div>
