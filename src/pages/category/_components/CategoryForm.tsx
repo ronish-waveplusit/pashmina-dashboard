@@ -22,6 +22,7 @@ interface CategoryPayloadFormProps {
   isSubmitting: boolean;
   onCloseModal: () => void;
   categories: CategoryPayload[];
+  isLoadingCategories?: boolean;
 }
 
 type FormErrors = Partial<
@@ -34,6 +35,7 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
   isSubmitting,
   onCloseModal,
   categories,
+  isLoadingCategories = false,
 }) => {
   const isEditMode = !!initialData;
 
@@ -50,8 +52,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     initialData?.featured_image ?? null
   );
   const [errors, setErrors] = useState<FormErrors>({});
-
-  console.log("Current categoryData:", categoryData);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -84,11 +84,11 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
       return;
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 2 * 1024 * 1024; // 2MB
     if (file.size > maxSize) {
       setErrors((prev) => ({
         ...prev,
-        featured_image: 'Image size must be less than 5MB',
+        featured_image: 'Image size must be less than 2MB',
       }));
       return;
     }
@@ -140,7 +140,7 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
         formData.append("featured_image", featuredImage);
       }
       if (removeExistingImage && !featuredImage) {
-        formData.append("remove_featured_image", "1");
+        formData.append("delete_featured_image", "1");
       }
       if (isEditMode) {
         formData.append("_method", "PUT");
@@ -196,11 +196,12 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="parent_id">Parent Category</Label>
           <Select
-            value={categoryData.parent_id || "none"}   // This line is critical
+            value={categoryData.parent_id || "none"}
             onValueChange={handleSelectChange}
+            disabled={isLoadingCategories}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select parent category (optional)" />
+              <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select parent category (optional)"} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">None (Top Level)</SelectItem>

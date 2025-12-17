@@ -14,9 +14,7 @@ import { Plus, Search, UserPlus, X } from "lucide-react";
 import { useTransactionCategory } from "./_hooks/useCategory";
 import { CategoryForm } from "./_components/CategoryForm";
 import { CategoryPayload } from "../../types/category";
-// import { useHasPermission } from "../../utils/helper/permissionUtils";
 import Pagination from "../../components/pagination/pagination";
-
 import { Input } from "../../components/ui/input";
 import { ITEMS_PER_PAGE } from "../../constants/common";
 import ImagePreview from "../../components/ui/ImagePreview";
@@ -27,14 +25,13 @@ const Index = () => {
         useState<CategoryPayload | null>(null);
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
-
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
     // Debounce search query
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
-            setPage(1); // Reset to first page when search changes
+            setPage(1);
         }, 500);
 
         return () => clearTimeout(timer);
@@ -49,6 +46,7 @@ const Index = () => {
         [page, debouncedSearchQuery]
     );
 
+    // Filtered list for the table
     const {
         transactionCategories,
         isLoading,
@@ -61,11 +59,15 @@ const Index = () => {
         meta,
     } = useTransactionCategory(filters);
 
-    // Permission checks using the helper function
-    // const canCreate = useHasPermission("transaction-category:create");
-    // //   const canView = useHasPermission("transaction-category:view");
-    // const canEdit = useHasPermission("transaction-category:update");
-    // const canDelete = useHasPermission("transaction-category:delete");
+   
+    const {
+        transactionCategories: allCategories,
+        isLoading: isLoadingAllCategories,
+    } = useTransactionCategory({ 
+        page: 1, 
+        per_page: 100, 
+        search: "" 
+    });
 
     const handleEdit = (TransactionCategory: CategoryPayload) => {
         setEditTransactionCategory(TransactionCategory);
@@ -81,13 +83,6 @@ const Index = () => {
         setSearchQuery("");
         setDebouncedSearchQuery("");
     };
-
-    // Helper function to find parent category name
-    // const getParentCategoryName = (parentId: string | number | null | undefined) => {
-    //     if (!parentId) return "—";
-    //     const parent = transactionCategories.find((cat) => cat.id === parentId);
-    //     return parent ? parent.name : "—";
-    // };
 
     if (isLoading) {
         return (
@@ -117,7 +112,6 @@ const Index = () => {
                             Track and manage Product Category
                         </p>
                     </div>
-                    {/* {canCreate && ( */}
                     <Button
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center "
@@ -125,7 +119,6 @@ const Index = () => {
                         <Plus className="mr-2" />
                         Add Product Category
                     </Button>
-                    {/* )} */}
                 </div>
 
                 <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
@@ -138,7 +131,7 @@ const Index = () => {
                             </DialogTitle>
                         </DialogHeader>
                         <CategoryForm
-                       key={editTransactionCategory?.id ?? "add"}
+                            key={editTransactionCategory?.id ?? "add"}
                             initialData={editTransactionCategory}
                             onSubmit={
                                 editTransactionCategory
@@ -147,7 +140,8 @@ const Index = () => {
                             }
                             isSubmitting={editTransactionCategory ? isUpdating : isAdding}
                             onCloseModal={handleModalClose}
-                            categories={transactionCategories}
+                            categories={allCategories} // 🔥 Use unfiltered list
+                            isLoadingCategories={isLoadingAllCategories}
                         />
                     </DialogContent>
                 </Dialog>
@@ -158,7 +152,6 @@ const Index = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="relative flex-1 space-y-2 mb-4">
-
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -195,7 +188,6 @@ const Index = () => {
                                     </thead>
                                     <tbody>
                                         {transactionCategories.map((transactionCategory, index) => (
-
                                             <tr
                                                 key={transactionCategory.id}
                                                 className="border-b border-muted last:border-0"
@@ -222,26 +214,22 @@ const Index = () => {
                                                 </td>
                                                 <td className="py-3 px-4 text-right">
                                                     <div className="flex justify-end space-x-2">
-                                                        {/* {canEdit && ( */}
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => handleEdit(transactionCategory)}
-                                                            >
-                                                                Edit
-                                                            </Button>
-                                                        {/* )} */}
-                                                        {/* {canDelete && ( */}
-                                                            <Button
-                                                                variant="destructive"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    actions.confirmDelete(transactionCategory.id)
-                                                                }
-                                                            >
-                                                                Delete
-                                                            </Button>
-                                                        {/* )} */}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleEdit(transactionCategory)}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                actions.confirmDelete(transactionCategory.id)
+                                                            }
+                                                        >
+                                                            Delete
+                                                        </Button>
                                                     </div>
                                                 </td>
                                             </tr>
