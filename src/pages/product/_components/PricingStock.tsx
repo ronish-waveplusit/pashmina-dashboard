@@ -41,11 +41,12 @@ const PricingStock = ({ formData, setFormData, errors={} }: Props) => {
           className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="0.00"
         />
+         <FieldError errors={errors?.sale_price} />
       </div>
 
       <div>
         <label className="text-sm font-medium text-foreground">
-          Stock Quantity <span className="text-destructive">*</span>
+          Stock Quantity 
         </label>
         <input
           type="number"
@@ -57,6 +58,7 @@ const PricingStock = ({ formData, setFormData, errors={} }: Props) => {
           className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="0"
         />
+        <FieldError errors={errors?.quantity} />
       </div>
 
       <div>
@@ -76,6 +78,7 @@ const PricingStock = ({ formData, setFormData, errors={} }: Props) => {
           className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="5"
         />
+        <FieldError errors={errors?.low_stock_threshold} />
       </div>
     </div>
   );

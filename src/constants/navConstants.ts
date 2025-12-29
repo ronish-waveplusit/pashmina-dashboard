@@ -3,8 +3,6 @@ import {
   UserCog,
   Users,
   BookOpen,
- 
-  DollarSign,
   Landmark,
   MessageSquare,
   File,
@@ -15,17 +13,15 @@ import {
   PhoneIncoming,
   CirclePlusIcon,
   User,
- 
   FileText,
   ClipboardList,
   Shield,
   BarChart3,
-  
   Package,
- 
   SlidersHorizontal,
   Tags,
   Warehouse,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -73,7 +69,8 @@ export const NAV_GROUPS = [
     items: [
       // { name: "Products", path: "/products", icon: Package },
       // { name: "Items", path: "/items", icon: Package },
-      { name: "Finance", path: "/finance", icon: DollarSign },
+ 
+      { name: "Chalani", path: "/chalani", icon: BriefcaseBusiness },
       // { name: "Payroll", path: "/payroll", icon: Landmark },
       { name: "Reports", path: "/reports", icon: BarChart2 },
       { name: "Staff Report", path: "/staff-reports", icon: BarChart3 },

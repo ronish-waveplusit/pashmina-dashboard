@@ -47,7 +47,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
 
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [existingImageUrl] = useState<string | null>(initialData?.featured_image ?? null);
-  const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialData?.featured_image ?? null
   );
@@ -75,6 +74,11 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log('Selected file:', file);
+    console.log('File type:', file.type);
+    console.log('File size:', file.size);
+    console.log('File name:', file.name);
+
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setErrors((prev) => ({
@@ -93,8 +97,8 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
       return;
     }
 
+    console.log('File validation passed, setting featured image');
     setFeaturedImage(file);
-    setRemoveExistingImage(false);
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -110,9 +114,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
   const handleRemoveImage = () => {
     setFeaturedImage(null);
     setImagePreview(null);
-    if (existingImageUrl) {
-      setRemoveExistingImage(true);
-    }
     const input = document.getElementById("featured_image") as HTMLInputElement;
     if (input) input.value = "";
   };
@@ -121,27 +122,43 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     e.preventDefault();
     setErrors({});
 
+    // Determine if we need to send delete flag
+    // Only send delete_featured_image when:
+    // - We're in edit mode
+    // - There was an existing image
+    // - No new image is being uploaded
+    // - The image preview has been removed
+    const shouldDeleteImage = isEditMode && existingImageUrl && !featuredImage && !imagePreview;
+
     try {
-      await categorySchema.validate(
-        {
-          ...categoryData,
-          featured_image: featuredImage,
-          remove_featured_image: removeExistingImage ? "1" : null,
-        },
-        { abortEarly: false }
-       );
+      // Only validate featured_image if we have a new file
+      const validationData: any = {
+        ...categoryData,
+      };
+      
+      if (featuredImage) {
+        validationData.featured_image = featuredImage;
+      }
+
+      await categorySchema.validate(validationData, { abortEarly: false });
 
       const formData = new FormData();
       formData.append("name", categoryData.name);
+      
       if (categoryData.parent_id) {
         formData.append("parent_id", categoryData.parent_id);
       }
+      
+      // Only append featured_image if we have a new file
       if (featuredImage) {
         formData.append("featured_image", featuredImage);
       }
-      if (removeExistingImage && !featuredImage) {
+      
+      // Only send delete flag when deleting without replacement
+      if (shouldDeleteImage) {
         formData.append("delete_featured_image", "1");
       }
+      
       if (isEditMode) {
         formData.append("_method", "PUT");
       }
@@ -257,7 +274,7 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Click to upload image</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG, GIF, WEBP (max 5MB)
+                    PNG, JPG, GIF, WEBP (max 2MB)
                   </p>
                 </div>
               </Label>

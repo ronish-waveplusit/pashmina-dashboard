@@ -3,6 +3,7 @@ export const apiRoutes = {
   //forget password
   GET_FORGET_PASSWORD: "/forget-password",
  GET_LOT:"/v1/lot",
+ GET_CHALANI:"/v1/chalani",
   GET_RESET_PASSWORD: "/reset-password",
   GET_PRODUCT_CATEGORIES: "/v1/st/categories",
     GET_PRODUCT: "/v1/products",
@@ -11,40 +12,14 @@ export const apiRoutes = {
   //refresh
   REFRESH_TOKEN: "/refresh",
   //instructors
-  GET_INSTRUCTORS: "/instructors",
-  //instructors
-  GET_STUDENT_USER: "/students",
-  //course-categories
-  GET_COURSE_CATEGORIES: "/co/course-categories",
-  //courses
-  GET_COURSES: "/co/course",
-  //classes
-  GET_CLASSES: "/co/batch",
-  //enrollments
-  GET_ENROLLMENTS: "/en/enroll",
-  //inventory categories
+ 
+
   GET_CATEGORIES: "/inven/categories",
-  //shifts
-  GET_SHIFTS: "co/shift",
-  //classes
-  GET_BATCHES: "co/batch",
-  GET_STUDENTS_BY_BATCH: "en/users-by-batch",
-  //students
-  GET_STUDENTS: "en/enroll",
-  //class shifts
-  GET_CLASS_SHIFTS: "/co/batch_shift",
-  GET_REFERRALS: "/referer",
+
   //product
  
-  //Stock
-  GET_STOCK: "inven/stocks",
-  GET_INVOICES: "en/pay",
-  // enquiries
-  GET_ENQUIRIES: "/enquiry",
-  // contacts
-  GET_CONTACTS: "/crm/leads",
-  //sources
-  GET_SOURCE: "/st/sources",
+ 
+
   //narrations
   GET_NARRATIONS: "/st/narrations",
   //search student
@@ -89,23 +64,9 @@ export const apiRoutes = {
   DASHBOARD_TOP_COURSES: "dashboard/top-courses",
   DASHBOARD_FOLLOWUP_SUMMARY: "dashboard/followup-summary",
   DASHBOARD_DISCOUNTED_ENROLLMENTS: "dashboard/discounted-enrollments",
-  //Inventory Management
-  GET_ITEMS: "/inven/items",
-  GET_VENDORS: "/inven/vendors",
-  GET_PURCHASES: "/inven/purchases",
-  INVENTORY_REPORT: "/inventory-report",
-  EXPORT_INVENTORY_REPORT: "/inventory-report/export",
-  //study materials
+
   GET_STUDY_MATERIALS: "/co/course",
   //branches
   GET_BRANCH: "/st/branches",
-  GET_AUTH_USER_CHILDREN_BRANCH: "/st/auth-user-children-branches",
-  //staff reports
-  REPORTS_STAFF_SUMMARY: "/reports/staff/summary",
-  REPORTS_STAFF_LEADS: "/reports/staff/leads",
-  REPORTS_STAFF_ENQUIRIES: "/reports/staff/enquiries",
-  REPORTS_STAFF_ENROLLMENTS: "/reports/staff/enrollments",
-  REPORTS_STAFF_FOLLOWUPS: "/reports/staff/followups",
-  // Export Students to Excel
-  EXPORT_STUDENTS: "/export-students",
+
 };

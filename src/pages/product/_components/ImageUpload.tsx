@@ -1,7 +1,7 @@
 import { Plus, X } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { FieldError } from "../../../components/ui/field-error";
 
-// Extended type to include uuid for existing images
 export interface GalleryImage {
   file?: File;
   url?: string;
@@ -15,6 +15,7 @@ interface Props {
   setGalleryImages: (files: GalleryImage[]) => void;
   onDeleteFeaturedImage?: () => void;
   onDeleteGalleryImage?: (uuid: string) => void;
+  errors?: Record<string, string[]>;
 }
 
 const ImageUpload = ({
@@ -24,6 +25,7 @@ const ImageUpload = ({
   setGalleryImages,
   onDeleteFeaturedImage,
   onDeleteGalleryImage,
+  errors,
 }: Props) => {
   const handleFeaturedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -105,18 +107,21 @@ const ImageUpload = ({
             </Button>
           </div>
         ) : (
-          <label className="flex h-48 w-full cursor-pointer items-center justify-center rounded border-2 border-dashed border-border bg-accent hover:bg-accent/80">
-            <div className="text-center">
-              <Plus className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Upload Featured Image</p>
-            </div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFeaturedImageUpload}
-              className="hidden"
-            />
-          </label>
+          <div>
+            <label className="flex h-48 w-full cursor-pointer items-center justify-center rounded border-2 border-dashed border-border bg-accent hover:bg-accent/80">
+              <div className="text-center">
+                <Plus className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Upload Featured Image</p>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFeaturedImageUpload}
+                className="hidden"
+              />
+            </label>
+            <FieldError errors={errors?.featured_image} />
+          </div>
         )}
       </div>
 
@@ -172,6 +177,9 @@ const ImageUpload = ({
             </label>
           )}
         </div>
+
+        {/* Gallery Images Error Messages */}
+        <FieldError errors={errors?.gallery_images} />
 
         {galleryImages.length > 0 && (
           <Button

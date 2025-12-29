@@ -12,6 +12,9 @@ const ProductIndex = lazy(() => import("./pages/product/Index"));
 const ProductVariation=lazy(()=>import("./pages/inventory/Index"));
 const LotView=lazy(()=>import("./pages/inventory/_components/ViewLotModal"))
 const ProductView=lazy(()=>import("./pages/product/ViewProduct"))
+const ChalaniIndex=lazy(()=>import("./pages/chalani/Index"));
+const ChalaniForm=lazy(()=>import("./pages/chalani/_components/ChalaniForm"))
+const ChalaniDetail=lazy(()=>import("./pages/chalani/_components/ChalaniDetail"))
 function App() {
 
 const LoadingFallback = () => (
@@ -105,6 +108,38 @@ const LoadingFallback = () => (
               </AuthGuard>
             }
           />
+
+            <Route
+            path="/chalani"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ChalaniIndex />
+              </AuthGuard>
+            }
+          />
+           <Route
+            path="/add-chalani"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ChalaniForm />
+              </AuthGuard>
+            }
+          />
+           <Route
+            path="/chalani/:id"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ChalaniDetail />
+              </AuthGuard>
+            }
+          />
+
       </Routes>
     </Suspense>
    </AppProvider>

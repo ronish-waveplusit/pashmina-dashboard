@@ -99,8 +99,9 @@ export async function updateTransactionCategory({
   try {
     const response = await http({
       url: `${apiRoutes.GET_PRODUCT_CATEGORIES}/${id}`,
-      method: "put",
+      method: "post",
       data: formData,
+      transformRequest: [(data) => data], 
     });
     return response.data.data;
   } catch (error) {

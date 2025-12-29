@@ -459,6 +459,7 @@ const ProductForm = () => {
                         setDeletedVariationIds(prev => [...prev, variationId]);
                       }
                     }}
+                    
                   />
                 </CardContent>
               </Card>
@@ -478,6 +479,7 @@ const ProductForm = () => {
                   setGalleryImages={setGalleryImages}
                   onDeleteFeaturedImage={handleDeleteFeaturedImage}
                   onDeleteGalleryImage={handleDeleteGalleryImage}
+                  errors={validationErrors}
                 />
               </CardContent>
             </Card>

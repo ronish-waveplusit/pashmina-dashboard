@@ -115,7 +115,7 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       branchId
         ? getProductByBranchId(branchId, queryParams)
         : getProduct(queryParams),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // 5 minutes
     placeholderData: (previousData) => previousData,
     refetchOnMount: "always",
   });
@@ -291,7 +291,7 @@ export const useProductDetail = (
   } = useQuery<ProductResponse, Error>({
     queryKey: ProductQueryKeys.detail(productId),
     queryFn: () => getProductById(productId),
-    staleTime:  5, // 5 minutes
+    staleTime:  0, // 5 minutes
     enabled: !!productId,
   });
 

@@ -71,6 +71,7 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
             className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="e.g., PROD-001"
           />
+          <FieldError errors={errors?.code} />
         </div>
       </div>
 
@@ -88,6 +89,7 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
             className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="e.g., 100% Cotton"
           />
+          <FieldError errors={errors?.composition} />
         </div>
 
         <div>
@@ -101,6 +103,7 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
             className="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Short description"
           />
+          <FieldError errors={errors?.excerpt} />
         </div>
       </div>
 
@@ -155,6 +158,7 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
             )}
           </SelectContent>
         </Select>
+        <FieldError errors={errors?.category_id} />
       </div>
        <div>
         <label className="text-sm font-medium text-foreground">Description</label>
@@ -166,6 +170,7 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
           placeholder="Enter product description"
         />
       </div>
+      <FieldError errors={errors?.description} />
     </div>
   );
 };

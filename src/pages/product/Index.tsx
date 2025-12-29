@@ -26,7 +26,7 @@ const Index = () => {
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState<"none" | "asc" | "desc">("none");
     const navigate = useNavigate();
-   
+
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
@@ -342,26 +342,17 @@ const Index = () => {
                                                     {product.code || "N/A"}
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-gray-600">
-                                                    {(() => {
-                                                        if (!product.categories) return "N/A";
-
-                                                        if (Array.isArray(product.categories)) {
-                                                            return product.categories
-                                                                .map(cat => typeof cat === 'string' ? cat : cat.name)
-                                                                .join(", ");
-                                                        }
-
-                                                        if (typeof product.categories === 'string') {
-                                                            return product.categories;
-                                                        }
-
-                                                        return product.categories.name || "N/A";
-                                                    })()}
+                                                    {Array.isArray(product.category) && product.category.length > 0
+                                                        ? product.category
+                                                            .slice(0, 2)               
+                                                            .map(cat => cat.name)
+                                                            .join(", ")
+                                                        : "N/A"}
                                                 </td>
                                                 <td className="py-4 px-4 text-sm">
                                                     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${product.variation_type === "color"
-                                                            ? "bg-purple-100 text-purple-800"
-                                                            : "bg-blue-100 text-blue-800"
+                                                        ? "bg-purple-100 text-purple-800"
+                                                        : "bg-blue-100 text-blue-800"
                                                         }`}>
                                                         {product.variation_type === "color" ? "Simple" : "Variable"}
                                                     </span>
@@ -376,10 +367,10 @@ const Index = () => {
                                                 <td className="py-4 px-4">
                                                     <span
                                                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getProductStatus(product) === "Active"
-                                                                ? "bg-green-100 text-green-800"
-                                                                : getProductStatus(product) === "Partial"
-                                                                    ? "bg-yellow-100 text-yellow-800"
-                                                                    : "bg-red-100 text-red-800"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : getProductStatus(product) === "Partial"
+                                                                ? "bg-yellow-100 text-yellow-800"
+                                                                : "bg-red-100 text-red-800"
                                                             }`}
                                                     >
                                                         {getProductStatus(product)}
