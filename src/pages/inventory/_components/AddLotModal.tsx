@@ -128,7 +128,7 @@ const AddLotModal = ({
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -260,7 +260,7 @@ const AddLotModal = ({
             )}
 
             {/* Add More Button - Only show if product is locked */}
-            {!isLoading && isProductLocked && (
+            {/* {!isLoading && isProductLocked && (
               <button
                 type="button"
                 onClick={addLotItem}
@@ -269,7 +269,7 @@ const AddLotModal = ({
                 <Plus className="h-4 w-4" />
                 Add More Quantity for {selectedProduct?.product_name}
               </button>
-            )}
+            )} */}
             {!isLoading && !isProductLocked && (
               <button
                 type="button"

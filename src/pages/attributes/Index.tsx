@@ -383,7 +383,7 @@ const Index = () => {
                                       <X className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
                                     {attribute.attributeValues.map((val) => (
                                       <div
                                         key={val.id}
