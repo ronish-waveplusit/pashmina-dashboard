@@ -53,7 +53,7 @@ export interface CreateChalanPayload {
   name: string;
   issue_date: string;
   total_amount: number;
-  discount_type: "percentage" | "fixed"|null;
+  discount_type: "percentage" | "fixed_amount"|null;
   discount_value: number;
   chalan_items: CreateChalanItemPayload[];
 }

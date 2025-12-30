@@ -55,7 +55,7 @@ const ChalaniForm = () => {
     );
     const [dueDate, setDueDate] = useState("");
     const [applyDiscount, setApplyDiscount] = useState(false);
-    const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
+    const [discountType, setDiscountType] = useState<"percentage" | "fixed_amount">("percentage");
     const [discountValue, setDiscountValue] = useState<number>(0);
     const [items, setItems] = useState<ChalanItem[]>([]);
 
@@ -505,7 +505,7 @@ const ChalaniForm = () => {
                                                     <Select
                                                         value={discountType}
                                                         onValueChange={(value) =>
-                                                            setDiscountType(value as "percentage" | "fixed")
+                                                            setDiscountType(value as "percentage" | "fixed_amount")
                                                         }
                                                     >
                                                         <SelectTrigger>
@@ -513,7 +513,7 @@ const ChalaniForm = () => {
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="percentage">Percentage (%)</SelectItem>
-                                                            <SelectItem value="fixed">Fixed (NPR)</SelectItem>
+                                                            <SelectItem value="fixed_amount">Fixed (NPR)</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
