@@ -122,12 +122,6 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     e.preventDefault();
     setErrors({});
 
-    // Determine if we need to send delete flag
-    // Only send delete_featured_image when:
-    // - We're in edit mode
-    // - There was an existing image
-    // - No new image is being uploaded
-    // - The image preview has been removed
     const shouldDeleteImage = isEditMode && existingImageUrl && !featuredImage && !imagePreview;
 
     try {
@@ -135,7 +129,7 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
       const validationData: any = {
         ...categoryData,
       };
-      
+
       if (featuredImage) {
         validationData.featured_image = featuredImage;
       }
@@ -144,21 +138,23 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
 
       const formData = new FormData();
       formData.append("name", categoryData.name);
-      
+
       if (categoryData.parent_id) {
         formData.append("parent_id", categoryData.parent_id);
+      } else {
+        formData.append("parent_id", "");
       }
-      
+
       // Only append featured_image if we have a new file
       if (featuredImage) {
         formData.append("featured_image", featuredImage);
       }
-      
+
       // Only send delete flag when deleting without replacement
       if (shouldDeleteImage) {
         formData.append("delete_featured_image", "1");
       }
-      
+
       if (isEditMode) {
         formData.append("_method", "PUT");
       }
@@ -301,8 +297,8 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
               ? "Updating..."
               : "Adding..."
             : isEditMode
-            ? "Update Category"
-            : "Add Category"}
+              ? "Update Category"
+              : "Add Category"}
         </Button>
       </div>
     </form>
