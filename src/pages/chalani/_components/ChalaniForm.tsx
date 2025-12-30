@@ -5,7 +5,14 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Checkbox } from "../../../components/ui/checkbox";
-import { Plus, Trash2 } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../../../components/ui/select";
+import { Plus, Trash2, Search, Loader2 } from "lucide-react";
 import { useChalani } from "../_hooks/useChalani";
 import { useProductVariation } from "../../inventory/_hooks/useProductVariation";
 import { CreateChalanPayload, CreateChalanItemPayload } from "../../../types/chalani";
@@ -20,9 +27,25 @@ interface ChalanItem extends CreateChalanItemPayload {
 const ChalaniForm = () => {
     const navigate = useNavigate();
     const { actions, isAdding } = useChalani();
+
+    // Search state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [openSelectId, setOpenSelectId] = useState<string | null>(null);
+
     const { products, isLoading: isLoadingProducts } = useProductVariation({
         per_page: 100,
+        search: debouncedSearch,
     });
+
+    // Debounce search with 500ms delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 600);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     // Form state
     const [isGuide, setIsGuide] = useState(true);
@@ -42,6 +65,16 @@ const ChalaniForm = () => {
             addNewRow();
         }
     }, []);
+
+    // Reset search when select closes
+    const handleOpenChange = (open: boolean, itemId: string) => {
+        if (open) {
+            setOpenSelectId(itemId);
+        } else {
+            setOpenSelectId(null);
+            setSearchQuery("");
+        }
+    };
 
     // Add new item row
     const addNewRow = () => {
@@ -81,7 +114,6 @@ const ChalaniForm = () => {
                         if (selectedProduct) {
                             updatedItem.unit_price = parseFloat(selectedProduct.sale_price || selectedProduct.price || "0");
                             updatedItem.product_name = selectedProduct.product_name || "";
-                            // FIX: Calculate total_price immediately when product is selected
                             updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
                         }
                     }
@@ -97,7 +129,6 @@ const ChalaniForm = () => {
             })
         );
     };
-    ;
 
     // Calculate subtotal
     const calculateSubtotal = () => {
@@ -196,7 +227,7 @@ const ChalaniForm = () => {
                     <CardContent className="p-8">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <h1 className="text-2xl font-bold text-gray-900">SMART ENTERPRISE AND TRADERS</h1>
+                            <h1 className="text-2xl font-bold text-gray-900">MONALISA ENTERPRISE AND TRADERS</h1>
                             <p className="text-sm text-gray-600 mt-1">
                                 GPO BOX No.23484, Tewa Tower, 4th Floor, Teku Road, Kathmandu
                             </p>
@@ -211,7 +242,6 @@ const ChalaniForm = () => {
                         <form onSubmit={handleSubmit}>
                             {/* Form Fields Row 1 */}
                             <div className="grid grid-cols-2 gap-6 mb-6">
-                                {/* Company Field (Hidden for now, can be added later) */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Is Guide <span className="text-red-500">*</span>
@@ -279,7 +309,7 @@ const ChalaniForm = () => {
                                 <h3 className="text-lg font-semibold mb-4">Items</h3>
 
                                 {/* Items Table */}
-                                <div className="overflow-x-auto  rounded-lg">
+                                <div className="overflow-x-auto rounded-lg">
                                     <table className="w-full">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -290,7 +320,7 @@ const ChalaniForm = () => {
                                                     Particulars
                                                 </th>
                                                 <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-40">
-                                                    Quantity / Serials
+                                                    Quantity
                                                 </th>
                                                 <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-40">
                                                     Unit Price
@@ -310,22 +340,67 @@ const ChalaniForm = () => {
                                                         {index + 1}
                                                     </td>
                                                     <td className="py-3 px-4">
-                                                        <select
-                                                            value={item.product_variation_id}
-                                                            onChange={(e) =>
-                                                                updateItem(item.id, "product_variation_id", e.target.value)
+                                                        <Select
+                                                            value={item.product_variation_id > 0 ? item.product_variation_id.toString() : ""}
+                                                            onValueChange={(value) =>
+                                                                updateItem(item.id, "product_variation_id", value)
                                                             }
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                            disabled={isLoadingProducts}
+                                                            onOpenChange={(open) => handleOpenChange(open, item.id)}
                                                         >
-                                                            <option value={0}>Select product...</option>
-                                                            {products.map((product) => (
-                                                                <option key={product.id} value={product.id}>
-                                                                    {product.product_name || "Unknown"}
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Select product..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {/* Search Input */}
 
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                                <div className="flex items-center px-3 py-2 border-b sticky top-0 bg-white z-10">
+                                                                    <Search className="h-4 w-4 text-gray-400 mr-2" />
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Search products..."
+                                                                        value={searchQuery}
+                                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                                        className="flex-1 outline-none text-sm"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        onKeyDown={(e) => {
+                                                                            e.stopPropagation();
+                                                                        }}
+                                                                        autoFocus={openSelectId === item.id}
+                                                                    />
+                                                                    {isLoadingProducts && (
+                                                                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Products List */}
+                                                                <div className="max-h-[200px] overflow-y-auto">
+                                                                    {products.length > 0 ? (
+                                                                        products.map((product) => (
+                                                                            <SelectItem
+                                                                                key={product.id}
+                                                                                value={product.id.toString()}
+                                                                            >
+                                                                                <div className="flex flex-col">
+                                                                                    <span>{product.product_name || "Unknown"}</span>
+                                                                                    <span className="text-xs text-gray-500">
+                                                                                        NPR {product.sale_price || product.price || "0"}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </SelectItem>
+                                                                        ))
+                                                                    ) : (
+                                                                        <div className="py-6 text-center text-sm text-gray-500">
+                                                                            {isLoadingProducts ? "Loading..." : searchQuery ? "No products found" : "Start typing to search"}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {item.product_name && (
+                                                            <div className="text-xs text-gray-500 mt-1">
+                                                                {item.product_name}
+                                                            </div>
+                                                        )}
                                                         {item.lot_number && (
                                                             <div className="text-xs text-gray-500 mt-1">
                                                                 Lot: {item.lot_number}
@@ -429,16 +504,20 @@ const ChalaniForm = () => {
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Discount Type
                                                     </label>
-                                                    <select
+                                                    <Select
                                                         value={discountType}
-                                                        onChange={(e) =>
-                                                            setDiscountType(e.target.value as "percentage" | "fixed")
+                                                        onValueChange={(value) =>
+                                                            setDiscountType(value as "percentage" | "fixed")
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     >
-                                                        <option value="percentage">Percentage (%)</option>
-                                                        <option value="fixed">Fixed (NPR)</option>
-                                                    </select>
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="percentage">Percentage (%)</SelectItem>
+                                                            <SelectItem value="fixed">Fixed (NPR)</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
 
                                                 {/* Discount Value */}

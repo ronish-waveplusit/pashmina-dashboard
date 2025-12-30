@@ -205,7 +205,7 @@ const ChalaniDetail = () => {
                         {/* Company Header */}
                         <div className="text-center mb-8">
                             <h1 className="text-3xl font-bold text-gray-900">
-                                SOHETO ENTERPRISES Pvt. Ltd.
+                                MONALISA ENTERPRISES Pvt. Ltd.
                             </h1>
                             <p className="text-sm text-gray-600 mt-2">
                                 GPO BOX No.23484, Tewa Tower, 4th Floor, Teku Road, Kathmandu
@@ -278,9 +278,7 @@ const ChalaniDetail = () => {
                                                 <div className="text-sm font-medium">
                                                     {item.product_variations.name}
                                                 </div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    Serial: {/* Add serial numbers if available */}
-                                                </div>
+                                               
                                             </td>
                                             <td className="border border-gray-300 py-3 px-4 text-center text-sm">
                                                 {item.quantity}
@@ -328,7 +326,7 @@ const ChalaniDetail = () => {
                                     ................................................................
                                 </p>
                                 <p className="text-sm font-semibold mt-2">
-                                    For Soheto Enterprises Pvt.Ltd.
+                                    For Monalisa Enterprises Pvt.Ltd.
                                 </p>
                             </div>
                         </div>
