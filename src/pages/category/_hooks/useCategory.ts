@@ -10,7 +10,7 @@ import {
   updateTransactionCategory,
   getTransactionCategoryByBranchId,
 } from "../../../api/category";
-import { PaginatedResponse } from "../../../types/pagination";
+import { PaginatedResponse, PaginationMeta } from "../../../types/pagination";
 import { AxiosError } from "axios";
 
 import { CategoryPayload } from "../../../types/category";
@@ -35,7 +35,7 @@ export const TransactionCategoryQueryKeys = {
 
 interface UseTransactionCategoryReturn {
   transactionCategories: CategoryPayload[];
-  meta?: Omit<PaginatedResponse<CategoryPayload>, "data">;
+  meta?: PaginationMeta;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -91,12 +91,12 @@ export const useTransactionCategory = (
         ? getTransactionCategoryByBranchId(branchId, queryParams)
         : getTransactionCategory(queryParams),
     staleTime: 1000 * 60 * 5,
-    placeholderData: (previousData) => previousData, // ✅ Replaces keepPreviousData
+    placeholderData: (previousData) => previousData, 
     refetchOnMount: "always",
   });
 
   const transactionCategories = response?.data || [];
-  const meta = response ? (({ data, ...m }) => m)(response) : undefined;
+  const meta = response?.meta ? response.meta : undefined;
 
   // ✅ Fixed: React Query v5 syntax
   const { mutate: performDelete, isPending: isDeleting } = useMutation({

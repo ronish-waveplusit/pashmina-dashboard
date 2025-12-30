@@ -18,12 +18,12 @@ const Index = () => {
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("all");
     const [sortBy, setSortBy] = useState<"none" | "asc" | "desc">("none");
-    
+
     const [isLotModalOpen, setIsLotModalOpen] = useState(false);
     const [isViewLotsModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | number | null>(null);
     const navigate = useNavigate();
-    
+
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -73,7 +73,7 @@ const Index = () => {
     const handleLotSubmit = async (lotData: any) => {
         try {
             const formData = new FormData();
-            
+
             // Check if it's a single item or multiple items
             if (lotData.items) {
                 // Multiple items
@@ -225,118 +225,120 @@ const Index = () => {
 
                         {/* Table */}
                         {variations.length > 0 ? (
-                            <div className="overflow-x-auto rounded-lg border border-gray-200">
-                                <table className="w-full">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                S.N
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                <button
-                                                    onClick={toggleSort}
-                                                    className="flex items-center gap-2 hover:text-blue-600 transition-colors"
-                                                >
-                                                    Product Name
-                                                    {getSortIcon()}
-                                                </button>
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                SKU
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Price
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Sale Price
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Stock
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Stock Status
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {variations?.map((variation: ProductVariation, index) => (
-                                            <tr key={variation.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="py-4 px-4 text-sm text-gray-900">
-                                                    {(page - 1) * ITEMS_PER_PAGE + index + 1}
-                                                </td>
-                                                <td className="py-4 px-4 text-sm font-medium text-gray-900">
-                                                    {variation.product_name}
-                                                </td>
-                                                <td className="py-4 px-4 text-sm text-gray-600 font-mono">
-                                                    {variation.sku}
-                                                </td>
-                                                <td className="py-4 px-4 text-sm text-gray-900">
-                                                    Rs. {parseFloat(variation.price || "0").toFixed(2)}
-                                                </td>
-                                                <td className="py-4 px-4 text-sm font-medium text-green-600">
-                                                    Rs. {parseFloat(variation.sale_price || variation.price || "0").toFixed(2)}
-                                                </td>
-                                                <td className="py-4 px-4 text-sm">
-                                                    <span
-                                                        className={`font-medium ${variation.quantity <= variation.low_stock_threshold
-                                                            ? "text-red-600"
-                                                            : "text-gray-900"
-                                                            }`}
+                            <>
+                                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    S.N
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    <button
+                                                        onClick={toggleSort}
+                                                        className="flex items-center gap-2 hover:text-blue-600 transition-colors"
                                                     >
-                                                        {variation.quantity}
-                                                    </span>
-                                                </td>
-                                                <td className="py-4 px-4">
-                                                    <span
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${variation.stock_status === "in_stock"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : variation.stock_status === "low_stock"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-red-100 text-red-800"
-                                                            }`}
-                                                    >
-                                                        {variation?.stock_status?.replace("_", " ")?.charAt(0).toUpperCase() +
-                                                            variation?.stock_status?.replace("_", " ")?.slice(1)}
-                                                    </span>
-                                                </td>
-                                                <td className="py-4 px-4">
-                                                    <span
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${variation?.status === "active"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-red-100 text-red-800"
-                                                            }`}
-                                                    >
-                                                        {variation?.status?.charAt(0).toUpperCase() + variation.status?.slice(1)}
-                                                    </span>
-                                                </td>
-                                                <td className="py-4 px-4">
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={() => handleViewProduct(variation.id)}
-                                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                                            title="View Lots"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleAddToLot(variation.id)}
-                                                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                                                            title="Add to Lot"
-                                                        >
-                                                            <Plus className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                                        Product Name
+                                                        {getSortIcon()}
+                                                    </button>
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    SKU
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Price
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Sale Price
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Stock
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Stock Status
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {variations?.map((variation: ProductVariation, index) => (
+                                                <tr key={variation.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="py-4 px-4 text-sm text-gray-900">
+                                                        {(page - 1) * ITEMS_PER_PAGE + index + 1}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-sm font-medium text-gray-900">
+                                                        {variation.product_name}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-sm text-gray-600 font-mono">
+                                                        {variation.sku}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-sm text-gray-900">
+                                                        Rs. {parseFloat(variation.price || "0").toFixed(2)}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-sm font-medium text-green-600">
+                                                        Rs. {parseFloat(variation.sale_price || variation.price || "0").toFixed(2)}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-sm">
+                                                        <span
+                                                            className={`font-medium ${variation.quantity <= variation.low_stock_threshold
+                                                                ? "text-red-600"
+                                                                : "text-gray-900"
+                                                                }`}
+                                                        >
+                                                            {variation.quantity}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-4">
+                                                        <span
+                                                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${variation.stock_status === "in_stock"
+                                                                ? "bg-green-100 text-green-800"
+                                                                : variation.stock_status === "low_stock"
+                                                                    ? "bg-yellow-100 text-yellow-800"
+                                                                    : "bg-red-100 text-red-800"
+                                                                }`}
+                                                        >
+                                                            {variation?.stock_status?.replace("_", " ")?.charAt(0).toUpperCase() +
+                                                                variation?.stock_status?.replace("_", " ")?.slice(1)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-4">
+                                                        <span
+                                                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${variation?.status === "active"
+                                                                ? "bg-green-100 text-green-800"
+                                                                : "bg-red-100 text-red-800"
+                                                                }`}
+                                                        >
+                                                            {variation?.status?.charAt(0).toUpperCase() + variation.status?.slice(1)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-4">
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleViewProduct(variation.id)}
+                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                title="View Lots"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleAddToLot(variation.id)}
+                                                                className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                                                                title="Add to Lot"
+                                                            >
+                                                                <Plus className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
 
                                 {meta && (
                                     <Pagination
@@ -346,7 +348,8 @@ const Index = () => {
                                         itemLabel="variations"
                                     />
                                 )}
-                            </div>
+
+                            </>
                         ) : (
                             <div className="text-center py-16">
                                 <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />

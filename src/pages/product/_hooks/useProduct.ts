@@ -14,7 +14,7 @@ import {
   getProductByBranchId,
 } from "../../../api/product";
 
-import { PaginatedResponse } from "../../../types/pagination";
+import { PaginatedResponse, PaginationMeta } from "../../../types/pagination";
 import {
   ProductResponse,
   ProductFormData,
@@ -45,7 +45,7 @@ export const ProductQueryKeys = {
 
 interface UseProductReturn {
   products: ProductResponse[];
-  meta?: Omit<PaginatedResponse<ProductResponse>, "data">;
+  meta?: PaginationMeta;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -115,20 +115,30 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       branchId
         ? getProductByBranchId(branchId, queryParams)
         : getProduct(queryParams),
-    staleTime: 0, // 5 minutes
+    staleTime: 0, // Always fetch fresh data
     placeholderData: (previousData) => previousData,
-    refetchOnMount: "always",
   });
 
   const products = response?.data || [];
-  const meta = response ? (({ data, ...m }) => m)(response) : undefined;
+   const meta = response?.meta ? response.meta : undefined;
 
   /* ---------- Delete mutation ---------- */
   const { mutate: performDelete, isPending: isDeleting } = useMutation({
     mutationFn: (productId: string | number) => deleteProduct(productId),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({ title: "Product Deleted" });
-      queryClient.invalidateQueries({ queryKey: ProductQueryKeys.lists() });
+      
+      // Wait for all invalidations to complete
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ProductQueryKeys.lists(),
+          refetchType: 'active'
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ProductQueryKeys.byBranchId(),
+          refetchType: 'active'
+        })
+      ]);
     },
     onError: (err: unknown) => {
       const errorMessage =
@@ -145,22 +155,33 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
   /* ---------- Create mutation ---------- */
   const { mutateAsync: performAdd, isPending: isAdding } = useMutation({
     mutationFn: (data: ProductFormData | FormData) => createProduct(data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Product Added",
         description: `Product "${data.name}" has been created.`,
       });
-      queryClient.invalidateQueries({ queryKey: ProductQueryKeys.lists() });
+      
+      // Wait for all invalidations to complete
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ProductQueryKeys.lists(),
+          refetchType: 'active'
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ProductQueryKeys.byBranchId(),
+          refetchType: 'active'
+        })
+      ]);
     },
-   onError: (err: unknown) => {
-  if (err instanceof AxiosError && err.response?.status === 422) {
-    const errors = err.response?.data?.errors;
-    if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
-      displayValidationErrors(errors); // ✅ This is exported and ready to use
+    onError: (err: unknown) => {
+      if (err instanceof AxiosError && err.response?.status === 422) {
+        const errors = err.response?.data?.errors;
+        if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
+          displayValidationErrors(errors);
+        }
+      }
+      throw err;
     }
-  }
-  throw err;
-}
   });
 
   /* ---------- Update mutation ---------- */
@@ -172,15 +193,27 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
       id: string | number;
       data: ProductFormData | ProductFormDataWithId | FormData;
     }) => updateProduct(id, data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Product Updated",
         description: `Product "${data.name}" has been saved.`,
       });
-      queryClient.invalidateQueries({ queryKey: ProductQueryKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: ProductQueryKeys.detail(data.id),
-      });
+      
+      // Wait for all invalidations to complete before navigation
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ProductQueryKeys.lists(),
+          refetchType: 'active'
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ProductQueryKeys.detail(data.id),
+          refetchType: 'active'
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ProductQueryKeys.byBranchId(),
+          refetchType: 'active'
+        })
+      ]);
     },
     onError: (err: unknown) => {
       console.log('Update error:', err);
@@ -291,7 +324,7 @@ export const useProductDetail = (
   } = useQuery<ProductResponse, Error>({
     queryKey: ProductQueryKeys.detail(productId),
     queryFn: () => getProductById(productId),
-    staleTime:  0, // 5 minutes
+    staleTime: 0, // Always fetch fresh data
     enabled: !!productId,
   });
 

@@ -11,7 +11,7 @@ import {
   createAttributeValue,
   updateAttributeValue,
 } from "../../../api/attribute";
-import { PaginatedResponse } from "../../../types/pagination";
+import { PaginatedResponse, PaginationMeta } from "../../../types/pagination";
 import { AxiosError } from "axios";
 import {
   AttributePayload,
@@ -33,7 +33,7 @@ export const AttributeQueryKeys = {
 
 interface UseAttributeReturn {
   attributes: AttributeWithValues[];
-  meta?: Omit<PaginatedResponse<AttributeWithValues>, "data">;
+  meta?: PaginationMeta;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -97,7 +97,7 @@ export const useAttribute = (
   });
 
   const attributes: AttributeWithValues[] = response?.data || [];
-  const meta = response ? (({ data, ...m }) => m)(response) : undefined;
+ const meta = response?.meta ? response.meta : undefined;;
 
   // Delete attribute mutation
   const { mutate: performDeleteAttribute, isPending: isDeletingAttribute } =

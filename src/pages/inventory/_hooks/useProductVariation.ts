@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createLot, getProductVariation, getLot } from "../../../api/product-variation";
-import { PaginatedResponse } from "../../../types/pagination";
+import { PaginatedResponse, PaginationMeta } from "../../../types/pagination";
 import { Lot, ProductVariation } from "../../../types/product-variation";
 import { AxiosError } from "axios";
 import { toast } from "../../../components/ui/use-toast";
@@ -42,7 +42,7 @@ export const ProductVariationQueryKeys = {
 // Updated return type to include lot query and mutation
 interface UseProductVariationReturn {
   products: ProductVariation[];
-  meta?: Omit<PaginatedResponse<ProductVariation>, "data">;
+  meta?: PaginationMeta;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -107,7 +107,7 @@ export const useProductVariation = (
   });
 
   const products = response?.data || [];
-  const meta = response ? (({ data, ...m }) => m)(response) : undefined;
+  const meta = response?.meta ? response.meta : undefined;
 
   // Lot query params
   const lotQueryParams = {

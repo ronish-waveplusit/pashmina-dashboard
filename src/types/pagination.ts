@@ -1,11 +1,8 @@
-
-/**
- * Represents a single link object in the pagination links array.
- */
 export interface PaginationLink {
   url: string | null;
   label: string;
   active: boolean;
+  page: number | null;
 }
 
 /**
@@ -13,14 +10,24 @@ export interface PaginationLink {
  * This is generic and not tied to any specific data model.
  */
 export interface PaginationMeta {
-  paginate?: 1;
   current_page: number;
   last_page: number;
   from: number | null;
   to: number | null;
   total: number;
   per_page: number;
-  // links: PaginationLink[]; // You can include this if you use it in the Pagination component
+  path: string;
+  links: PaginationLink[];
+}
+
+/**
+ * Pagination links object (first, last, next, prev URLs)
+ */
+export interface PaginationLinks {
+  first: string;
+  last: string;
+  next: string | null;
+  prev: string | null;
 }
 
 /**
@@ -31,6 +38,8 @@ export interface PaginationMeta {
  * PaginatedResponse<CoursePayload>
  * PaginatedResponse<UserPayload>
  */
-export interface PaginatedResponse<T> extends PaginationMeta {
+export interface PaginatedResponse<T> {
   data: T[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
 }

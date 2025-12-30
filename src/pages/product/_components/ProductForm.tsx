@@ -33,16 +33,16 @@ const ProductForm = () => {
 
   const { actions, isAdding, isUpdating } = useProduct();
   const { product, isLoading: isLoadingProduct } = useProductDetail(id || "");
-  
+
   const [variationType, setVariationType] = useState<VariationType>("color");
   const [isInitialized, setIsInitialized] = useState(false);
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
-  
+
   // Track deletions
   const [deleteFeaturedImage, setDeleteFeaturedImage] = useState(false);
   const [deletedGalleryImageUuids, setDeletedGalleryImageUuids] = useState<string[]>([]);
   const [deletedVariationIds, setDeletedVariationIds] = useState<number[]>([]);
-  
+
   // Color product state
   const [colorFormData, setColorFormData] = useState<ColorProductFormData>({
     name: "",
@@ -87,7 +87,7 @@ const ProductForm = () => {
       // Extract category IDs
       const categoryIds = (() => {
         const categories = product.category || product.categories;
-        
+
         if (!categories) return [];
         if (typeof categories === 'string') return [];
         if (Array.isArray(categories)) {
@@ -101,7 +101,7 @@ const ProductForm = () => {
       if (product.featured_image) {
         setFeaturedImage(product.featured_image);
       }
-      
+
       // Parse gallery images with uuid and url
       if (product.gallery_images && Array.isArray(product.gallery_images)) {
         const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
@@ -117,7 +117,7 @@ const ProductForm = () => {
 
       if (varType === "color") {
         const variation = product.variations?.[0];
-        
+
         setColorFormData({
           name: product.name || "",
           code: product.code || "",
@@ -134,12 +134,12 @@ const ProductForm = () => {
         });
       } else {
         const usedAttributeValues = new Map<number, Set<number>>();
-        
+
         product.variations?.forEach((variation: any) => {
           variation.attributes?.forEach((attr: any) => {
             const attrId = attr.attribute.id;
             const valueId = attr.value.id;
-            
+
             if (!usedAttributeValues.has(attrId)) {
               usedAttributeValues.set(attrId, new Set());
             }
@@ -150,7 +150,7 @@ const ProductForm = () => {
         const productAttributes = product.attributes?.map((attr: any) => {
           const attributeObj = attr.attribute;
           const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
-          
+
           return {
             attribute_id: attributeObj.id,
             attribute_value_ids: usedValueIds,
@@ -160,7 +160,7 @@ const ProductForm = () => {
         const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
           const attributeObj = attr.attribute;
           const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
-          
+
           const usedValueNames = attributeObj.attribute_values
             ?.filter((v: any) => usedValueIds.includes(v.id))
             .map((v: any) => v.name)
@@ -222,9 +222,9 @@ const ProductForm = () => {
     try {
       setValidationErrors({});
       const formData = new FormData();
-      
+
       const currentData = variationType === "color" ? colorFormData : sizeColorFormData;
-      
+
       if (!currentData.name || !currentData.code) {
         toast.error("Please fill in required fields (Name and Code)");
         return;
@@ -297,7 +297,7 @@ const ProductForm = () => {
             if (variation.id) {
               formData.append(`variations[${varIdx}][id]`, variation.id.toString());
             }
-            
+
             formData.append(`variations[${varIdx}][sku]`, variation.sku);
             formData.append(`variations[${varIdx}][price]`, variation.price);
             formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);
@@ -334,18 +334,22 @@ const ProductForm = () => {
       }
 
       if (isEditMode && id) {
-        formData.append("_method", "PUT"); 
+        formData.append("_method", "PUT");
+       
         await actions.update(id, formData);
         toast.success("Product updated successfully!");
       } else {
+      
         await actions.add(formData);
         toast.success("Product created successfully!");
       }
-      
-      navigate("/products");
+
+     
+      window.location.href = "/#/products";
+
     } catch (error: unknown) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} product:`, error);
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as any;
         if (axiosError.response?.status === 422 && axiosError.response?.data?.errors) {
@@ -401,11 +405,11 @@ const ProductForm = () => {
               </div>
             </RadioGroup>
             <p className="text-sm text-muted-foreground mt-2">
-              {isEditMode 
+              {isEditMode
                 ? "Variation type cannot be changed when editing a product"
                 : variationType === "color"
-                ? "Use this for products with a single price and stock quantity"
-                : "Use this for products with multiple attributes like size, color, etc."}
+                  ? "Use this for products with a single price and stock quantity"
+                  : "Use this for products with multiple attributes like size, color, etc."}
             </p>
           </CardContent>
         </Card>
@@ -437,9 +441,9 @@ const ProductForm = () => {
                   <CardTitle>Pricing And Stock</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PricingStock 
-                    formData={colorFormData} 
-                    setFormData={setColorFormData} 
+                  <PricingStock
+                    formData={colorFormData}
+                    setFormData={setColorFormData}
                     errors={validationErrors}
                   />
                 </CardContent>
@@ -459,7 +463,7 @@ const ProductForm = () => {
                         setDeletedVariationIds(prev => [...prev, variationId]);
                       }
                     }}
-                    
+
                   />
                 </CardContent>
               </Card>
@@ -513,8 +517,8 @@ const ProductForm = () => {
             Cancel
           </Button>
           <Button onClick={handleSubmit} size="lg" disabled={isSubmitting}>
-            {isSubmitting 
-              ? (isEditMode ? "Updating..." : "Creating...") 
+            {isSubmitting
+              ? (isEditMode ? "Updating..." : "Creating...")
               : (isEditMode ? "Update Product" : "Create Product")}
           </Button>
         </div>

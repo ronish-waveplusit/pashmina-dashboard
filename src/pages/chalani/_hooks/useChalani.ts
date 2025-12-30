@@ -12,7 +12,7 @@ import {
   deleteChalani,
 } from "../../../api/chalani";
 
-import { PaginatedResponse } from "../../../types/pagination";
+import { PaginatedResponse, PaginationMeta } from "../../../types/pagination";
 import {
   ChalanListItem,
   ChalanDetail,
@@ -38,7 +38,7 @@ export const ChalaniQueryKeys = {
 
 interface UseChalaniReturn {
   chalaniList: ChalanListItem[];
-  meta?: Omit<PaginatedResponse<ChalanListItem>, "data">;
+  meta?: PaginationMeta;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -100,7 +100,7 @@ export const useChalani = (filters: ChalaniFilters = {}): UseChalaniReturn => {
   });
 
   const chalaniList = response?.data || [];
-  const meta = response ? (({ data, ...m }) => m)(response) : undefined;
+  const meta = response?.meta ? response.meta : undefined;
 
   /* ---------- Delete mutation ---------- */
   const { mutate: performDelete, isPending: isDeleting } = useMutation({
