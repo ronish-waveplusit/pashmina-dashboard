@@ -258,7 +258,7 @@ const ProductForm = () => {
       // Handle gallery images deletion
       if (deletedGalleryImageUuids.length > 0 && isEditMode) {
         deletedGalleryImageUuids.forEach(uuid => {
-          formData.append("delete_gallery_image[]", uuid);
+          formData.append("delete_media_uuids[]", uuid);
         });
       }
 

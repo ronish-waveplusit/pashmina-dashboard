@@ -382,9 +382,7 @@ const ChalaniForm = () => {
                                                                             >
                                                                                 <div className="flex flex-col">
                                                                                     <span>{product.product_name || "Unknown"}</span>
-                                                                                    <span className="text-xs text-gray-500">
-                                                                                        NPR {product.sale_price || product.price || "0"}
-                                                                                    </span>
+                                                                                   
                                                                                 </div>
                                                                             </SelectItem>
                                                                         ))
@@ -396,7 +394,7 @@ const ChalaniForm = () => {
                                                                 </div>
                                                             </SelectContent>
                                                         </Select>
-                                                        {item.product_name && (
+                                                        {/* {item.product_name && (
                                                             <div className="text-xs text-gray-500 mt-1">
                                                                 {item.product_name}
                                                             </div>
@@ -405,7 +403,7 @@ const ChalaniForm = () => {
                                                             <div className="text-xs text-gray-500 mt-1">
                                                                 Lot: {item.lot_number}
                                                             </div>
-                                                        )}
+                                                        )} */}
                                                     </td>
                                                     <td className="py-3 px-4">
                                                         <Input
