@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import AuthGuard from "./components/AuthGuard";
 
 import AppProvider from "./utils/provider/app-provider";
+const Index = lazy(() => import("./pages/Index"));
 const CategoryForm = lazy(() => import("./pages/category/Index"));
 const LoginPage = lazy(() => import("./pages/login/Page")); 
 const Attributes = lazy(() => import("./pages/attributes/Index")); 
@@ -28,6 +29,7 @@ const LoadingFallback = () => (
    <AppProvider>
    <Suspense fallback={<LoadingFallback />}>
       <Routes>
+         <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
          <Route
             path="/category"
