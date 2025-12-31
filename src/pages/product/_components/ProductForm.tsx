@@ -35,7 +35,7 @@ const ProductForm = () => {
   const { product, isLoading: isLoadingProduct } = useProductDetail(id || "");
 
   const [variationType, setVariationType] = useState<VariationType>("color");
-  const [isInitialized, setIsInitialized] = useState(false);
+
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
 
   // Track deletions
@@ -78,137 +78,152 @@ const ProductForm = () => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
-  // Populate form data when editing
-  useEffect(() => {
-    if (isEditMode && product && !isInitialized) {
-      const varType = product.variation_type as VariationType;
-      setVariationType(varType);
+ 
+ 
 
-      // Extract category IDs
-      const categoryIds = (() => {
-        const categories = product.category || product.categories;
+useEffect(() => {
+  if (isEditMode && product) {
+    const varType = product.variation_type as VariationType;
+    setVariationType(varType);
 
-        if (!categories) return [];
-        if (typeof categories === 'string') return [];
-        if (Array.isArray(categories)) {
-          return categories.map(cat => cat.id);
-        }
-        // Single category object
-        return [categories.id];
-      })();
+    // Extract category IDs
+    const categoryIds = (() => {
+      const categories = product.category || product.categories;
 
-      // Set images if available
-      if (product.featured_image) {
-        setFeaturedImage(product.featured_image);
+      if (!categories) return [];
+      if (typeof categories === 'string') return [];
+      if (Array.isArray(categories)) {
+        return categories.map(cat => cat.id);
       }
+      // Single category object
+      return [categories.id];
+    })();
 
-      // Parse gallery images with uuid and url
-      if (product.gallery_images && Array.isArray(product.gallery_images)) {
-        const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
-          if (typeof img === 'string') {
-            return { url: img };
-          } else if (img && typeof img === 'object' && img.url) {
-            return { url: img.url, uuid: img.uuid };
-          }
-          return { url: img };
-        });
-        setGalleryImages(parsedGalleryImages);
-      }
-
-      if (varType === "color") {
-        const variation = product.variations?.[0];
-
-        setColorFormData({
-          name: product.name || "",
-          code: product.code || "",
-          description: product.description || "",
-          composition: product.composition || "",
-          excerpt: product.excerpt || "",
-          price: variation?.price?.toString() || "",
-          sale_price: variation?.sale_price?.toString() || "",
-          quantity: variation?.quantity || 0,
-          status: product.status || "active",
-          variation_type: "color",
-          low_stock_threshold: variation?.low_stock_threshold || 5,
-          category_id: categoryIds,
-        });
-      } else {
-        const usedAttributeValues = new Map<number, Set<number>>();
-
-        product.variations?.forEach((variation: any) => {
-          variation.attributes?.forEach((attr: any) => {
-            const attrId = attr.attribute.id;
-            const valueId = attr.value.id;
-
-            if (!usedAttributeValues.has(attrId)) {
-              usedAttributeValues.set(attrId, new Set());
-            }
-            usedAttributeValues.get(attrId)?.add(valueId);
-          });
-        });
-
-        const productAttributes = product.attributes?.map((attr: any) => {
-          const attributeObj = attr.attribute;
-          const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
-
-          return {
-            attribute_id: attributeObj.id,
-            attribute_value_ids: usedValueIds,
-          };
-        }) || [];
-
-        const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
-          const attributeObj = attr.attribute;
-          const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
-
-          const usedValueNames = attributeObj.attribute_values
-            ?.filter((v: any) => usedValueIds.includes(v.id))
-            .map((v: any) => v.name)
-            .join(", ") || "";
-
-          return {
-            id: String(attributeObj.id),
-            name: attributeObj.name,
-            values: usedValueNames,
-            visibleOnProduct: true,
-            usedForVariations: true,
-            attribute_id: attributeObj.id,
-            attribute_value_ids: usedValueIds,
-          };
-        }) || [];
-
-        setLocalAttributes(localAttrs);
-
-        const mappedVariations = product.variations?.map((variation: any) => ({
-          sku: variation.sku || "",
-          price: variation.price?.toString() || "",
-          sale_price: variation.sale_price?.toString() || "",
-          quantity: variation.quantity || 0,
-          low_stock_threshold: variation.low_stock_threshold || 5,
-          status: variation.status || "active",
-          attributes: variation.attributes?.map((attr: any) => ({
-            attribute_id: attr.attribute.id,
-            attribute_value_id: attr.value.id,
-          })) || [],
-        })) || [];
-
-        setSizeColorFormData({
-          name: product.name || "",
-          code: product.code || "",
-          description: product.description || "",
-          composition: product.composition || "",
-          excerpt: product.excerpt || "",
-          status: product.status || "active",
-          variation_type: "size_color",
-          attributes: productAttributes,
-          variations: mappedVariations,
-          category_id: categoryIds,
-        });
-      }
-
-      setIsInitialized(true);
+    // Set images if available
+    if (product.featured_image) {
+      setFeaturedImage(product.featured_image);
+    } else {
+      setFeaturedImage(null);
     }
-  }, [product, isEditMode, isInitialized]);
+
+    // Parse gallery images with uuid and url
+    if (product.gallery_images && Array.isArray(product.gallery_images)) {
+      const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
+        if (typeof img === 'string') {
+          return { url: img };
+        } else if (img && typeof img === 'object' && img.url) {
+          return { url: img.url, uuid: img.uuid };
+        }
+        return { url: img };
+      });
+      setGalleryImages(parsedGalleryImages);
+    } else {
+      setGalleryImages([]);
+    }
+
+    // Reset deletion tracking when loading fresh product data
+    setDeleteFeaturedImage(false);
+    setDeletedGalleryImageUuids([]);
+    setDeletedVariationIds([]);
+
+    if (varType === "color") {
+      const variation = product.variations?.[0];
+
+      setColorFormData({
+        name: product.name || "",
+        code: product.code || "",
+        description: product.description || "",
+        composition: product.composition || "",
+        excerpt: product.excerpt || "",
+        price: variation?.price?.toString() || "",
+        sale_price: variation?.sale_price?.toString() || "",
+        quantity: variation?.quantity || 0,
+        status: product.status || "active",
+        variation_type: "color",
+        low_stock_threshold: variation?.low_stock_threshold || 5,
+        category_id: categoryIds,
+      });
+    } else {
+      const usedAttributeValues = new Map<number, Set<number>>();
+
+      product.variations?.forEach((variation: any) => {
+        variation.attributes?.forEach((attr: any) => {
+          const attrId = attr.attribute.id;
+          const valueId = attr.value.id;
+
+          if (!usedAttributeValues.has(attrId)) {
+            usedAttributeValues.set(attrId, new Set());
+          }
+          usedAttributeValues.get(attrId)?.add(valueId);
+        });
+      });
+
+      const productAttributes = product.attributes?.map((attr: any) => {
+        const attributeObj = attr.attribute;
+        const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
+
+        return {
+          attribute_id: attributeObj.id,
+          attribute_value_ids: usedValueIds,
+        };
+      }) || [];
+
+      const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
+        const attributeObj = attr.attribute;
+        const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
+
+        const usedValueNames = attributeObj.attribute_values
+          ?.filter((v: any) => usedValueIds.includes(v.id))
+          .map((v: any) => v.name)
+          .join(", ") || "";
+
+        return {
+          id: String(attributeObj.id),
+          name: attributeObj.name,
+          values: usedValueNames,
+          visibleOnProduct: true,
+          usedForVariations: true,
+          attribute_id: attributeObj.id,
+          attribute_value_ids: usedValueIds,
+        };
+      }) || [];
+
+      setLocalAttributes(localAttrs);
+
+      const mappedVariations = product.variations?.map((variation: any) => ({
+        id: variation.id, // Make sure to include the ID
+        sku: variation.sku || "",
+        price: variation.price?.toString() || "",
+        sale_price: variation.sale_price?.toString() || "",
+        quantity: variation.quantity || 0,
+        low_stock_threshold: variation.low_stock_threshold || 5,
+        status: variation.status || "active",
+        attributes: variation.attributes?.map((attr: any) => ({
+          attribute_id: attr.attribute.id,
+          attribute_value_id: attr.value.id,
+        })) || [],
+      })) || [];
+
+      setSizeColorFormData({
+        name: product.name || "",
+        code: product.code || "",
+        description: product.description || "",
+        composition: product.composition || "",
+        excerpt: product.excerpt || "",
+        status: product.status || "active",
+        variation_type: "size_color",
+        attributes: productAttributes,
+        variations: mappedVariations,
+        category_id: categoryIds,
+      });
+    }
+
+ 
+  }
+}, [product, isEditMode, id]); 
+
+
+
 
   const handleDeleteFeaturedImage = () => {
     setDeleteFeaturedImage(true);

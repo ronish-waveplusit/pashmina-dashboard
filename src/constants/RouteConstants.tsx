@@ -15,7 +15,7 @@ export const apiRoutes = {
  
 
   GET_CATEGORIES: "/inven/categories",
-
+GET_FAQS:"/v1/cms/faqs",
   //product
  
  

@@ -227,11 +227,11 @@ const ChalaniForm = () => {
                     <CardContent className="p-8">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <h1 className="text-2xl font-bold text-gray-900">MONALISA ENTERPRISE AND TRADERS</h1>
+                            <h1 className="text-2xl font-bold text-gray-900">NEW MONALISA PASHMINA</h1>
                             <p className="text-sm text-gray-600 mt-1">
-                                GPO BOX No.23484, Tewa Tower, 4th Floor, Teku Road, Kathmandu
+                                Amrit Marg, Kathmandu 44600, Nepal
                             </p>
-                            <p className="text-sm text-gray-600">Tel: 977-01-5354488</p>
+                            <p className="text-sm text-gray-600">Tel: 9849289801</p>
                         </div>
 
                         {/* Title Bar */}
@@ -381,8 +381,13 @@ const ChalaniForm = () => {
                                                                                 value={product.id.toString()}
                                                                             >
                                                                                 <div className="flex flex-col">
-                                                                                    <span>{product.product_name || "Unknown"}</span>
-                                                                                   
+                                                                                    <span>
+                                                                                        {product.product_name
+                                                                                            ? `${product.product_name}${product.sku ? ` - ${product.sku}` : ""}`
+                                                                                            : "Unknown"}
+                                                                                    </span>
+
+
                                                                                 </div>
                                                                             </SelectItem>
                                                                         ))

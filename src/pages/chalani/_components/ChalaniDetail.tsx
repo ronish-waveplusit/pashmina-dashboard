@@ -205,12 +205,12 @@ const ChalaniDetail = () => {
                         {/* Company Header */}
                         <div className="text-center mb-8">
                             <h1 className="text-3xl font-bold text-gray-900">
-                                MONALISA ENTERPRISES Pvt. Ltd.
+                               NEW MONALISA PASHMINA
                             </h1>
                             <p className="text-sm text-gray-600 mt-2">
-                                GPO BOX No.23484, Tewa Tower, 4th Floor, Teku Road, Kathmandu
+                               Amrit Marg, Kathmandu 44600, Nepal
                             </p>
-                            <p className="text-sm text-gray-600">Tel: 977-01-5354488</p>
+                            <p className="text-sm text-gray-600">Tel: 9849289801</p>
                         </div>
 
                         
@@ -240,12 +240,12 @@ const ChalaniDetail = () => {
                                         <span className="font-semibold">Name:</span> {chalani.name}
                                     </p>
                                 </div>
-                                <div className="text-right">
+                                {/* <div className="text-right">
                                     <p className="text-sm">
                                         <span className="font-semibold">Invoice No.</span>
                                         {chalani.chalan_no}
                                     </p>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 
@@ -326,7 +326,7 @@ const ChalaniDetail = () => {
                                     ................................................................
                                 </p>
                                 <p className="text-sm font-semibold mt-2">
-                                    For Monalisa Enterprises Pvt.Ltd.
+                                    New Monalisa Pashmina
                                 </p>
                             </div>
                         </div>
