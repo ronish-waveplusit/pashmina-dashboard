@@ -353,7 +353,9 @@ const ChalaniForm = () => {
                                                             <SelectContent>
                                                                 {/* Search Input */}
 
-                                                                <div className="flex items-center px-3 py-2 border-b sticky top-0 bg-white z-10">
+                                                                <div className="flex items-center px-3 py-2 border-b sticky top-0 bg-white z-10"
+                                                                style={{ borderColor: "hsl(25 10% 90%)" }}
+                                                                >
                                                                     <Search className="h-4 w-4 text-gray-400 mr-2" />
                                                                     <input
                                                                         type="text"

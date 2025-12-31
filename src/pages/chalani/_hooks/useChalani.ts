@@ -102,7 +102,7 @@ export const useChalani = (filters: ChalaniFilters = {}): UseChalaniReturn => {
   const chalaniList = response?.data || [];
   const meta = response?.meta ? response.meta : undefined;
 
-  /* ---------- Delete mutation ---------- */
+ 
   const { mutate: performDelete, isPending: isDeleting } = useMutation({
     mutationFn: (chalaniId: string | number) => deleteChalani(chalaniId),
     onSuccess: () => {
@@ -138,6 +138,16 @@ export const useChalani = (filters: ChalaniFilters = {}): UseChalaniReturn => {
           displayValidationErrors(errors);
         }
       }
+      else if (err instanceof AxiosError && err.response?.status === 400) {
+          const message = err.response?.data?.message;
+          if (message) {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: message,
+            });
+          }
+        }
       throw err;
     },
   });

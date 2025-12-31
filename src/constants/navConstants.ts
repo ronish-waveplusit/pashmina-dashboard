@@ -9,14 +9,12 @@ import {
   Award,
   Settings,
   HelpCircle,
-  BarChart2,
   PhoneIncoming,
   CirclePlusIcon,
   User,
   FileText,
   ClipboardList,
   Shield,
-  BarChart3,
   Package,
   SlidersHorizontal,
   Tags,
@@ -33,7 +31,7 @@ export const NAV_GROUPS = [
     title: "Product Management",
     items: [
       { name: "Products", path: "/products", icon: Package },
-       { name: "Inventory", path: "/inventory", icon: Warehouse },
+      { name: "Inventory", path: "/inventory", icon: Warehouse },
       { name: "Categories", path: "/category", icon: Tags },
       // { name: "Reminders", path: "/reminders", icon: Bell },
       {
@@ -65,16 +63,8 @@ export const NAV_GROUPS = [
     ],
   },
   {
-    title: "Administration",
-    items: [
-      // { name: "Products", path: "/products", icon: Package },
-      // { name: "Items", path: "/items", icon: Package },
- 
-      { name: "Chalani", path: "/chalani", icon: BriefcaseBusiness },
-      // { name: "Payroll", path: "/payroll", icon: Landmark },
-      { name: "Reports", path: "/reports", icon: BarChart2 },
-      { name: "Staff Report", path: "/staff-reports", icon: BarChart3 },
-    ],
+    title: "Orders & Finance",
+    items: [{ name: "Chalani", path: "/chalani", icon: BriefcaseBusiness }],
   },
   // {
   //   title: "Inventory Management",
