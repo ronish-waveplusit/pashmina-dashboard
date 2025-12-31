@@ -4,6 +4,8 @@ import { Routes, Route } from "react-router-dom";
 import AuthGuard from "./components/AuthGuard";
 
 import AppProvider from "./utils/provider/app-provider";
+import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 const Index = lazy(() => import("./pages/Index"));
 const CategoryForm = lazy(() => import("./pages/category/Index"));
 const LoginPage = lazy(() => import("./pages/login/Page")); 
@@ -31,6 +33,7 @@ const LoadingFallback = () => (
       <Routes>
          <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
+         <Route path="/unauthorized" element={<Unauthorized />} />
          <Route
             path="/category"
             element={
@@ -152,7 +155,7 @@ const LoadingFallback = () => (
               </AuthGuard>
             }
           />
-
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
    </AppProvider>
