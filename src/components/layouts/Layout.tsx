@@ -18,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     // Access themeData from Redux store
 
-    const themeName = "Pashmina";
+    const themeName = "New Monalisa Pashmina";
     const themeLogo = "/favicon.png";
 
     return (
@@ -60,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 <img
                                     src={themeLogo}
                                     alt={`${themeName} Logo`}
-                                    className="h-8 w-8 object-contain"
+                                    className="h-12 w-12 object-cover"
                                     onError={(e) => {
                                         // Fallback to Coffee icon if image fails to load
                                         e.currentTarget.style.display = "none";

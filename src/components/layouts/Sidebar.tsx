@@ -23,12 +23,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const { user, userRoles, userPermissions } = useSelector(
     (state: RootState) => state.auth
   );
- 
-  const themeName = "Pashmina";
-  const themeLogo =  "/favicon.png";
+
+  const themeName = "New Monalisa Pashmina";
+  const themeLogo = "/favicon.png";
   const { logout } = useAuth();
   const isMobile = useIsMobile();
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     }
   }, [sidebarOpen, restoreScrollPosition]);
 
- 
+
 
   const filteredNavGroups = NAV_GROUPS.map((group) => {
     // SuperAdmin sees all navigation items without permission filtering
@@ -101,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Dashboard: "dashboard:view",
         // Users: "user:view",
         Products: "user:view",
-        Inventory:"user:view",
+        Inventory: "user:view",
         Categories: "category:view",
         Attributes: "attribute:view",
         Contact: "lead:view",
@@ -113,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Attendance: "attendance:view",
         Referrers: "referer:view",
         POS: "pos:view",
-       Chalani:"user:view",
+        Chalani: "user:view",
         // Items: "item:view",
         // Vendors: "item:view",
         // Purchase: "item:view",
@@ -161,30 +161,25 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         "fixed top-0 left-0 h-screen z-40",
         isMobile && !sidebarOpen && "-translate-x-full"
       )}
-       style={{ borderColor: "hsl(25 10% 90%)" }}
+      style={{ borderColor: "hsl(25 10% 90%)" }}
     >
-      <div className="p-6 flex items-center justify-between border-b shrink-0"  style={{ borderColor: "hsl(25 10% 90%)" }}>
-        <div className="flex items-center space-x-2 ">
+      <div className="flex items-center justify-between border-b shrink-0" style={{ borderColor: "hsl(25 10% 90%)" }}>
+        <div className="flex flex-row items-center  w-full ">
           {themeLogo ? (
             <img
               src={themeLogo}
               alt={`${themeName} Logo`}
-              className="h-[2.5rem] w-[4rem] object-fit"
+              className="h-20 w-auto object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
-               
               }}
             />
-          ) : null}
-          <Coffee
-            className={cn("h-8 w-8 text-coffee", themeLogo && "hidden")}
-          />
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight leading-none text-coffee-dark">
-              {themeName}
-            </h1>
-          </div>
+          ) : (
+            <Coffee className="h-16 w-16 text-coffee" />
+          )}
+           <h1 className="text-base font-semibold tracking-tight text-coffee-dark">{themeName}</h1>
         </div>
+        
 
         {isMobile && (
           <button
@@ -237,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                     >
                       <item.icon className="mr-3 h-5 w-5" />
                       <span className="flex-1">{item.name}</span>
-                      
+
                     </Link>
                   </li>
                 );
@@ -247,7 +242,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         ))}
       </nav>
 
-      <div className="p-4 border-t shrink-0"  style={{ borderColor: "hsl(25 10% 90%)" }}>
+      <div className="p-4 border-t shrink-0" style={{ borderColor: "hsl(25 10% 90%)" }}>
         <div className="flex items-center space-x-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
