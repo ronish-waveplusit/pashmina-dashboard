@@ -329,9 +329,9 @@ const Index = () => {
                                             <div className="flex justify-between items-start gap-2">
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <Badge variant="outline" className="text-xs">
+                                                        <span className="text-xs text-gray-500 whitespace-nowrap">
                                                             #{(page - 1) * ITEMS_PER_PAGE + index + 1}
-                                                        </Badge>
+                                                        </span>
                                                         <span className="font-semibold text-sm text-gray-900 truncate">
                                                             {chalani.chalan_no}
                                                         </span>
