@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { X, Plus, Trash2, Package } from "lucide-react";
+import { X, Plus, Trash2, Package, Search, Loader2 } from "lucide-react";
+import { Select,SelectTrigger,SelectContent,SelectValue,SelectItem } from "../../../components/ui/select";
 
 interface AddLotModalProps {
   isOpen: boolean;
@@ -26,6 +27,28 @@ const AddLotModal = ({
     }
   ]);
   const [importedDate, setImportedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [openSelectId, setOpenSelectId] = useState<number | null>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter products based on debounced search
+  const filteredProducts = products?.filter(product => {
+    if (!debouncedSearch) return true;
+    const searchLower = debouncedSearch.toLowerCase();
+    return (
+      product.product_name?.toLowerCase().includes(searchLower) ||
+      product.sku?.toLowerCase().includes(searchLower)
+    );
+  }) || [];
 
   // Debug logging
   useEffect(() => {
@@ -57,8 +80,20 @@ const AddLotModal = ({
         ]);
       }
       setImportedDate(new Date().toISOString().split('T')[0]);
+      setSearchQuery("");
+      setDebouncedSearch("");
     }
   }, [isOpen, preSelectedProductId]);
+
+  const handleOpenChange = (open: boolean, itemId: number) => {
+    if (open) {
+      setOpenSelectId(itemId);
+      setSearchQuery("");
+    } else {
+      setOpenSelectId(null);
+      setSearchQuery("");
+    }
+  };
 
   const addLotItem = () => {
     setLotItems([
@@ -178,7 +213,6 @@ const AddLotModal = ({
               <div className="space-y-3">
                 {lotItems.map((item) => (
                   <div key={item.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-
                     <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-3 items-start">
                       {/* Product Selection */}
                       <div>
@@ -192,26 +226,65 @@ const AddLotModal = ({
                               : "Product not found"}
                           </div>
                         ) : (
-                          <select
-                            value={item.lotable_id}
-                            onChange={(e) => updateLotItem(item.id, 'lotable_id', e.target.value)}
-                            className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                            disabled={isLoading || !products || products.length === 0}
+                          <Select
+                            value={item.lotable_id || ""}
+                            onValueChange={(value: string) =>
+                              updateLotItem(item.id, "lotable_id", value)
+                            }
+                            onOpenChange={(open: boolean) => handleOpenChange(open, item.id)}
                           >
-                            <option value="">
-                              {isLoading 
-                                ? "Loading products..." 
-                                : !products || products.length === 0 
-                                  ? "No products available" 
-                                  : "Select Product"}
-                            </option>
-                            {products?.map((product) => (
-                              <option key={product.id} value={product.id}>
-                                {product.product_name} - {product.sku}
-                              </option>
-                            ))}
-                          </select>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select product..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* Search Input */}
+                              <div 
+                                className="flex items-center px-3 py-2 border-b sticky top-0 bg-white z-10"
+                                style={{ borderColor: "hsl(25 10% 90%)" }}
+                              >
+                                <Search className="h-4 w-4 text-gray-400 mr-2" />
+                                <input
+                                  type="text"
+                                  placeholder="Search products..."
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
+                                  className="flex-1 outline-none text-sm"
+                                  onClick={(e) => e.stopPropagation()}
+                                  onKeyDown={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                  autoFocus={openSelectId === item.id}
+                                />
+                                {isLoading && (
+                                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                )}
+                              </div>
+
+                              {/* Products List */}
+                              <div className="max-h-[200px] overflow-y-auto">
+                                {filteredProducts.length > 0 ? (
+                                  filteredProducts.map((product) => (
+                                    <SelectItem
+                                      key={product.id}
+                                      value={product.id.toString()}
+                                    >
+                                      <div className="flex flex-col">
+                                        <span>
+                                          {product.product_name
+                                            ? `${product.product_name}${product.sku ? ` - ${product.sku}` : ""}`
+                                            : "Unknown"}
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <div className="py-6 text-center text-sm text-gray-500">
+                                    {isLoading ? "Loading..." : searchQuery ? "No products found" : "Start typing to search"}
+                                  </div>
+                                )}
+                              </div>
+                            </SelectContent>
+                          </Select>
                         )}
                         {!isLoading && products && !isProductLocked && (
                           <p className="text-xs text-gray-500 mt-1">
@@ -259,17 +332,7 @@ const AddLotModal = ({
               </div>
             )}
 
-            {/* Add More Button - Only show if product is locked */}
-            {/* {!isLoading && isProductLocked && (
-              <button
-                type="button"
-                onClick={addLotItem}
-                className="mt-3 w-full py-2 px-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add More Quantity for {selectedProduct?.product_name}
-              </button>
-            )} */}
+            {/* Add More Button */}
             {!isLoading && !isProductLocked && (
               <button
                 type="button"

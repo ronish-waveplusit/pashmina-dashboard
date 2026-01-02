@@ -155,7 +155,7 @@ const Index = () => {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border mx-auto" ></div>
-            <p className="mt-4 text-muted-foreground">Loading attributes...</p>
+            <p className="mt-4 text-sm text-muted-foreground">Loading attributes...</p>
           </div>
         </div>
       </Layout>
@@ -166,7 +166,7 @@ const Index = () => {
     return (
       <Layout>
         <div className="text-center py-8">
-          <p className="text-red-500">Error loading attributes</p>
+          <p className="text-sm text-red-500">Error loading attributes</p>
         </div>
       </Layout>
     );
@@ -174,21 +174,22 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
         {/* Header */}
-        <div className="flex justify-between items-start sm:items-center sm:flex-row flex-col gap-4 mt-4">
+        <div className="flex justify-between items-start sm:items-center sm:flex-row flex-col gap-3 sm:gap-4 mt-3 sm:mt-4">
           <div>
-            <h1 className="text-xl font-semibold md:text-3xl">
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold">
               Product Attributes
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Manage product attributes and their values
             </p>
           </div>
           {canCreate && (
             <Button
               onClick={() => handleOpenModal("attribute")}
-              className="flex items-center"
+              className="flex items-center text-sm w-full sm:w-auto"
+              size="sm"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Attribute
@@ -198,9 +199,9 @@ const Index = () => {
 
         {/* Attribute Modal */}
         <Dialog open={modalMode === "attribute"} onOpenChange={handleCloseModal}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">
                 {editingAttribute ? "Edit Attribute" : "Add New Attribute"}
               </DialogTitle>
             </DialogHeader>
@@ -218,11 +219,10 @@ const Index = () => {
         </Dialog>
 
         {/* Attribute Value Modal */}
-        {/* Attribute Value Modal - around line 193 */}
         <Dialog open={modalMode === "attributeValue"} onOpenChange={handleCloseModal}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">
                 {editingAttributeValue
                   ? "Edit Attribute Value"
                   : `Add Value${selectedAttributeForValue ? ` for ${selectedAttributeForValue.name}` : ""}`}
@@ -245,21 +245,21 @@ const Index = () => {
 
         {/* Main Card */}
         <Card>
-          <CardHeader>
-            <CardTitle>Attributes List</CardTitle>
+          <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+            <CardTitle className="text-base sm:text-lg">Attributes List</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {/* Search */}
             <div className="relative flex-1 space-y-2 mb-4">
-              <Label htmlFor="search" className="text-sm sm:text-base">
+              <Label htmlFor="search" className="text-xs sm:text-sm">
                 Search Attributes
               </Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
                   id="search"
                   placeholder="Search attributes..."
-                  className="pl-9 text-sm sm:text-base"
+                  className="pl-8 sm:pl-9 text-xs sm:text-sm h-9 sm:h-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -268,16 +268,19 @@ const Index = () => {
                     onClick={clearSearch}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Table */}
+            {/* Table - Desktop View */}
             {attributes.length > 0 ? (
               <div className="space-y-4">
-                <div className="rounded-md ">
+                {/* Desktop Table */}
+                <div className="hidden md:block rounded-md border"
+                style={{ borderColor: "hsl(25 10% 90%)" }}
+                >
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -292,10 +295,10 @@ const Index = () => {
                       {attributes.map((attribute, index) => (
                         <>
                           <TableRow key={attribute.id}>
-                            <TableCell>
+                            <TableCell className="text-sm">
                               {(page - 1) * ITEMS_PER_PAGE + index + 1}
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-sm">
                               {attribute.name}
                             </TableCell>
                             <TableCell>
@@ -303,14 +306,13 @@ const Index = () => {
                                 {attribute.slug}
                               </code>
                             </TableCell>
-                            {/* In the TableCell for Values - around line 267 */}
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
                                 {attribute.attributeValues && attribute.attributeValues.length > 0 ? (
                                   <>
                                     {attribute.attributeValues.slice(0, 3).map((val) => (
                                       <div key={val.id} className="relative group">
-                                        <Badge variant="secondary" className="pr-6">
+                                        <Badge variant="secondary" className="pr-6 text-xs">
                                           {val.name}
                                         </Badge>
                                         {canDelete && (
@@ -326,7 +328,7 @@ const Index = () => {
                                     {attribute.attributeValues.length > 3 && (
                                       <Badge
                                         variant="outline"
-                                        className="cursor-pointer"
+                                        className="cursor-pointer text-xs"
                                         onClick={() => toggleExpandRow(attribute.id)}
                                       >
                                         +{attribute.attributeValues.length - 3} more
@@ -334,7 +336,7 @@ const Index = () => {
                                     )}
                                   </>
                                 ) : (
-                                  <Badge variant="outline">No values</Badge>
+                                  <Badge variant="outline" className="text-xs">No values</Badge>
                                 )}
                               </div>
                             </TableCell>
@@ -344,6 +346,7 @@ const Index = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleOpenModal("attributeValue", attribute)}
+                                  className="text-xs"
                                 >
                                   <Plus className="h-3 w-3 mr-1" />
                                   Add Value
@@ -374,7 +377,7 @@ const Index = () => {
                               <TableCell colSpan={5} className="bg-muted/50">
                                 <div className="p-4 space-y-2">
                                   <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-medium">All Values for {attribute.name}</h4>
+                                    <h4 className="font-medium text-sm">All Values for {attribute.name}</h4>
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -389,7 +392,7 @@ const Index = () => {
                                         key={val.id}
                                         className="flex items-center justify-between p-2 border rounded-md bg-background"
                                       >
-                                        <Badge variant="secondary">{val.name}</Badge>
+                                        <Badge variant="secondary" className="text-xs">{val.name}</Badge>
                                         <div className="flex gap-1">
                                           {canEdit && (
                                             <Button
@@ -430,6 +433,107 @@ const Index = () => {
                     </TableBody>
                   </Table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3">
+                  {attributes.map((attribute, index) => (
+                    <div key={attribute.id} className="border rounded-lg p-3 space-y-3 bg-card"
+                    style={{ borderColor: "hsl(25 10% 90%)" }}
+                    >
+                      {/* Header */}
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              #{(page - 1) * ITEMS_PER_PAGE + index + 1}
+                            </span>
+                            <h3 className="font-medium text-sm truncate">{attribute.name}</h3>
+                          </div>
+                          <code className="text-xs bg-muted px-2 py-0.5 rounded mt-1 inline-block">
+                            {attribute.slug}
+                          </code>
+                        </div>
+                      </div>
+
+                      {/* Values */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">Values:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {attribute.attributeValues && attribute.attributeValues.length > 0 ? (
+                            <>
+                              {(expandedRows.has(attribute.id) 
+                                ? attribute.attributeValues 
+                                : attribute.attributeValues.slice(0, 5)
+                              ).map((val) => (
+                                <div key={val.id} className="relative group">
+                                  <Badge variant="secondary" className="text-xs pr-6">
+                                    {val.name}
+                                  </Badge>
+                                  {canDelete && (
+                                    <button
+                                      onClick={() => actions.confirmDeleteValue(val)}
+                                      className="absolute right-1 top-1/2 -translate-y-1/2"
+                                    >
+                                      <X className="h-3 w-3 text-muted-foreground" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              {attribute.attributeValues.length > 5 && (
+                                <Badge
+                                  variant="outline"
+                                  className="cursor-pointer text-xs"
+                                  onClick={() => toggleExpandRow(attribute.id)}
+                                >
+                                  {expandedRows.has(attribute.id) 
+                                    ? "Show less" 
+                                    : `+${attribute.attributeValues.length - 5} more`}
+                                </Badge>
+                              )}
+                            </>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">No values</Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2 pt-2 border-t"
+                      style={{ borderColor: "hsl(25 10% 90%)" }}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenModal("attributeValue", attribute)}
+                          className="flex-1 text-xs h-8"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Value
+                        </Button>
+                        {canEdit && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenModal("attribute", attribute)}
+                            className="h-8"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => actions.confirmDeleteAttribute(attribute.id)}
+                            className="h-8"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {meta && (
                   <Pagination
                     meta={meta}
@@ -440,16 +544,17 @@ const Index = () => {
                 )}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <TagIcon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-medium">No attributes yet</h3>
-                <p className="text-muted-foreground mt-1">
+              <div className="text-center py-8 sm:py-12">
+                <TagIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/30 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium">No attributes yet</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Add your first attribute to get started
                 </p>
                 {canCreate && (
                   <Button
                     onClick={() => handleOpenModal("attribute")}
-                    className="mt-4"
+                    className="mt-3 sm:mt-4 text-sm"
+                    size="sm"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Attribute
@@ -465,27 +570,29 @@ const Index = () => {
           open={!!attributeToDelete}
           onOpenChange={actions.cancelDelete}
         >
-          <DialogContent>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">Confirm Delete</DialogTitle>
             </DialogHeader>
-            <div>
-              <p>
+            <div className="space-y-2">
+              <p className="text-sm">
                 Are you sure you want to delete the attribute "
                 {attributeToDelete?.name}"?
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 This will also delete all associated attribute values.
               </p>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={actions.cancelDelete}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={actions.cancelDelete} className="w-full sm:w-auto text-sm" size="sm">
                 Cancel
               </Button>
               <Button
                 variant="destructive"
                 onClick={actions.handleDeleteAttribute}
                 disabled={isDeleting}
+                className="w-full sm:w-auto text-sm"
+                size="sm"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
@@ -495,24 +602,25 @@ const Index = () => {
 
         {/* Delete Attribute Value Confirmation Dialog */}
         <Dialog open={!!valueToDelete} onOpenChange={actions.cancelDelete}>
-          <DialogContent>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Confirm Delete</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">Confirm Delete</DialogTitle>
             </DialogHeader>
             <div>
-              <p>
-                Are you sure you want to delete the value "{valueToDelete?.name}
-                "?
+              <p className="text-sm">
+                Are you sure you want to delete the value "{valueToDelete?.name}"?
               </p>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={actions.cancelDelete}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={actions.cancelDelete} className="w-full sm:w-auto text-sm" size="sm">
                 Cancel
               </Button>
               <Button
                 variant="destructive"
                 onClick={actions.handleDeleteValue}
                 disabled={isDeleting}
+                className="w-full sm:w-auto text-sm"
+                size="sm"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
