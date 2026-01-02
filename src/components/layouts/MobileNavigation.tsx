@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  Home,
-  Users,
-  Calendar,
   ChartArea,
   FileText,
   ClipboardList,
+
+  Package,
+  Warehouse,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -19,14 +20,14 @@ const MobileNavigation = () => {
   const { user, userRoles, userPermissions } = useSelector(
     (state: RootState) => state.auth
   );
-  
+
   const isMobile = useIsMobile();
 
   // ✅ Add badge property to each nav item (or remove badge logic below)
   const navItems = [
-    { name: "Dashboard", path: "/dashboard", icon: Home, badge: 0 },
-    { name: "Enquiries", path: "/enquiries", icon: Calendar, badge: 0 },
-    { name: "Students", path: "/students", icon: Users, badge: 0 },
+    { name: "Products", path: "/products", icon: Package, badge: 0 },
+    { name: "Inventory", path: "/inventory", icon: Warehouse, badge: 0 },
+    { name: "Chalani", path: "/chalani", icon: BriefcaseBusiness, badge: 0 },
     { name: "Reports", path: "/reports", icon: ChartArea, badge: 0 },
     { name: "Study Materials", path: "/materials", icon: FileText, badge: 0 },
     { name: "Assignments", path: "/assignments", icon: ClipboardList, badge: 0 },
@@ -38,7 +39,7 @@ const MobileNavigation = () => {
     // If the user is a Student, only show Dashboard, Study Materials, and Assignments
     if (userRoles.includes(UserRole.Student)) {
       return [
-        "Dashboard",
+        "Products",
         "Study Materials",
         "Assignments",
       ].includes(item.name);
@@ -51,13 +52,10 @@ const MobileNavigation = () => {
 
     // Map navigation item names to permission names
     const permissionMap: { [key: string]: string } = {
-      Dashboard: "dashboard:view",
-      Reminders: "notifications:view",
-      Enquiries: "enquiry:view",
-      Students: "student:view",
-      Reports: "user:view",
-      "Study Materials": "materials:view",
-      Assignments: "assignments:view",
+      Products: "dashboard:view",
+      Inventory: "dashboard:view",
+
+      Chalani: "dashboard:view",
     };
 
     const permissionName =
