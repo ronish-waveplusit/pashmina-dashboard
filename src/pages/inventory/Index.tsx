@@ -203,7 +203,7 @@ const Index = () => {
                                 )}
                             </div>
 
-                            <div className="w-full sm:w-48">
+                            {/* <div className="w-full sm:w-48">
                                 <select
                                     value={selectedStatus}
                                     onChange={(e) => {
@@ -216,7 +216,7 @@ const Index = () => {
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                 </select>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Table - Desktop */}

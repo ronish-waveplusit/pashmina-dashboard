@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import Layout from "../../../components/layouts/Layout";
 import { ColorProductFormData, SizeColorProductFormData } from "../../../types/product";
 import { useProduct, useProductDetail } from "../_hooks/useProduct";
-
+import { validateProductForm } from "../_hooks/productSchema";
 type VariationType = "color" | "size_color";
 
 interface LocalAttribute {
@@ -78,149 +78,149 @@ const ProductForm = () => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
- 
- 
 
-useEffect(() => {
-  if (isEditMode && product) {
-    const varType = product.variation_type as VariationType;
-    setVariationType(varType);
 
-    // Extract category IDs
-    const categoryIds = (() => {
-      const categories = product.category || product.categories;
 
-      if (!categories) return [];
-      if (typeof categories === 'string') return [];
-      if (Array.isArray(categories)) {
-        return categories.map(cat => cat.id);
-      }
-      // Single category object
-      return [categories.id];
-    })();
+  useEffect(() => {
+    if (isEditMode && product) {
+      const varType = product.variation_type as VariationType;
+      setVariationType(varType);
 
-    // Set images if available
-    if (product.featured_image) {
-      setFeaturedImage(product.featured_image);
-    } else {
-      setFeaturedImage(null);
-    }
+      // Extract category IDs
+      const categoryIds = (() => {
+        const categories = product.category || product.categories;
 
-    // Parse gallery images with uuid and url
-    if (product.gallery_images && Array.isArray(product.gallery_images)) {
-      const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
-        if (typeof img === 'string') {
-          return { url: img };
-        } else if (img && typeof img === 'object' && img.url) {
-          return { url: img.url, uuid: img.uuid };
+        if (!categories) return [];
+        if (typeof categories === 'string') return [];
+        if (Array.isArray(categories)) {
+          return categories.map(cat => cat.id);
         }
-        return { url: img };
-      });
-      setGalleryImages(parsedGalleryImages);
-    } else {
-      setGalleryImages([]);
-    }
+        // Single category object
+        return [categories.id];
+      })();
 
-    // Reset deletion tracking when loading fresh product data
-    setDeleteFeaturedImage(false);
-    setDeletedGalleryImageUuids([]);
-    setDeletedVariationIds([]);
+      // Set images if available
+      if (product.featured_image) {
+        setFeaturedImage(product.featured_image);
+      } else {
+        setFeaturedImage(null);
+      }
 
-    if (varType === "color") {
-      const variation = product.variations?.[0];
-
-      setColorFormData({
-        name: product.name || "",
-        code: product.code || "",
-        description: product.description || "",
-        composition: product.composition || "",
-        excerpt: product.excerpt || "",
-        price: variation?.price?.toString() || "",
-        sale_price: variation?.sale_price?.toString() || "",
-        quantity: variation?.quantity || 0,
-        status: product.status || "active",
-        variation_type: "color",
-        low_stock_threshold: variation?.low_stock_threshold || 5,
-        category_id: categoryIds,
-      });
-    } else {
-      const usedAttributeValues = new Map<number, Set<number>>();
-
-      product.variations?.forEach((variation: any) => {
-        variation.attributes?.forEach((attr: any) => {
-          const attrId = attr.attribute.id;
-          const valueId = attr.value.id;
-
-          if (!usedAttributeValues.has(attrId)) {
-            usedAttributeValues.set(attrId, new Set());
+      // Parse gallery images with uuid and url
+      if (product.gallery_images && Array.isArray(product.gallery_images)) {
+        const parsedGalleryImages: GalleryImage[] = product.gallery_images.map((img: any) => {
+          if (typeof img === 'string') {
+            return { url: img };
+          } else if (img && typeof img === 'object' && img.url) {
+            return { url: img.url, uuid: img.uuid };
           }
-          usedAttributeValues.get(attrId)?.add(valueId);
+          return { url: img };
         });
-      });
+        setGalleryImages(parsedGalleryImages);
+      } else {
+        setGalleryImages([]);
+      }
 
-      const productAttributes = product.attributes?.map((attr: any) => {
-        const attributeObj = attr.attribute;
-        const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
+      // Reset deletion tracking when loading fresh product data
+      setDeleteFeaturedImage(false);
+      setDeletedGalleryImageUuids([]);
+      setDeletedVariationIds([]);
 
-        return {
-          attribute_id: attributeObj.id,
-          attribute_value_ids: usedValueIds,
-        };
-      }) || [];
+      if (varType === "color") {
+        const variation = product.variations?.[0];
 
-      const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
-        const attributeObj = attr.attribute;
-        const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
+        setColorFormData({
+          name: product.name || "",
+          code: product.code || "",
+          description: product.description || "",
+          composition: product.composition || "",
+          excerpt: product.excerpt || "",
+          price: variation?.price?.toString() || "",
+          sale_price: variation?.sale_price?.toString() || "",
+          quantity: variation?.quantity || 0,
+          status: product.status || "active",
+          variation_type: "color",
+          low_stock_threshold: variation?.low_stock_threshold || 5,
+          category_id: categoryIds,
+        });
+      } else {
+        const usedAttributeValues = new Map<number, Set<number>>();
 
-        const usedValueNames = attributeObj.attribute_values
-          ?.filter((v: any) => usedValueIds.includes(v.id))
-          .map((v: any) => v.name)
-          .join(", ") || "";
+        product.variations?.forEach((variation: any) => {
+          variation.attributes?.forEach((attr: any) => {
+            const attrId = attr.attribute.id;
+            const valueId = attr.value.id;
 
-        return {
-          id: String(attributeObj.id),
-          name: attributeObj.name,
-          values: usedValueNames,
-          visibleOnProduct: true,
-          usedForVariations: true,
-          attribute_id: attributeObj.id,
-          attribute_value_ids: usedValueIds,
-        };
-      }) || [];
+            if (!usedAttributeValues.has(attrId)) {
+              usedAttributeValues.set(attrId, new Set());
+            }
+            usedAttributeValues.get(attrId)?.add(valueId);
+          });
+        });
 
-      setLocalAttributes(localAttrs);
+        const productAttributes = product.attributes?.map((attr: any) => {
+          const attributeObj = attr.attribute;
+          const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
 
-      const mappedVariations = product.variations?.map((variation: any) => ({
-        id: variation.id, // Make sure to include the ID
-        sku: variation.sku || "",
-        price: variation.price?.toString() || "",
-        sale_price: variation.sale_price?.toString() || "",
-        quantity: variation.quantity || 0,
-        low_stock_threshold: variation.low_stock_threshold || 5,
-        status: variation.status || "active",
-        attributes: variation.attributes?.map((attr: any) => ({
-          attribute_id: attr.attribute.id,
-          attribute_value_id: attr.value.id,
-        })) || [],
-      })) || [];
+          return {
+            attribute_id: attributeObj.id,
+            attribute_value_ids: usedValueIds,
+          };
+        }) || [];
 
-      setSizeColorFormData({
-        name: product.name || "",
-        code: product.code || "",
-        description: product.description || "",
-        composition: product.composition || "",
-        excerpt: product.excerpt || "",
-        status: product.status || "active",
-        variation_type: "size_color",
-        attributes: productAttributes,
-        variations: mappedVariations,
-        category_id: categoryIds,
-      });
+        const localAttrs: LocalAttribute[] = product.attributes?.map((attr: any) => {
+          const attributeObj = attr.attribute;
+          const usedValueIds = Array.from(usedAttributeValues.get(attributeObj.id) || []);
+
+          const usedValueNames = attributeObj.attribute_values
+            ?.filter((v: any) => usedValueIds.includes(v.id))
+            .map((v: any) => v.name)
+            .join(", ") || "";
+
+          return {
+            id: String(attributeObj.id),
+            name: attributeObj.name,
+            values: usedValueNames,
+            visibleOnProduct: true,
+            usedForVariations: true,
+            attribute_id: attributeObj.id,
+            attribute_value_ids: usedValueIds,
+          };
+        }) || [];
+
+        setLocalAttributes(localAttrs);
+
+        const mappedVariations = product.variations?.map((variation: any) => ({
+          id: variation.id, // Make sure to include the ID
+          sku: variation.sku || "",
+          price: variation.price?.toString() || "",
+          sale_price: variation.sale_price?.toString() || "",
+          quantity: variation.quantity || 0,
+          low_stock_threshold: variation.low_stock_threshold || 5,
+          status: variation.status || "active",
+          attributes: variation.attributes?.map((attr: any) => ({
+            attribute_id: attr.attribute.id,
+            attribute_value_id: attr.value.id,
+          })) || [],
+        })) || [];
+
+        setSizeColorFormData({
+          name: product.name || "",
+          code: product.code || "",
+          description: product.description || "",
+          composition: product.composition || "",
+          excerpt: product.excerpt || "",
+          status: product.status || "active",
+          variation_type: "size_color",
+          attributes: productAttributes,
+          variations: mappedVariations,
+          category_id: categoryIds,
+        });
+      }
+
+
     }
-
- 
-  }
-}, [product, isEditMode, id]); 
+  }, [product, isEditMode, id]);
 
 
 
@@ -235,15 +235,33 @@ useEffect(() => {
 
   const handleSubmit = async () => {
     try {
+      // Clear previous validation errors
       setValidationErrors({});
-      const formData = new FormData();
 
       const currentData = variationType === "color" ? colorFormData : sizeColorFormData;
 
-      if (!currentData.name || !currentData.code) {
-        toast.error("Please fill in required fields (Name and Code)");
+      // Validate form data using Yup schema
+      const { isValid, errors } = await validateProductForm(currentData);
+
+      if (!isValid) {
+        setValidationErrors(errors);
+
+        // Find the first error and scroll to it
+        const firstErrorKey = Object.keys(errors)[0];
+        toast.error(`Validation failed: ${errors[firstErrorKey]?.[0] || 'Please check the form'}`);
+
+        // Optionally scroll to the first error
+        setTimeout(() => {
+          const errorElement = document.querySelector(`[data-error="${firstErrorKey}"]`);
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+
         return;
       }
+
+      const formData = new FormData();
 
       formData.append("name", currentData.name);
       formData.append("code", currentData.code);
@@ -260,12 +278,11 @@ useEffect(() => {
         });
       }
 
-      // Handle featured image deletion
-      if (deleteFeaturedImage && isEditMode) {
+
+      if (deleteFeaturedImage && isEditMode && !(featuredImage instanceof File)) {
         formData.append("delete_featured_image", "1");
       }
 
-      // Add new featured image if it's a File
       if (featuredImage && featuredImage instanceof File) {
         formData.append("featured_image", featuredImage);
       }
@@ -299,11 +316,6 @@ useEffect(() => {
             );
           });
         });
-
-        if (sizeColorFormData.variations.length === 0) {
-          toast.error("Please generate or add at least one variation");
-          return;
-        }
 
         sizeColorFormData.variations.forEach((variation, varIdx) => {
           // Only send variations that don't have an ID (new) or have an ID but weren't deleted
@@ -350,26 +362,29 @@ useEffect(() => {
 
       if (isEditMode && id) {
         formData.append("_method", "PUT");
-       
         await actions.update(id, formData);
         toast.success("Product updated successfully!");
       } else {
-      
         await actions.add(formData);
         toast.success("Product created successfully!");
       }
 
-     
       window.location.href = "/#/products";
 
     } catch (error: unknown) {
       console.error(`Failed to ${isEditMode ? 'update' : 'create'} product:`, error);
 
+      // Handle backend validation errors
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as any;
         if (axiosError.response?.status === 422 && axiosError.response?.data?.errors) {
           setValidationErrors(axiosError.response.data.errors);
+          toast.error("Please fix the validation errors");
+        } else {
+          toast.error(`Failed to ${isEditMode ? 'update' : 'create'} product`);
         }
+      } else {
+        toast.error("An unexpected error occurred");
       }
     }
   };

@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       if (!user || !userPermissions) return false;
 
       const permissionMap: { [key: string]: string } = {
-        Dashboard: "dashboard:view",
+        Dashboard: "user:view",
         // Users: "user:view",
         Products: "user:view",
         Inventory: "user:view",
