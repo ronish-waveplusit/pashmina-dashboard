@@ -26,7 +26,7 @@ const DesktopLogin: React.FC = () => {
         <div className="p-8">
           <div className="flex justify-center  h-[150px]">
             <img
-              src="/favicon.png"
+              src="/newmonalisa.png"
               alt="Pashmina"
               className="w-full h-full object-contain"
             />

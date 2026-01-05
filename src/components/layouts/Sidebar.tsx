@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   );
 
   const themeName = "New Monalisa Pashmina";
-  const themeLogo = "/favicon.png";
+  const themeLogo = "/newmonalisa.png";
   const { logout } = useAuth();
   const isMobile = useIsMobile();
 
@@ -177,9 +177,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           ) : (
             <Coffee className="h-16 w-16 text-coffee" />
           )}
-           <h1 className="text-base font-semibold tracking-tight text-coffee-dark">{themeName}</h1>
+          <h1 className="text-base font-semibold tracking-tight text-coffee-dark">{themeName}</h1>
         </div>
-        
+
 
         {isMobile && (
           <button

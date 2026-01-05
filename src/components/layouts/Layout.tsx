@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Access themeData from Redux store
 
     const themeName = "New Monalisa Pashmina";
-    const themeLogo = "/favicon.png";
+    const themeLogo = "/newmonalisa.png";
 
     return (
         <div className="flex min-h-screen bg-background w-full">
@@ -95,7 +95,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {children}
                 </main>
 
-                
+
 
                 {isMobile && <MobileNavigation />}
             </div>

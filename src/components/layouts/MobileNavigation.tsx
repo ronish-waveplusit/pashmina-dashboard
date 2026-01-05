@@ -23,7 +23,6 @@ const MobileNavigation = () => {
 
   const isMobile = useIsMobile();
 
-  // ✅ Add badge property to each nav item (or remove badge logic below)
   const navItems = [
     { name: "Products", path: "/products", icon: Package, badge: 0 },
     { name: "Inventory", path: "/inventory", icon: Warehouse, badge: 0 },
@@ -36,7 +35,6 @@ const MobileNavigation = () => {
   const filteredNavItems = navItems.filter((item) => {
     if (!user || !userRoles || !userPermissions) return false;
 
-    // If the user is a Student, only show Dashboard, Study Materials, and Assignments
     if (userRoles.includes(UserRole.Student)) {
       return [
         "Products",
