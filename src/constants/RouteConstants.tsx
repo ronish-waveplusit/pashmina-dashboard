@@ -1,16 +1,17 @@
 export const apiRoutes = {
-  GET_TOKEN_BY_PASSOWORD: "/login",
+  GET_TOKEN_BY_PASSOWORD: "/v1/login",
   //forget password
   GET_FORGET_PASSWORD: "/forget-password",
  GET_LOT:"/v1/lot",
  GET_CHALANI:"/v1/chalani",
+ GET_ENQUIRY:"/v1/enquiries",
   GET_RESET_PASSWORD: "/reset-password",
   GET_PRODUCT_CATEGORIES: "/v1/st/categories",
     GET_PRODUCT: "/v1/products",
   //logout
   AUTH_LOGOUT: "/v1/logout",
   //refresh
-  REFRESH_TOKEN: "/refresh",
+  REFRESH_TOKEN: "/v1/refresh",
   //instructors
  
 

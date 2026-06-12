@@ -20,6 +20,7 @@ import {
   Tags,
   Warehouse,
   BriefcaseBusiness,
+  Inbox,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -64,7 +65,10 @@ export const NAV_GROUPS = [
   },
   {
     title: "Orders & Finance",
-    items: [{ name: "Chalani", path: "/chalani", icon: BriefcaseBusiness }],
+    items: [
+      { name: "Chalani", path: "/chalani", icon: BriefcaseBusiness },
+      { name: "Enquiries", path: "/enquiries", icon: Inbox },
+    ],
   },
   // {
   //   title: "Inventory Management",

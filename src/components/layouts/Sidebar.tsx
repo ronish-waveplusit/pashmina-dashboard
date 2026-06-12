@@ -114,6 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         Referrers: "referer:view",
         POS: "pos:view",
         Chalani: "user:view",
+        Enquiries: "user:view",
         // Items: "item:view",
         // Vendors: "item:view",
         // Purchase: "item:view",

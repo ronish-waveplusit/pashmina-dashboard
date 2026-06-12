@@ -20,6 +20,7 @@ const ChalaniForm=lazy(()=>import("./pages/chalani/_components/ChalaniForm"))
 const ChalaniDetail=lazy(()=>import("./pages/chalani/_components/ChalaniDetail"))
 const FAQIndex=lazy(()=>import("./pages/faq/Index"))
 const Dashboard=lazy(()=>import("./pages/dashboard/Dashboard"))
+const EnquiryIndex=lazy(()=>import("./pages/enquiry/Index"))
 function App() {
 
 const LoadingFallback = () => (
@@ -163,6 +164,16 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <FAQIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/enquiries"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <EnquiryIndex />
               </AuthGuard>
             }
           />
