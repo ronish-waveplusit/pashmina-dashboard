@@ -1,5 +1,5 @@
 export const apiRoutes = {
-  GET_TOKEN_BY_PASSOWORD: "/v1/login",
+  GET_TOKEN_BY_PASSOWORD: "/login",
   //forget password
   GET_FORGET_PASSWORD: "/forget-password",
  GET_LOT:"/v1/lot",
