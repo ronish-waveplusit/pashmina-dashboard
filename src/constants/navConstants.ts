@@ -20,6 +20,9 @@ import {
   Tags,
   Warehouse,
   BriefcaseBusiness,
+  Inbox,
+  Image,
+  Mail,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -64,7 +67,10 @@ export const NAV_GROUPS = [
   },
   {
     title: "Orders & Finance",
-    items: [{ name: "Chalani", path: "/chalani", icon: BriefcaseBusiness }],
+    items: [
+      { name: "Chalani", path: "/chalani", icon: BriefcaseBusiness },
+      { name: "Enquiries", path: "/enquiries", icon: Inbox },
+    ],
   },
   // {
   //   title: "Inventory Management",
@@ -85,9 +91,16 @@ export const NAV_GROUPS = [
   //   ],
   // },
   {
+    title: "Website",
+    items: [
+      { name: "Site Settings", path: "/settings", icon: Settings },
+      { name: "Banners", path: "/banners", icon: Image },
+      { name: "Contact Messages", path: "/contact-messages", icon: Mail },
+    ],
+  },
+  {
     title: "System",
     items: [
-      { name: "Settings", path: "/settings", icon: Settings },
       { name: "Referrers", path: "/referrals", icon: Award },
       { name: "CourseCategory", path: "/course-categories", icon: HelpCircle },
       { name: "Sources", path: "/sources", icon: PhoneIncoming },

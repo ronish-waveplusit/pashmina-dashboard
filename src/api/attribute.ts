@@ -10,7 +10,9 @@ export async function getAttributes(
   const response = await http({
     url: "/v1/attributes",
     method: "get",
-    params,
+    // Eager-load each attribute's values so the product variant UI can offer
+    // them for selection; the API omits `attribute_values` otherwise.
+    params: { with: "values", ...params },
   });
   return response.data.data;
 }

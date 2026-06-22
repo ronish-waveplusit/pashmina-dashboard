@@ -11,11 +11,12 @@ export async function userLogin(data: loginDataType) {
     const response = await http.post(apiRoutes.GET_TOKEN_BY_PASSOWORD, data);
     const result = response.data;
 
-    if (result.message !== "SUCCESS") {
-      throw new Error(result.errors || result.message || "Login failed");
+    // Backend returns { user, groups, permissions, token } on success.
+    if (!result.token) {
+      throw new Error(result.error || result.errors || result.message || "Login failed");
     }
 
-    return result;
+    return { ...result, message: "SUCCESS" };
   } catch (error: any) {
     // Re-throw with clean message for UI
     throw new Error(

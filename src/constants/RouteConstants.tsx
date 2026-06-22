@@ -4,18 +4,23 @@ export const apiRoutes = {
   GET_FORGET_PASSWORD: "/forget-password",
  GET_LOT:"/v1/lot",
  GET_CHALANI:"/v1/chalani",
+ GET_ENQUIRY:"/v1/enquiries",
   GET_RESET_PASSWORD: "/reset-password",
   GET_PRODUCT_CATEGORIES: "/v1/st/categories",
     GET_PRODUCT: "/v1/products",
   //logout
   AUTH_LOGOUT: "/v1/logout",
   //refresh
-  REFRESH_TOKEN: "/refresh",
+  REFRESH_TOKEN: "/v1/refresh",
   //instructors
  
 
   GET_CATEGORIES: "/inven/categories",
 GET_FAQS:"/v1/cms/faqs",
+  GET_SETTINGS:"/v1/cms/settings",
+  GET_BANNERS:"/v1/cms/banners",
+  GET_PAGES:"/v1/cms/pages",
+  GET_CONTACT_SUBMISSIONS:"/v1/cms/contact-submissions",
   //product
  
  
