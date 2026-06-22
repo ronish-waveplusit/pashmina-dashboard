@@ -21,6 +21,9 @@ const ChalaniDetail=lazy(()=>import("./pages/chalani/_components/ChalaniDetail")
 const FAQIndex=lazy(()=>import("./pages/faq/Index"))
 const Dashboard=lazy(()=>import("./pages/dashboard/Dashboard"))
 const EnquiryIndex=lazy(()=>import("./pages/enquiry/Index"))
+const SettingsIndex=lazy(()=>import("./pages/settings/Index"))
+const BannersIndex=lazy(()=>import("./pages/banners/Index"))
+const ContactMessagesIndex=lazy(()=>import("./pages/contact-messages/Index"))
 function App() {
 
 const LoadingFallback = () => (
@@ -174,6 +177,36 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <EnquiryIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/settings"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <SettingsIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/banners"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <BannersIndex />
+              </AuthGuard>
+            }
+          />
+            <Route
+            path="/contact-messages"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <ContactMessagesIndex />
               </AuthGuard>
             }
           />

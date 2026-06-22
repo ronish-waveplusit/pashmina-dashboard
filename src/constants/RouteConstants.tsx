@@ -17,6 +17,10 @@ export const apiRoutes = {
 
   GET_CATEGORIES: "/inven/categories",
 GET_FAQS:"/v1/cms/faqs",
+  GET_SETTINGS:"/v1/cms/settings",
+  GET_BANNERS:"/v1/cms/banners",
+  GET_PAGES:"/v1/cms/pages",
+  GET_CONTACT_SUBMISSIONS:"/v1/cms/contact-submissions",
   //product
  
  
