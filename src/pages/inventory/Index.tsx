@@ -15,7 +15,8 @@ const Index = () => {
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("all");
+    // Status filter UI is currently commented out below; keep the value only.
+    const [selectedStatus] = useState("all");
     const [sortBy, setSortBy] = useState<"none" | "asc" | "desc">("none");
 
     const [isLotModalOpen, setIsLotModalOpen] = useState(false);
