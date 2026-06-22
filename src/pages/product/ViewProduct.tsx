@@ -1,11 +1,49 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useProductDetail } from "./_hooks/useProduct";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
-import { Separator } from "../../components/ui/separator";
-import { ArrowLeft, Edit, Package, Layers, ArrowDownUp } from "lucide-react";
+import { ArrowLeft, Pencil, ImageIcon, Layers } from "lucide-react";
 import Layout from "../../components/layouts/Layout";
+
+export interface GalleryImage {
+  file?: File;
+  url?: string;
+  uuid?: string;
+}
+
+const Pill = ({
+  children,
+  color = "gray",
+}: {
+  children: React.ReactNode;
+  color?: "gray" | "green" | "sky" | "red" | "amber";
+}) => {
+  const map: Record<string, string> = {
+    gray: "bg-zinc-100 text-zinc-500",
+    green: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200",
+    sky: "bg-sky-50 text-sky-600 ring-1 ring-sky-200",
+    red: "bg-red-50 text-red-500 ring-1 ring-red-200",
+    amber: "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
+  };
+  return (
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-wider uppercase ${map[color]}`}>
+      {children}
+    </span>
+  );
+};
+
+const StatBox = ({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  accent?: string;
+}) => (
+  <div className="flex flex-col gap-1 border-l-2 border-zinc-200 pl-4">
+    <span className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</span>
+    <span className={`text-2xl font-bold tabular-nums ${accent ?? "text-zinc-900"}`}>{value}</span>
+  </div>
+);
 
 const ProductView = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,316 +52,245 @@ const ProductView = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading product details...</p>
-          </div>
+      <Layout>
+        <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full border-2 border-zinc-300 border-t-zinc-800 animate-spin" />
         </div>
-      </div>
+      </Layout>
     );
   }
 
   if (isError || !product) {
     return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">Failed to load product details</p>
-              <Button onClick={() => navigate("/products")}>Back to Products</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Layout>
+        <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <p className="text-zinc-400 text-sm">Product not found</p>
+            <button onClick={() => navigate("/products")} className="text-sm text-zinc-800 underline underline-offset-4">
+              ← Back
+            </button>
+          </div>
+        </div>
+      </Layout>
     );
   }
 
   const firstVariation = product.variations[0];
   const isColorType = product.variation_type === "color";
+  const isInStock = firstVariation?.stock_status === "in_stock";
 
   return (
     <Layout>
-    <div className="container mx-auto p-6 max-w-8xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
+      <div className="min-h-screen bg-zinc-50 ">
+
+        {/* ── TOPBAR ── */}
+        <div className="bg-white border-b border-zinc-200 px-8 py-4 flex items-center justify-between">
+          <button
             onClick={() => navigate("/products")}
+            className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-800 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
+            <ArrowLeft className="w-4 h-4" /> Back to Products
+          </button>
+          <button
+            onClick={() => navigate(`/product-form/${product.id}`)}
+            className="flex items-center gap-2 bg-zinc-900 text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" /> Edit
+          </button>
         </div>
-        <Button onClick={() => navigate(`/product-form/${product.id}`)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Product
-        </Button>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Product Code</p>
-                  <p className="font-medium">{product.code}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Slug</p>
-                  <p className="font-medium">{product.slug}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Variation Type</p>
-                  <Badge variant="outline" className="capitalize">
-                    {product.variation_type.replace("_", " ")}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <Badge
-                    variant={firstVariation?.status === "active" ? "default" : "secondary"}
-                  >
-                    {firstVariation?.status || "N/A"}
-                  </Badge>
-                </div>
+        {/* ── BANNER STRIP ── */}
+        <div className="bg-white border-b border-zinc-100 px-8 py-8">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[11px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded">{product.code}</span>
+                <Pill color="gray">{product.variation_type.replace("_", " ")}</Pill>
+                <Pill color={firstVariation?.status === "active" ? "green" : "gray"}>
+                  {firstVariation?.status || "N/A"}
+                </Pill>
               </div>
+              <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 leading-tight">
+                {product.name}
+              </h1>
+              <p className="text-sm text-zinc-400 mt-1 font-mono">{product.slug}</p>
+            </div>
 
-              <Separator />
+            {/* Stock status big */}
+            <div className="shrink-0">
+              <Pill color={isInStock ? "green" : "red"}>
+                {firstVariation?.stock_status?.replace("_", " ") || "—"}
+              </Pill>
+            </div>
+          </div>
+        </div>
 
-              <div>
-                <p className="text-sm text-gray-500 mb-2">Description</p>
-                <p className="text-gray-700">{product.description}</p>
-              </div>
+        {/* ── MAIN CONTENT ── */}
+        <div className="max-w-6xl mx-auto px-8 py-8 space-y-6">
 
-              {product.composition && (
-                <>
-                  <Separator />
-                  <div>
-                    <p className="text-sm text-gray-500 mb-2">Composition</p>
-                    <p className="text-gray-700">{product.composition}</p>
+          {/* ROW 1: Image + Details */}
+          <div className="grid grid-cols-12 gap-6">
+
+            {/* Featured Image */}
+            <div className="col-span-12 md:col-span-5">
+              <div className="rounded-2xl overflow-hidden bg-white border border-zinc-200 aspect-[4/5] w-full">
+                {product.featured_image ? (
+                  <img src={product.featured_image} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-zinc-200">
+                    <ImageIcon className="w-12 h-12" />
+                    <span className="text-xs text-zinc-300">No image</span>
                   </div>
-                </>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="col-span-12 md:col-span-7 flex flex-col gap-5">
+
+              {/* Pricing Card — color type */}
+              {isColorType && firstVariation && (
+                <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-5">Pricing & Stock</p>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                    <StatBox label="Price" value={`Rs. ${parseFloat(firstVariation.price).toFixed(2)}`} accent="text-zinc-900" />
+                    <StatBox label="Sale Price" value={`Rs. ${parseFloat(firstVariation.sale_price).toFixed(2)}`} accent="text-sky-600" />
+                    <StatBox label="Quantity" value={firstVariation.quantity} />
+                    <StatBox label="Low Stock At" value={firstVariation.low_stock_threshold} accent="text-amber-500" />
+                  </div>
+                </div>
               )}
 
-              {product.excerpt && (
-                <>
-                  <Separator />
-                  <div>
-                    <p className="text-sm text-gray-500 mb-2">Excerpt</p>
-                    <p className="text-gray-700">{product.excerpt}</p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+              {/* Description */}
+              <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex-1">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-3">Description</p>
+                <p className="text-sm text-zinc-600 leading-relaxed">{product.description}</p>
 
-          {/* Pricing & Stock Card (for color type) */}
-          {isColorType && firstVariation && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                
-                  <ArrowDownUp className="h-5 w-5" />
-                  Pricing & Stock
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Price</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      Rs. {parseFloat(firstVariation.price).toFixed(2)}
+                {product.composition && (
+                  <>
+                    <div className="border-t border-zinc-100 my-4" />
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-3">Composition</p>
+                    <p className="text-sm text-zinc-600 leading-relaxed">{product.composition}</p>
+                  </>
+                )}
+
+                {product.excerpt && (
+                  <>
+                    <div className="border-t border-zinc-100 my-4" />
+                    <p className="text-sm text-zinc-500 italic leading-relaxed border-l-2 border-zinc-200 pl-4">
+                      {product.excerpt}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Timestamps */}
+              <div className="bg-white rounded-2xl border border-zinc-200 p-5 flex gap-8">
+                {[
+                  { label: "Created", value: product.created_at },
+                  { label: "Last Updated", value: product.updated_at },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1">{label}</p>
+                    <p className="text-sm font-medium text-zinc-700">
+                      {new Date(value).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Sale Price</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      Rs. {parseFloat(firstVariation.sale_price).toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Quantity</p>
-                    <p className="text-2xl font-bold">{firstVariation.quantity}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Low Stock Threshold</p>
-                    <p className="text-2xl font-bold">{firstVariation.low_stock_threshold}</p>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500">Stock Status</p>
-                  <Badge
-                    variant={firstVariation.stock_status === "in_stock" ? "default" : "destructive"}
-                    className="mt-1"
-                  >
-                    {firstVariation.stock_status.replace("_", " ").toUpperCase()}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ROW 2: Gallery */}
+          {product.gallery_images && product.gallery_images.length > 0 && (
+            <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-4">Gallery</p>
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {(product.gallery_images as GalleryImage[]).map((image, index) =>
+                  image.url ? (
+                    <div
+                      key={index}
+                      className="shrink-0 w-36 h-36 rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200 group"
+                    >
+                      <img
+                        src={image.url}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                  ) : null
+                )}
+              </div>
+            </div>
           )}
 
-          {/* Variations Card (for size_color type) */}
+          {/* ROW 3: Variations */}
           {!isColorType && product.variations.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Layers className="h-5 w-5" />
-                  Product Variations
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {product.variations.map((variation, index) => (
-                    <div
-                      key={variation.id}
-                      className="border border-[#EDEAE7] rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="font-semibold text-lg">Variation #{index + 1}</p>
-                          <p className="text-sm text-gray-500">SKU: {variation.sku}</p>
-                        </div>
-                        <Badge
-                          variant={variation.status === "active" ? "default" : "secondary"}
-                        >
-                          {variation.status}
-                        </Badge>
-                      </div>
+            <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-zinc-400" />
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-400">Variations</p>
+                </div>
+                <span className="text-xs text-zinc-400 bg-zinc-100 rounded-full px-3 py-1">
+                  {product.variations.length} total
+                </span>
+              </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-500">Price</p>
-                          <p className="font-semibold text-green-600">
-                            Rs.{parseFloat(variation.price).toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Sale Price</p>
-                          <p className="font-semibold text-blue-600">
-                            Rs.{parseFloat(variation.sale_price).toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Quantity</p>
-                          <p className="font-semibold">{variation.quantity}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Stock Status</p>
-                          <Badge
-                            variant={variation.stock_status === "in_stock" ? "default" : "destructive"}
-                            className="text-xs"
-                          >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-100">
+                      {["#", "SKU", "Price", "Sale Price", "Qty", "Stock", "Status", "Attributes"].map((h) => (
+                        <th key={h} className="text-left text-[10px] uppercase tracking-widest text-zinc-400 pb-3 pr-6 font-medium">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-50">
+                    {product.variations.map((variation, index) => (
+                      <tr key={variation.id} className="hover:bg-zinc-50 transition-colors group">
+                        <td className="py-3.5 pr-6 text-zinc-400 font-mono text-xs">
+                          {String(index + 1).padStart(2, "0")}
+                        </td>
+                        <td className="py-3.5 pr-6 font-mono text-xs text-zinc-500">{variation.sku}</td>
+                        <td className="py-3.5 pr-6 font-semibold text-zinc-900">
+                          Rs.{parseFloat(variation.price).toFixed(2)}
+                        </td>
+                        <td className="py-3.5 pr-6 font-semibold text-sky-600">
+                          Rs.{parseFloat(variation.sale_price).toFixed(2)}
+                        </td>
+                        <td className="py-3.5 pr-6 text-zinc-700">{variation.quantity}</td>
+                        <td className="py-3.5 pr-6">
+                          <Pill color={variation.stock_status === "in_stock" ? "green" : "red"}>
                             {variation.stock_status.replace("_", " ")}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {variation.attributes && variation.attributes.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-[#EDEAE7]">
-                          <p className="text-xs text-gray-500 mb-2">Attributes</p>
-                          <div className="flex flex-wrap gap-2">
-                            {variation.attributes.map((attr: any, idx: number) => (
-                              <Badge key={idx} variant="outline">
+                          </Pill>
+                        </td>
+                        <td className="py-3.5 pr-6">
+                          <Pill color={variation.status === "active" ? "green" : "gray"}>
+                            {variation.status}
+                          </Pill>
+                        </td>
+                        <td className="py-3.5">
+                          <div className="flex flex-wrap gap-1">
+                            {variation.attributes?.map((attr: any, idx: number) => (
+                              <span key={idx} className="text-[10px] bg-zinc-100 text-zinc-500 rounded px-2 py-0.5">
                                 {attr.attribute?.name}: {attr.value?.name}
-                              </Badge>
+                              </span>
                             ))}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Featured Image */}
-          {product.featured_image && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Featured Image</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img
-                  src={product.featured_image}
-                  alt={product.name}
-                  className="w-full rounded-lg object-cover"
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Gallery Images */}
-          {product.gallery_images && product.gallery_images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Gallery</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  {product.gallery_images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full rounded-lg object-cover aspect-square"
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Metadata */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Metadata</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">Created At</p>
-                <p className="font-medium">
-                  {new Date(product.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <Separator />
-              <div>
-                <p className="text-sm text-gray-500">Last Updated</p>
-                <p className="font-medium">
-                  {new Date(product.updated_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
+
         </div>
       </div>
-    </div>
     </Layout>
   );
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Package, Search, Loader2 } from "lucide-react";
-import { Select,SelectTrigger,SelectContent,SelectValue,SelectItem } from "../../../components/ui/select";
+import { Select, SelectTrigger, SelectContent, SelectValue, SelectItem } from "../../../components/ui/select";
 
 interface AddLotModalProps {
   isOpen: boolean;
@@ -11,19 +11,20 @@ interface AddLotModalProps {
   preSelectedProductId?: string | number | null;
 }
 
-const AddLotModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  products, 
+const AddLotModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  products,
   isLoading,
-  preSelectedProductId = null 
+  preSelectedProductId = null
 }: AddLotModalProps) => {
   const [lotItems, setLotItems] = useState([
     {
       id: Date.now(),
       lotable_id: "",
-      quantity_received: ""
+      quantity_received: "",
+      import_price: ""
     }
   ]);
   const [importedDate, setImportedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -66,7 +67,8 @@ const AddLotModal = ({
           {
             id: Date.now(),
             lotable_id: preSelectedProductId.toString(),
-            quantity_received: ""
+            quantity_received: "",
+            import_price: ""
           }
         ]);
       } else {
@@ -75,7 +77,8 @@ const AddLotModal = ({
           {
             id: Date.now(),
             lotable_id: "",
-            quantity_received: ""
+            quantity_received: "",
+            import_price: ""
           }
         ]);
       }
@@ -101,7 +104,8 @@ const AddLotModal = ({
       {
         id: Date.now(),
         lotable_id: preSelectedProductId ? preSelectedProductId.toString() : "",
-        quantity_received: ""
+        quantity_received: "",
+        import_price: ""
       }
     ]);
   };
@@ -113,15 +117,15 @@ const AddLotModal = ({
   };
 
   const updateLotItem = (id: number, field: string, value: string) => {
-    setLotItems(lotItems.map(item => 
+    setLotItems(lotItems.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
 
   const handleSubmit = () => {
     // Validate all fields are filled
-    const isValid = lotItems.every(item => 
-      item.lotable_id && item.quantity_received
+    const isValid = lotItems.every(item =>
+      item.lotable_id && item.quantity_received && item.import_price
     ) && importedDate;
 
     if (!isValid) {
@@ -131,14 +135,15 @@ const AddLotModal = ({
 
     // Format data based on number of items
     let formattedData;
-    
+
     if (lotItems.length === 1) {
       // Single item payload
       formattedData = {
         lotable_type: "product_variation",
         lotable_id: parseInt(lotItems[0].lotable_id),
         imported_date: importedDate,
-        quantity_received: parseInt(lotItems[0].quantity_received)
+        quantity_received: parseInt(lotItems[0].quantity_received),
+        import_price: parseInt(lotItems[0].import_price),
       };
     } else {
       // Multiple items payload
@@ -147,7 +152,9 @@ const AddLotModal = ({
         imported_date: importedDate,
         items: lotItems.map(item => ({
           lotable_id: parseInt(item.lotable_id),
-          quantity_received: parseInt(item.quantity_received)
+          quantity_received: parseInt(item.quantity_received),
+          import_price: parseInt(item.import_price)
+
         }))
       };
     }
@@ -158,7 +165,7 @@ const AddLotModal = ({
   if (!isOpen) return null;
 
   const isProductLocked = !!preSelectedProductId;
-  const selectedProduct = preSelectedProductId 
+  const selectedProduct = preSelectedProductId
     ? products?.find(p => p.id.toString() === preSelectedProductId.toString())
     : null;
 
@@ -221,7 +228,7 @@ const AddLotModal = ({
                         </label>
                         {isProductLocked ? (
                           <div className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100 text-gray-700">
-                            {selectedProduct 
+                            {selectedProduct
                               ? `${selectedProduct.product_name} - ${selectedProduct.sku}`
                               : "Product not found"}
                           </div>
@@ -238,7 +245,7 @@ const AddLotModal = ({
                             </SelectTrigger>
                             <SelectContent>
                               {/* Search Input */}
-                              <div 
+                              <div
                                 className="flex items-center px-3 py-2 border-b sticky top-0 bg-white z-10"
                                 style={{ borderColor: "hsl(25 10% 90%)" }}
                               >
@@ -309,6 +316,21 @@ const AddLotModal = ({
                           value={item.quantity_received}
                           onChange={(e) => updateLotItem(item.id, 'quantity_received', e.target.value)}
                           placeholder="Enter quantity"
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                          Import Price
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.import_price}
+                          onChange={(e) => updateLotItem(item.id, 'import_price', e.target.value)}
+                          placeholder="Enter import price"
                           className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />

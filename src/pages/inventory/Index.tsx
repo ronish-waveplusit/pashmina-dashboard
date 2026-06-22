@@ -15,7 +15,7 @@ const Index = () => {
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("all");
+    const [selectedStatus] = useState("all");
     const [sortBy, setSortBy] = useState<"none" | "asc" | "desc">("none");
 
     const [isLotModalOpen, setIsLotModalOpen] = useState(false);
@@ -79,12 +79,14 @@ const Index = () => {
                 lotData.items.forEach((item: any, index: number) => {
                     formData.append(`items[${index}][lotable_id]`, item.lotable_id.toString());
                     formData.append(`items[${index}][quantity_received]`, item.quantity_received.toString());
+                    formData.append(`items[${index}][import_price]`, item.import_price.toString());
                 });
             } else {
                 formData.append('lotable_type', lotData.lotable_type);
                 formData.append('lotable_id', lotData.lotable_id.toString());
                 formData.append('imported_date', lotData.imported_date);
                 formData.append('quantity_received', lotData.quantity_received.toString());
+                 formData.append('import_price', lotData.import_price.toString());
             }
 
             await addLot(formData);
@@ -154,7 +156,7 @@ const Index = () => {
                         <p className="text-sm sm:text-base text-gray-600 mt-0.5 sm:mt-1">Manage all product SKUs and stock</p>
                     </div>
                     <Button
-                        onClick={handleAddLotFromHeader}
+                        onClick={() => navigate("/add-lot")}
                         className="flex items-center gap-2 shadow-lg w-full sm:w-auto text-sm sm:text-base"
                         disabled={isAddingLot}
                     >

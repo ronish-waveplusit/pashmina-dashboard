@@ -17,7 +17,7 @@ const StatusSection = ({ formData, setFormData }: Props) => {
     <div className="space-y-4">
       <div>
         <label className="text-sm font-medium text-foreground block mb-2">
-          Product Status
+          Public/Private
         </label>
         <Select
           value={formData.status}
@@ -27,8 +27,8 @@ const StatusSection = ({ formData, setFormData }: Props) => {
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="active">Public</SelectItem>
+            <SelectItem value="inactive">Private</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground mt-2">

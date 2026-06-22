@@ -6,19 +6,20 @@ export interface ProductVariation {
   sale_price: string;
   quantity: number;
   low_stock_threshold: number;
-  stock_status: "low_stock" | "in_stock" | "out_of_stock"; 
-  status: "active" | "inactive"; 
-  created_at: string;   
+  stock_status: "low_stock" | "in_stock" | "out_of_stock";
+  status: "active" | "inactive";
+  created_at: string;
   updated_at: string;
-  lots?: Lot[];  // Add this line
+  lots?: Lot[]; // Add this line
 }
 
 export interface Lot {
   id: number;
   lotable_id: number;
-  lotable_type: string; 
+  lotable_type: string;
   imported_date: string;
+  import_price: string | number;
   quantity_received: number;
-  created_at: string;  // Add this line
-  updated_at?: string; // Optional, in case you need it later
+  created_at: string;
+  updated_at?: string;
 }

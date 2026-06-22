@@ -87,7 +87,7 @@ const ImageUpload = ({
       {/* Featured Image Section */}
       <div>
         <label className="text-sm font-medium text-foreground block mb-2">
-          Featured Image <span className="text-muted-foreground">(Required)</span>
+          Featured Image 
         </label>
         
         {featuredImageUrl ? (

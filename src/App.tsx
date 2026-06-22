@@ -6,6 +6,7 @@ import AuthGuard from "./components/AuthGuard";
 import AppProvider from "./utils/provider/app-provider";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+import AddLotPage from "./pages/inventory/_components/AddLotPage";
 const Index = lazy(() => import("./pages/Index"));
 const CategoryForm = lazy(() => import("./pages/category/Index"));
 const LoginPage = lazy(() => import("./pages/login/Page")); 
@@ -72,6 +73,16 @@ const LoadingFallback = () => (
                 requiredPermissions={[]}
               >
                 <ProductForm />
+              </AuthGuard>
+            }
+          />
+             <Route
+            path="/add-lot"
+            element={
+              <AuthGuard
+                requiredPermissions={[]}
+              >
+                <AddLotPage />
               </AuthGuard>
             }
           />
