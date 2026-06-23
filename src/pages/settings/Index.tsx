@@ -13,10 +13,14 @@ import {
   TabsTrigger,
   TabsContent,
 } from "../../components/ui/tabs";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, MessageSquareQuote } from "lucide-react";
 import { SETTINGS_GROUPS, GroupDef } from "./settingsConfig";
 import { GroupForm } from "./_components/GroupForm";
+import { TestimonialsManager } from "./_components/TestimonialsManager";
 import { useSettingsManager } from "./_hooks/useSettingsManager";
+
+/** Testimonials are a CRUD list (not key/value settings) so they get their own tab. */
+const TESTIMONIALS_TAB = "testimonials";
 
 const Index = () => {
   const {
@@ -96,6 +100,13 @@ const Index = () => {
                   </TabsTrigger>
                 );
               })}
+              <TabsTrigger
+                value={TESTIMONIALS_TAB}
+                className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2.5 text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              >
+                <MessageSquareQuote className="mr-2 h-4 w-4" />
+                Testimonial
+              </TabsTrigger>
             </TabsList>
 
             {SETTINGS_GROUPS.map((g) => (
@@ -129,6 +140,20 @@ const Index = () => {
                 </Card>
               </TabsContent>
             ))}
+
+            <TabsContent value={TESTIMONIALS_TAB} className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Testimonials</CardTitle>
+                  <CardDescription>
+                    Customer quotes shown on the storefront home page.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TestimonialsManager />
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         )}
       </div>
