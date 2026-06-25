@@ -19,8 +19,7 @@ export const useSettingsManager = () => {
   const settingsQuery = useQuery({
     queryKey: ["settings-all"],
     queryFn: () => getSettings({ page: 1, per_page: 100, paginate: true }),
-    staleTime: 1000 * 60,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5,
   });
 
   const settings: Setting[] = settingsQuery.data?.data ?? [];
@@ -36,8 +35,7 @@ export const useSettingsManager = () => {
       const res = await getPages({ page: 1, per_page: 100, paginate: true });
       return res.data.find((p) => p.slug === "about") ?? null;
     },
-    staleTime: 1000 * 60,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5,
   });
   const aboutPage = aboutPageQuery.data ?? null;
 

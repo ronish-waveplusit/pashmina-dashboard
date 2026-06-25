@@ -56,4 +56,21 @@ export interface CreateChalanPayload {
   discount_type: "percentage" | "fixed_amount"|null;
   discount_value: number;
   chalan_items: CreateChalanItemPayload[];
+  enquiry_id?: number;
+}
+
+/* =======================
+   CONVERT-FROM-ENQUIRY (navigation state)
+======================= */
+export interface ChalaniPrefillItem {
+  product_variation_id: number;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface ChalaniPrefillState {
+  enquiry_id: number;
+  name: string;
+  items: ChalaniPrefillItem[];
 }

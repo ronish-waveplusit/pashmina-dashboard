@@ -3,6 +3,7 @@ export type EnquiryStatus = "new" | "contacted" | "closed";
 export interface EnquiryItem {
   id: number;
   product_id: number | null;
+  product_variant_id: number | null;
   product_name: string;
   slug: string | null;
   color: string | null;

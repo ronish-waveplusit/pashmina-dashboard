@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import {
   Card,
@@ -23,11 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Search, X, Inbox, Mail, Eye, Trash2 } from "lucide-react";
+import { Search, X, Inbox, Mail, Eye, Trash2, FileText } from "lucide-react";
 import { useEnquiry, useEnquiryDetail } from "./_hooks/useEnquiry";
 import { ITEMS_PER_PAGE } from "../../constants/common";
 import Pagination from "../../components/pagination/pagination";
-import { EnquiryStatus } from "../../types/enquiry";
+import { Enquiry, EnquiryStatus } from "../../types/enquiry";
+import { ChalaniPrefillState } from "../../types/chalani";
 
 const STATUS_STYLES: Record<EnquiryStatus, string> = {
   new: "bg-blue-100 text-blue-800 hover:bg-blue-100",
@@ -36,6 +38,7 @@ const STATUS_STYLES: Record<EnquiryStatus, string> = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -83,6 +86,23 @@ const Index = () => {
   const clearSearch = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
+  };
+
+  // Convert an enquiry into a pre-filled Chalani form
+  const handleConvertToChalani = (enquiry: Enquiry) => {
+    const prefill: ChalaniPrefillState = {
+      enquiry_id: enquiry.id,
+      name: enquiry.name,
+      items: enquiry.items
+        .filter((item) => item.product_variant_id)
+        .map((item) => ({
+          product_variation_id: item.product_variant_id as number,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          unit_price: parseFloat(item.price ?? "0") || 0,
+        })),
+    };
+    navigate("/add-chalani", { state: { fromEnquiry: prefill } });
   };
 
   const formatDate = (dateString: string) => {
@@ -278,6 +298,18 @@ const Index = () => {
                               >
                                 <Eye className="h-3.5 w-3.5 mr-1" />
                                 View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleConvertToChalani(enquiry)}
+                                disabled={
+                                  !enquiry.items.some((i) => i.product_variant_id)
+                                }
+                                className="text-xs text-coffee border-coffee hover:bg-coffee/10"
+                              >
+                                <FileText className="h-3.5 w-3.5 mr-1" />
+                               Chalani
                               </Button>
                               <Button
                                 variant="destructive"

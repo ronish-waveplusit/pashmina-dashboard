@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../../../components/layouts/Layout";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
@@ -15,7 +15,7 @@ import {
 import { Plus, Trash2, Search, Loader2 } from "lucide-react";
 import { useChalani } from "../_hooks/useChalani";
 import { useProductVariation } from "../../inventory/_hooks/useProductVariation";
-import { CreateChalanPayload, CreateChalanItemPayload } from "../../../types/chalani";
+import { CreateChalanPayload, CreateChalanItemPayload, ChalaniPrefillState } from "../../../types/chalani";
 import { toast } from "../../../components/ui/use-toast";
 import { AxiosError } from "axios";
 
@@ -28,7 +28,25 @@ interface ChalanItem extends CreateChalanItemPayload {
 
 const ChalaniForm = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { actions, isAdding } = useChalani();
+
+    // Optional pre-fill when converting an enquiry into a chalani
+    const prefill = (location.state as { fromEnquiry?: ChalaniPrefillState } | null)
+        ?.fromEnquiry;
+
+    const prefillItems: ChalanItem[] =
+        prefill?.items.map((item, index) => {
+            const unitPrice = item.unit_price || 0;
+            return {
+                id: `enquiry-${index}-${item.product_variation_id}`,
+                product_variation_id: item.product_variation_id,
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: unitPrice,
+                total_price: item.quantity * unitPrice,
+            };
+        }) ?? [];
 
     // Search state
     const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +69,7 @@ const ChalaniForm = () => {
 
     // Form state
     const [isGuide, setIsGuide] = useState(true);
-    const [name, setName] = useState("");
+    const [name, setName] = useState(prefill?.name ?? "");
     const [issueDate, setIssueDate] = useState(
         new Date().toISOString().split("T")[0]
     );
@@ -59,7 +77,7 @@ const ChalaniForm = () => {
     const [applyDiscount, setApplyDiscount] = useState(false);
     const [discountType, setDiscountType] = useState<"percentage" | "fixed_amount">("percentage");
     const [discountValue, setDiscountValue] = useState<number>(0);
-    const [items, setItems] = useState<ChalanItem[]>([]);
+    const [items, setItems] = useState<ChalanItem[]>(prefillItems);
 
     // Validation errors
     const [errors, setErrors] = useState<{
@@ -78,6 +96,31 @@ const ChalaniForm = () => {
             addNewRow();
         }
     }, []);
+
+    // Backfill stock quantity (and latest price) for pre-filled rows once products load
+    useEffect(() => {
+        if (products.length === 0) return;
+        setItems((prev) =>
+            prev.map((item) => {
+                if (
+                    item.product_variation_id > 0 &&
+                    typeof item.stock_quantity !== "number"
+                ) {
+                    const product = products.find(
+                        (p) => p.id === item.product_variation_id
+                    );
+                    if (product) {
+                        return {
+                            ...item,
+                            stock_quantity: product.quantity,
+                            product_name: item.product_name || product.product_name || "",
+                        };
+                    }
+                }
+                return item;
+            })
+        );
+    }, [products]);
 
     // Reset search when select closes
     const handleOpenChange = (open: boolean, itemId: string) => {
@@ -246,6 +289,8 @@ const ChalaniForm = () => {
                 unit_price: item.unit_price,
                 total_price: item.total_price,
             })),
+            // Only include enquiry_id when this chalani was created from an enquiry
+            ...(prefill?.enquiry_id ? { enquiry_id: prefill.enquiry_id } : {}),
         };
         try {
             const result = await actions.add(payload);
@@ -425,7 +470,11 @@ const ChalaniForm = () => {
                                                             onOpenChange={(open) => handleOpenChange(open, item.id)}
                                                         >
                                                             <SelectTrigger className={`w-full ${itemErrors[item.id] ? "border-red-500 focus:ring-red-500" : ""}`}>
-                                                                <SelectValue placeholder="Select product..." />
+                                                                {item.product_variation_id > 0 && item.product_name ? (
+                                                                    <span className="truncate">{item.product_name}</span>
+                                                                ) : (
+                                                                    <SelectValue placeholder="Select product..." />
+                                                                )}
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 {/* Search Input */}
