@@ -106,10 +106,10 @@ const Index = () => {
         setIsLotModalOpen(true);
     };
 
-    const handleAddLotFromHeader = () => {
-        setSelectedProductId(null);
-        setIsLotModalOpen(true);
-    };
+    // const handleAddLotFromHeader = () => {
+    //     setSelectedProductId(null);
+    //     setIsLotModalOpen(true);
+    // };
 
     const handleCloseLotModal = () => {
         setIsLotModalOpen(false);

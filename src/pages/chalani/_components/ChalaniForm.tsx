@@ -155,22 +155,14 @@ const ChalaniForm = () => {
         e.preventDefault();
 
         // Validation
+        const newErrors: typeof errors = {};
+
         if (!name.trim()) {
-            toast({
-                variant: "destructive",
-                title: "Validation Error",
-                description: "Customer name is required",
-            });
-            return;
+            newErrors.name = "Customer name is required";
         }
 
         if (!issueDate) {
-            toast({
-                variant: "destructive",
-                title: "Validation Error",
-                description: "Issue date is required",
-            });
-            return;
+            newErrors.issueDate = "Issue date is required";
         }
 
         // Validate items
@@ -179,13 +171,20 @@ const ChalaniForm = () => {
         );
 
         if (validItems.length === 0) {
+            newErrors.items = "At least one valid item is required";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "At least one valid item is required",
+                description: "Please fix the highlighted fields",
             });
             return;
         }
+
+        setErrors({});
 
         // Prepare payload
         const payload: CreateChalanPayload = {
