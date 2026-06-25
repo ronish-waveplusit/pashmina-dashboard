@@ -24,10 +24,10 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { Search, X, Inbox, Mail, Eye, Trash2 } from "lucide-react";
-import { useEnquiry } from "./_hooks/useEnquiry";
+import { useEnquiry, useEnquiryDetail } from "./_hooks/useEnquiry";
 import { ITEMS_PER_PAGE } from "../../constants/common";
 import Pagination from "../../components/pagination/pagination";
-import { Enquiry, EnquiryStatus } from "../../types/enquiry";
+import { EnquiryStatus } from "../../types/enquiry";
 
 const STATUS_STYLES: Record<EnquiryStatus, string> = {
   new: "bg-blue-100 text-blue-800 hover:bg-blue-100",
@@ -39,7 +39,7 @@ const Index = () => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [selected, setSelected] = useState<Enquiry | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,6 +69,11 @@ const Index = () => {
     actions,
   } = useEnquiry(filters);
 
+  const {
+    enquiry: selected,
+    isLoading: isLoadingDetail,
+  } = useEnquiryDetail(selectedId);
+
   const totalEnquiries = meta?.total ?? enquiries.length;
   const newCount = useMemo(
     () => enquiries.filter((e) => e.status === "new").length,
@@ -94,14 +99,6 @@ const Index = () => {
 
   const formatPrice = (price: string | null) =>
     price ? `Rs. ${parseFloat(price).toFixed(2)}` : "—";
-
-  // Keep the open detail dialog in sync after a status update refetch.
-  useEffect(() => {
-    if (selected) {
-      const fresh = enquiries.find((e) => e.id === selected.id);
-      if (fresh && fresh.status !== selected.status) setSelected(fresh);
-    }
-  }, [enquiries]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) {
     return (
@@ -276,7 +273,7 @@ const Index = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setSelected(enquiry)}
+                                onClick={() => setSelectedId(enquiry.id)}
                                 className="text-xs"
                               >
                                 <Eye className="h-3.5 w-3.5 mr-1" />
@@ -326,15 +323,21 @@ const Index = () => {
         </Card>
 
         {/* Detail Dialog */}
-        <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <Dialog open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
           <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg">
-                Enquiry from {selected?.name}
+                {selected ? `Enquiry from ${selected.name}` : "Enquiry Detail"}
               </DialogTitle>
             </DialogHeader>
 
-            {selected && (
+            {isLoadingDetail && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border" />
+              </div>
+            )}
+
+            {!isLoadingDetail && selected && (
               <div className="space-y-5">
                 {/* Customer info */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -429,7 +432,7 @@ const Index = () => {
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setSelected(null)}>
+              <Button variant="outline" onClick={() => setSelectedId(null)}>
                 Close
               </Button>
             </DialogFooter>

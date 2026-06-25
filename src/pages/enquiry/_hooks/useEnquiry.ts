@@ -4,6 +4,7 @@ import { toast } from "../../../components/ui/use-toast";
 
 import {
   getEnquiries,
+  getEnquiryById,
   updateEnquiryStatus,
   deleteEnquiry,
 } from "../../../api/enquiry";
@@ -24,6 +25,7 @@ export const EnquiryQueryKeys = {
   all: ["enquiries"] as const,
   lists: () => [...EnquiryQueryKeys.all, "list"] as const,
   list: (filters: object) => [...EnquiryQueryKeys.lists(), filters] as const,
+  detail: (id: string | number) => [...EnquiryQueryKeys.all, "detail", id] as const,
 };
 
 interface UseEnquiryReturn {
@@ -112,7 +114,7 @@ export const useEnquiry = (filters: EnquiryFilters = {}): UseEnquiryReturn => {
     }) => updateEnquiryStatus(id, status),
     onSuccess: () => {
       toast({ title: "Status Updated" });
-      queryClient.invalidateQueries({ queryKey: EnquiryQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: EnquiryQueryKeys.all });
     },
     onError: (err: unknown) => {
       const errorMessage =
@@ -149,4 +151,30 @@ export const useEnquiry = (filters: EnquiryFilters = {}): UseEnquiryReturn => {
       updateStatus,
     },
   };
+};
+
+/* ---------- Hook for single enquiry detail ---------- */
+interface UseEnquiryDetailReturn {
+  enquiry: Enquiry | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+}
+
+export const useEnquiryDetail = (
+  enquiryId: string | number | null
+): UseEnquiryDetailReturn => {
+  const {
+    data: enquiry,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Enquiry, Error>({
+    queryKey: EnquiryQueryKeys.detail(enquiryId ?? ""),
+    queryFn: () => getEnquiryById(enquiryId as string | number),
+    enabled: !!enquiryId,
+    staleTime: 0,
+  });
+
+  return { enquiry, isLoading, isError, error };
 };
