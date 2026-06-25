@@ -8,6 +8,10 @@ import * as Yup from "yup";
 import { AxiosError } from "axios";
 import { Banner } from "../../../types/banner";
 import { bannerSchema } from "./bannerSchema";
+import { validateImageFile } from "../../../lib/imageValidation";
+
+/** Backend banner_image rule allows up to 4MB. */
+const IMAGE_MAX_MB = 4;
 
 interface BannerFormProps {
   initialData?: Banner | null;
@@ -38,6 +42,22 @@ export const BannerForm: React.FC<BannerFormProps> = ({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const handleFile = (file: File | null): boolean => {
+    setErrors((prev) => ({ ...prev, banner_image: undefined }));
+    if (!file) {
+      setImageFile(null);
+      return true;
+    }
+    const error = validateImageFile(file, IMAGE_MAX_MB);
+    if (error) {
+      setErrors((prev) => ({ ...prev, banner_image: error }));
+      setImageFile(null);
+      return false;
+    }
+    setImageFile(file);
+    return true;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -205,10 +225,14 @@ export const BannerForm: React.FC<BannerFormProps> = ({
             name="banner_image"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              if (!handleFile(e.target.files?.[0] ?? null)) {
+                e.target.value = "";
+              }
+            }}
           />
           <p className="text-xs text-muted-foreground">
-            JPG, PNG or WEBP, up to 3MB.
+            JPG, PNG or WEBP, up to {IMAGE_MAX_MB}MB.
           </p>
           {initialData?.banner_image && (
             <label className="flex items-center gap-2 text-sm mt-1">

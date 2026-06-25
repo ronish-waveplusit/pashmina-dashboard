@@ -5,6 +5,10 @@ import { Label } from "../../../components/ui/label";
 import { Textarea } from "../../../components/ui/textarea";
 import { Loader2, ImagePlus } from "lucide-react";
 import { GroupDef, FieldDef } from "../settingsConfig";
+import { validateImageFile } from "../../../lib/imageValidation";
+
+/** About image is stored as the About page's featured image (backend max 3MB). */
+const IMAGE_MAX_MB = 3;
 
 interface GroupFormProps {
   group: GroupDef;
@@ -27,14 +31,29 @@ export const GroupForm: React.FC<GroupFormProps> = ({
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const handleChange = (key: string, val: string) => {
     setValues((prev) => ({ ...prev, [key]: val }));
   };
 
-  const handleFile = (file: File | null) => {
+  const handleFile = (file: File | null): boolean => {
+    setImageError(null);
+    if (!file) {
+      setImageFile(null);
+      setPreviewUrl(null);
+      return true;
+    }
+    const error = validateImageFile(file, IMAGE_MAX_MB);
+    if (error) {
+      setImageError(error);
+      setImageFile(null);
+      setPreviewUrl(null);
+      return false;
+    }
     setImageFile(file);
-    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+    setPreviewUrl(URL.createObjectURL(file));
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,19 +130,23 @@ export const GroupForm: React.FC<GroupFormProps> = ({
                 id={`${group.id}-image`}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+                onChange={(e) => {
+                  if (!handleFile(e.target.files?.[0] ?? null)) {
+                    e.target.value = "";
+                  }
+                }}
                 className="cursor-pointer"
               />
-              {imageFile ? (
+              {imageError ? (
+                <p className="text-xs text-red-600">{imageError}</p>
+              ) : imageFile ? (
                 <p className="text-xs text-muted-foreground">
                   New image selected — click Save to upload.
                 </p>
               ) : (
-                group.imageHelp && (
-                  <p className="text-xs text-muted-foreground">
-                    {group.imageHelp}
-                  </p>
-                )
+                <p className="text-xs text-muted-foreground">
+                  {group.imageHelp ?? "JPG, PNG or WEBP."} Max {IMAGE_MAX_MB}MB.
+                </p>
               )}
             </div>
           </div>

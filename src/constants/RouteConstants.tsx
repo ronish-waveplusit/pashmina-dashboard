@@ -21,6 +21,7 @@ GET_FAQS:"/v1/cms/faqs",
   GET_BANNERS:"/v1/cms/banners",
   GET_PAGES:"/v1/cms/pages",
   GET_CONTACT_SUBMISSIONS:"/v1/cms/contact-submissions",
+  GET_TESTIMONIALS:"/v1/cms/testimonials",
   //product
  
  
