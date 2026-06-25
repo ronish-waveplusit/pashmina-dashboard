@@ -10,6 +10,7 @@ interface GetEnquiryParams {
   paginate?: boolean;
   sort_by?: string;
   sort_order?: "asc" | "desc";
+  status?: EnquiryStatus;
 }
 
 /**

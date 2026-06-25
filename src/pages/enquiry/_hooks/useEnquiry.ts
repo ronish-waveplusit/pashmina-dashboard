@@ -18,6 +18,7 @@ interface EnquiryFilters {
   per_page?: number;
   sort_by?: string;
   sort_order?: "asc" | "desc";
+  status?: EnquiryStatus;
 }
 
 /* ---------- Query Keys ---------- */
@@ -54,6 +55,7 @@ export const useEnquiry = (filters: EnquiryFilters = {}): UseEnquiryReturn => {
     per_page = 10,
     sort_by,
     sort_order,
+    status,
   } = filters;
 
   const queryParams = {
@@ -63,6 +65,7 @@ export const useEnquiry = (filters: EnquiryFilters = {}): UseEnquiryReturn => {
     ...(search && { search }),
     ...(sort_by && { sort_by }),
     ...(sort_order && { sort_order }),
+    ...(status && { status }),
   };
 
   const [enquiryToDelete, setEnquiryToDelete] = useState<Enquiry | null>(null);

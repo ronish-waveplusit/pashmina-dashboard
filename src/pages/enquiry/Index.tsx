@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Search, X, Inbox, Mail, Eye, Trash2, FileText } from "lucide-react";
+import { Search, X, Inbox, Mail, Eye, Trash2, FileText, ArrowUp, ArrowDown } from "lucide-react";
 import { useEnquiry, useEnquiryDetail } from "./_hooks/useEnquiry";
 import { ITEMS_PER_PAGE } from "../../constants/common";
 import Pagination from "../../components/pagination/pagination";
@@ -43,6 +43,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<EnquiryStatus | "all">("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,9 +59,22 @@ const Index = () => {
       page,
       search: debouncedSearchQuery,
       per_page: ITEMS_PER_PAGE,
+      sort_by: "created_at",
+      sort_order: sortOrder,
+      ...(statusFilter !== "all" && { status: statusFilter }),
     }),
-    [page, debouncedSearchQuery]
+    [page, debouncedSearchQuery, sortOrder, statusFilter]
   );
+
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: EnquiryStatus | "all") => {
+    setStatusFilter(value);
+    setPage(1);
+  };
 
   const {
     enquiries,
@@ -205,9 +220,9 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            {/* Search */}
-            <div className="mb-4 sm:mb-6">
-              <div className="relative">
+            {/* Search & Filters */}
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                 <Input
                   placeholder="Search by name, phone or email..."
@@ -224,6 +239,23 @@ const Index = () => {
                   </button>
                 )}
               </div>
+
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  handleStatusFilterChange(value as EnquiryStatus | "all")
+                }
+              >
+                <SelectTrigger className="w-full sm:w-44 h-9 sm:h-10 text-xs sm:text-sm">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {enquiries.length > 0 ? (
@@ -248,7 +280,17 @@ const Index = () => {
                           Status
                         </th>
                         <th className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                          Received
+                          <button
+                            onClick={toggleSortOrder}
+                            className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-900"
+                          >
+                            Received
+                            {sortOrder === "asc" ? (
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            )}
+                          </button>
                         </th>
                         <th className="py-3 px-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           Actions
