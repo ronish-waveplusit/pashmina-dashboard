@@ -17,11 +17,13 @@ import { useChalani } from "../_hooks/useChalani";
 import { useProductVariation } from "../../inventory/_hooks/useProductVariation";
 import { CreateChalanPayload, CreateChalanItemPayload } from "../../../types/chalani";
 import { toast } from "../../../components/ui/use-toast";
+import { AxiosError } from "axios";
 
 interface ChalanItem extends CreateChalanItemPayload {
     id: string;
     product_name?: string;
     lot_number?: string;
+    stock_quantity?: number;
 }
 
 const ChalaniForm = () => {
@@ -58,6 +60,17 @@ const ChalaniForm = () => {
     const [discountType, setDiscountType] = useState<"percentage" | "fixed_amount">("percentage");
     const [discountValue, setDiscountValue] = useState<number>(0);
     const [items, setItems] = useState<ChalanItem[]>([]);
+
+    // Validation errors
+    const [errors, setErrors] = useState<{
+        name?: string;
+        issueDate?: string;
+        items?: string;
+        discountValue?: string;
+    }>({});
+
+    // Per-row errors (keyed by item id), e.g. stock not available
+    const [itemErrors, setItemErrors] = useState<Record<string, string>>({});
 
     // Add initial empty row
     useEffect(() => {
@@ -103,6 +116,16 @@ const ChalaniForm = () => {
 
     // Update item field
     const updateItem = (id: string, field: keyof ChalanItem, value: any) => {
+        if (errors.items) {
+            setErrors((prev) => ({ ...prev, items: undefined }));
+        }
+        if (itemErrors[id]) {
+            setItemErrors((prev) => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
+        }
         setItems(
             items.map((item) => {
                 if (item.id === id) {
@@ -114,6 +137,7 @@ const ChalaniForm = () => {
                         if (selectedProduct) {
                             updatedItem.unit_price = parseFloat(selectedProduct.sale_price || selectedProduct.price || "0");
                             updatedItem.product_name = selectedProduct.product_name || "";
+                            updatedItem.stock_quantity = selectedProduct.quantity;
                             updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
                         }
                     }
@@ -165,6 +189,11 @@ const ChalaniForm = () => {
             newErrors.issueDate = "Issue date is required";
         }
 
+        // Discount validation
+        if (applyDiscount && discountType === "percentage" && discountValue > 100) {
+            newErrors.discountValue = "Percentage discount cannot exceed 100%";
+        }
+
         // Validate items
         const validItems = items.filter(
             (item) => item.product_variation_id > 0 && item.quantity > 0
@@ -174,8 +203,24 @@ const ChalaniForm = () => {
             newErrors.items = "At least one valid item is required";
         }
 
-        if (Object.keys(newErrors).length > 0) {
+        // Validate stock quantity per row
+        const newItemErrors: Record<string, string> = {};
+        items.forEach((item) => {
+            if (
+                item.product_variation_id > 0 &&
+                typeof item.stock_quantity === "number" &&
+                item.quantity > item.stock_quantity
+            ) {
+                newItemErrors[item.id] = `Only ${item.stock_quantity} in stock`;
+            }
+        });
+
+        if (
+            Object.keys(newErrors).length > 0 ||
+            Object.keys(newItemErrors).length > 0
+        ) {
             setErrors(newErrors);
+            setItemErrors(newItemErrors);
             toast({
                 variant: "destructive",
                 title: "Validation Error",
@@ -185,6 +230,7 @@ const ChalaniForm = () => {
         }
 
         setErrors({});
+        setItemErrors({});
 
         // Prepare payload
         const payload: CreateChalanPayload = {
@@ -211,6 +257,24 @@ const ChalaniForm = () => {
             navigate(`/chalani/${result.id}`);
         } catch (error) {
             console.error("Failed to create chalani:", error);
+
+            // Map backend "Stock not available for product variation X" to the right row
+            if (error instanceof AxiosError) {
+                const message: string = error.response?.data?.message || "";
+                const match = message.match(/product variation\s+(\d+)/i);
+                if (match) {
+                    const variationId = parseInt(match[1], 10);
+                    const targetItem = items.find(
+                        (item) => item.product_variation_id === variationId
+                    );
+                    if (targetItem) {
+                        setItemErrors((prev) => ({
+                            ...prev,
+                            [targetItem.id]: message,
+                        }));
+                    }
+                }
+            }
         }
     };
 
@@ -269,9 +333,16 @@ const ChalaniForm = () => {
                                         type="text"
                                         placeholder="Enter customer name"
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required
+                                        onChange={(e) => {
+                                            setName(e.target.value);
+                                            if (errors.name)
+                                                setErrors((prev) => ({ ...prev, name: undefined }));
+                                        }}
+                                        className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}
                                     />
+                                    {errors.name && (
+                                        <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -285,9 +356,16 @@ const ChalaniForm = () => {
                                     <Input
                                         type="date"
                                         value={issueDate}
-                                        onChange={(e) => setIssueDate(e.target.value)}
-                                        required
+                                        onChange={(e) => {
+                                            setIssueDate(e.target.value);
+                                            if (errors.issueDate)
+                                                setErrors((prev) => ({ ...prev, issueDate: undefined }));
+                                        }}
+                                        className={errors.issueDate ? "border-red-500 focus-visible:ring-red-500" : ""}
                                     />
+                                    {errors.issueDate && (
+                                        <p className="text-sm text-red-600 mt-1">{errors.issueDate}</p>
+                                    )}
                                 </div>
 
                                 {/* Due Date (Optional) */}
@@ -346,7 +424,7 @@ const ChalaniForm = () => {
                                                             }
                                                             onOpenChange={(open) => handleOpenChange(open, item.id)}
                                                         >
-                                                            <SelectTrigger className="w-full">
+                                                            <SelectTrigger className={`w-full ${itemErrors[item.id] ? "border-red-500 focus:ring-red-500" : ""}`}>
                                                                 <SelectValue placeholder="Select product..." />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -400,6 +478,11 @@ const ChalaniForm = () => {
                                                                 </div>
                                                             </SelectContent>
                                                         </Select>
+                                                        {itemErrors[item.id] && (
+                                                            <p className="text-sm text-red-600 mt-1">
+                                                                {itemErrors[item.id]}
+                                                            </p>
+                                                        )}
                                                         {/* {item.product_name && (
                                                             <div className="text-xs text-gray-500 mt-1">
                                                                 {item.product_name}
@@ -415,12 +498,18 @@ const ChalaniForm = () => {
                                                         <Input
                                                             type="number"
                                                             min="1"
+                                                            max={item.stock_quantity}
                                                             value={item.quantity}
                                                             onChange={(e) =>
                                                                 updateItem(item.id, "quantity", parseInt(e.target.value) || 0)
                                                             }
-                                                            className="w-full"
+                                                            className={`w-full ${itemErrors[item.id] ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                                                         />
+                                                        {typeof item.stock_quantity === "number" && item.product_variation_id > 0 && (
+                                                            <p className="text-xs text-gray-500 mt-1">
+                                                                In stock: {item.stock_quantity}
+                                                            </p>
+                                                        )}
                                                     </td>
                                                     <td className="py-3 px-4">
                                                         <div className="flex items-center gap-2">
@@ -458,6 +547,10 @@ const ChalaniForm = () => {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {errors.items && (
+                                    <p className="text-sm text-red-600 mt-2">{errors.items}</p>
+                                )}
 
                                 {/* Add Row Button */}
                                 <Button
@@ -510,9 +603,11 @@ const ChalaniForm = () => {
                                                     </label>
                                                     <Select
                                                         value={discountType}
-                                                        onValueChange={(value) =>
-                                                            setDiscountType(value as "percentage" | "fixed_amount")
-                                                        }
+                                                        onValueChange={(value) => {
+                                                            setDiscountType(value as "percentage" | "fixed_amount");
+                                                            if (errors.discountValue)
+                                                                setErrors((prev) => ({ ...prev, discountValue: undefined }));
+                                                        }}
                                                     >
                                                         <SelectTrigger>
                                                             <SelectValue />
@@ -533,11 +628,15 @@ const ChalaniForm = () => {
                                                         <Input
                                                             type="number"
                                                             min="0"
+                                                            max={discountType === "percentage" ? 100 : undefined}
                                                             step="0.01"
                                                             value={discountValue}
-                                                            onChange={(e) =>
-                                                                setDiscountValue(parseFloat(e.target.value) || 0)
-                                                            }
+                                                            onChange={(e) => {
+                                                                setDiscountValue(parseFloat(e.target.value) || 0);
+                                                                if (errors.discountValue)
+                                                                    setErrors((prev) => ({ ...prev, discountValue: undefined }));
+                                                            }}
+                                                            className={errors.discountValue ? "border-red-500 focus-visible:ring-red-500" : ""}
                                                         />
                                                         {discountType === "percentage" && (
                                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -545,6 +644,9 @@ const ChalaniForm = () => {
                                                             </span>
                                                         )}
                                                     </div>
+                                                    {errors.discountValue && (
+                                                        <p className="text-sm text-red-600 mt-1">{errors.discountValue}</p>
+                                                    )}
                                                 </div>
                                             </div>
 
