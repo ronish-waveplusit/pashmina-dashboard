@@ -225,6 +225,39 @@ const ProductForm = () => {
 
 
 
+  // Switch variation type while preserving the fields that both types share
+  const handleVariationTypeChange = (value: VariationType) => {
+    if (value === variationType) return;
+
+    if (value === "size_color") {
+      // color -> variable: carry over the common fields
+      setSizeColorFormData((prev) => ({
+        ...prev,
+        name: colorFormData.name,
+        code: colorFormData.code,
+        description: colorFormData.description,
+        composition: colorFormData.composition,
+        excerpt: colorFormData.excerpt,
+        status: colorFormData.status,
+        category_id: colorFormData.category_id,
+      }));
+    } else {
+      // variable -> simple: carry over the common fields
+      setColorFormData((prev) => ({
+        ...prev,
+        name: sizeColorFormData.name,
+        code: sizeColorFormData.code,
+        description: sizeColorFormData.description,
+        composition: sizeColorFormData.composition,
+        excerpt: sizeColorFormData.excerpt,
+        status: sizeColorFormData.status,
+        category_id: sizeColorFormData.category_id,
+      }));
+    }
+
+    setVariationType(value);
+  };
+
   const handleDeleteFeaturedImage = useCallback(() => {
     setDeleteFeaturedImage(true);
   }, []);
@@ -347,7 +380,7 @@ const ProductForm = () => {
             });
 
             if (variation.image instanceof File) {
-              formData.append(`variations[${varIdx}][image]`, variation.image);
+              formData.append(`variant[${varIdx}]_image`, variation.image);
             }
           }
         });
@@ -417,7 +450,7 @@ const ProductForm = () => {
           <CardContent>
             <RadioGroup
               value={variationType}
-              onValueChange={(value) => setVariationType(value as VariationType)}
+              onValueChange={(value) => handleVariationTypeChange(value as VariationType)}
               className="flex gap-6"
               disabled={isEditMode}
             >
