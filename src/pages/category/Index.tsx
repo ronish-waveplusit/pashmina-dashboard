@@ -10,7 +10,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "../../components/ui/dialog";
-import { Plus, Search, UserPlus, X, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, UserPlus, X, Edit, Trash2, Star } from "lucide-react";
 import { useTransactionCategory } from "./_hooks/useCategory";
 import { CategoryForm } from "./_components/CategoryForm";
 import { CategoryPayload } from "../../types/category";
@@ -56,6 +56,7 @@ const Index = () => {
         referralToDelete,
         actions,
         isDeleting,
+        isTogglingFeatured,
         meta,
     } = useTransactionCategory(filters);
 
@@ -191,6 +192,7 @@ const Index = () => {
                                                 <th className="py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Image</th>
                                                 <th className="py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
                                                 <th className="py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Parent Category</th>
+                                                <th className="py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-center">Featured</th>
                                                 <th className="py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                                                     Actions
                                                 </th>
@@ -223,6 +225,32 @@ const Index = () => {
                                                     </td>
                                                     <td className="py-4 px-4 text-sm text-gray-600">
                                                         {transactionCategory?.parent?.name || "-"}
+                                                    </td>
+                                                    <td className="py-4 px-4 text-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                actions.toggleFeatured(
+                                                                    transactionCategory,
+                                                                    !transactionCategory.is_featured
+                                                                )
+                                                            }
+                                                            disabled={isTogglingFeatured}
+                                                            title={
+                                                                transactionCategory.is_featured
+                                                                    ? "Remove from featured"
+                                                                    : "Mark as featured"
+                                                            }
+                                                            className="inline-flex items-center justify-center p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                                        >
+                                                            <Star
+                                                                className={`h-5 w-5 ${
+                                                                    transactionCategory.is_featured
+                                                                        ? "fill-yellow-400 text-yellow-400"
+                                                                        : "text-gray-300"
+                                                                }`}
+                                                            />
+                                                        </button>
                                                     </td>
                                                     <td className="py-4 px-4 text-right">
                                                         <div className="flex justify-end gap-2">
@@ -286,9 +314,35 @@ const Index = () => {
                                                                         </p>
                                                                     )}
                                                                 </div>
-                                                                <span className="text-xs text-gray-500 whitespace-nowrap">
-                                                                    #{(page - 1) * ITEMS_PER_PAGE + index + 1}
-                                                                </span>
+                                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            actions.toggleFeatured(
+                                                                                transactionCategory,
+                                                                                !transactionCategory.is_featured
+                                                                            )
+                                                                        }
+                                                                        disabled={isTogglingFeatured}
+                                                                        title={
+                                                                            transactionCategory.is_featured
+                                                                                ? "Remove from featured"
+                                                                                : "Mark as featured"
+                                                                        }
+                                                                        className="p-0.5 rounded disabled:opacity-50"
+                                                                    >
+                                                                        <Star
+                                                                            className={`h-5 w-5 ${
+                                                                                transactionCategory.is_featured
+                                                                                    ? "fill-yellow-400 text-yellow-400"
+                                                                                    : "text-gray-300"
+                                                                            }`}
+                                                                        />
+                                                                    </button>
+                                                                    <span className="text-xs text-gray-500">
+                                                                        #{(page - 1) * ITEMS_PER_PAGE + index + 1}
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>

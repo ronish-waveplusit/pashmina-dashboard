@@ -3,6 +3,7 @@ export interface CategoryPayload {
   name: string;
   parent_id?: string | number | null;
   featured_image?: string | null;
+  is_featured?: boolean | number;
    parent?: ParentCategory;
 }
 export interface ParentCategory {

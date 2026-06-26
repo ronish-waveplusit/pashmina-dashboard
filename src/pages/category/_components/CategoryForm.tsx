@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
+import { Switch } from "../../../components/ui/switch";
 import { Loader2, Upload, X } from "lucide-react";
 import * as Yup from "yup";
 import { CategoryPayload } from "../../../types/category";
@@ -45,6 +46,9 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
     parent_id: initialData?.parent?.id ? String(initialData.parent.id) : "",
   });
 
+  const [isFeatured, setIsFeatured] = useState<boolean>(
+    Boolean(initialData?.is_featured)
+  );
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [existingImageUrl] = useState<string | null>(initialData?.featured_image ?? null);
   const [imagePreview, setImagePreview] = useState<string | null>(
@@ -145,6 +149,8 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
         formData.append("parent_id", "");
       }
 
+      formData.append("is_featured", isFeatured ? "1" : "0");
+
       // Only append featured_image if we have a new file
       if (featuredImage) {
         formData.append("featured_image", featuredImage);
@@ -228,6 +234,21 @@ export const CategoryForm: React.FC<CategoryPayloadFormProps> = ({
           {errors.parent_id && (
             <p className="text-sm text-red-600 mt-1">{getErrorMessage(errors.parent_id)}</p>
           )}
+        </div>
+
+        {/* Featured */}
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="space-y-0.5">
+            <Label htmlFor="is_featured">Featured</Label>
+            <p className="text-xs text-muted-foreground">
+              Show this category in featured sections
+            </p>
+          </div>
+          <Switch
+            id="is_featured"
+            checked={isFeatured}
+            onCheckedChange={setIsFeatured}
+          />
         </div>
 
         {/* Featured Image */}

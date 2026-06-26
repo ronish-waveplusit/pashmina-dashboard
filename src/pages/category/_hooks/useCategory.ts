@@ -42,6 +42,7 @@ interface UseTransactionCategoryReturn {
   isAdding: boolean;
   isUpdating: boolean;
   isDeleting: boolean;
+  isTogglingFeatured: boolean;
   referralToDelete: CategoryPayload | null;
   actions: {
     view: (id: string | number) => void;
@@ -51,6 +52,7 @@ interface UseTransactionCategoryReturn {
       id: string | number,
       data: FormData
     ) => Promise<CategoryPayload>;
+    toggleFeatured: (category: CategoryPayload, value: boolean) => void;
     confirmDelete: (id: string | number) => void;
     cancelDelete: () => void;
     handleDelete: () => void;
@@ -186,6 +188,47 @@ export const useTransactionCategory = (
     },
   });
 
+  // Toggle the "featured" flag for a category without opening the form
+  const { mutate: performToggleFeatured, isPending: isTogglingFeatured } =
+    useMutation({
+      mutationFn: ({
+        category,
+        value,
+      }: {
+        category: CategoryPayload;
+        value: boolean;
+      }) => {
+        const formData = new FormData();
+        formData.append("name", String(category.name));
+        const parentId = category.parent?.id ?? category.parent_id;
+        formData.append("parent_id", parentId ? String(parentId) : "");
+        formData.append("is_featured", value ? "1" : "0");
+        formData.append("_method", "PUT");
+        return updateTransactionCategory({ id: category.id, formData });
+      },
+      onSuccess: (data) => {
+        toast({
+          title: data.is_featured ? "Marked as Featured" : "Removed from Featured",
+        });
+        queryClient.invalidateQueries({
+          queryKey: TransactionCategoryQueryKeys.lists(),
+        });
+      },
+      onError: (err: unknown) => {
+        const message =
+          err instanceof AxiosError
+            ? err.response?.data?.message
+            : err instanceof Error
+            ? err.message
+            : "Failed to update featured status.";
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: message,
+        });
+      },
+    });
+
   const handleView = useCallback(
     (transactionCategoryId: string | number) => {
       navigate(`/transactionCategory/${transactionCategoryId}`);
@@ -228,6 +271,7 @@ export const useTransactionCategory = (
     isAdding,
     isUpdating,
     isDeleting,
+    isTogglingFeatured,
     referralToDelete,
     actions: {
       view: handleView,
@@ -235,6 +279,8 @@ export const useTransactionCategory = (
       add: performAdd,
       update: (id: string | number, formData: FormData) =>
         performUpdate({ id, formData }),
+      toggleFeatured: (category: CategoryPayload, value: boolean) =>
+        performToggleFeatured({ category, value }),
       confirmDelete,
       cancelDelete,
       handleDelete,
