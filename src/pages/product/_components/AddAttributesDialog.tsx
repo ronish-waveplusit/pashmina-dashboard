@@ -76,17 +76,34 @@ const AddAttributesDialog = ({
       delete newSelectedValues[attributeId];
     } else {
       newSelected.add(attributeId);
-      // Initialize with all values selected by default
-      const attribute = attributes.find((a) => String(a.id) === attributeId);
-      if (attribute && attribute.attributeValues) {
-        newSelectedValues[attributeId] = new Set(
-          attribute.attributeValues.map((v) => String(v.id))
-        );
-      }
+      // Start with no values selected; the user picks the ones they want
+      newSelectedValues[attributeId] = new Set();
     }
 
     setSelectedAttributes(newSelected);
     setSelectedValues(newSelectedValues);
+  };
+
+  const setNewAttributeAllValues = (attributeId: string, selectAll: boolean) => {
+    const attribute = attributes.find((a) => String(a.id) === attributeId);
+    setSelectedValues((prev) => ({
+      ...prev,
+      [attributeId]: selectAll && attribute?.attributeValues
+        ? new Set(attribute.attributeValues.map((v) => String(v.id)))
+        : new Set(),
+    }));
+  };
+
+  const setExistingAttributeAllValues = (
+    attributeId: string,
+    selectAll: boolean
+  ) => {
+    const attribute = attributes.find((a) => String(a.id) === attributeId);
+    const allIds =
+      selectAll && attribute?.attributeValues
+        ? attribute.attributeValues.map((v) => Number(v.id))
+        : [];
+    onUpdateAttributeValues(attributeId, allIds);
   };
 
   const handleToggleValue = (attributeId: string, valueId: string) => {
@@ -246,12 +263,38 @@ const AddAttributesDialog = ({
                 return (
                   <div key={productAttr.id} className="rounded border border-border">
                     <div className="p-3 bg-muted/30">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <div>
                           <p className="text-sm font-medium">{productAttr.name}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {selectedCount} of {totalCount} values selected
                           </p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() =>
+                              setExistingAttributeAllValues(productAttr.id, true)
+                            }
+                            disabled={selectedCount === totalCount}
+                          >
+                            Select all
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() =>
+                              setExistingAttributeAllValues(productAttr.id, false)
+                            }
+                            disabled={selectedCount === 0}
+                          >
+                            Clear
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -339,6 +382,28 @@ const AddAttributesDialog = ({
                       attr.attributeValues &&
                       attr.attributeValues.length > 0 && (
                         <div className="p-3 pt-0">
+                          <div className="flex justify-end gap-1 mt-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setNewAttributeAllValues(attrId, true)}
+                              disabled={selectedValueCount === totalValueCount}
+                            >
+                              Select all
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setNewAttributeAllValues(attrId, false)}
+                              disabled={selectedValueCount === 0}
+                            >
+                              Clear
+                            </Button>
+                          </div>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {attr.attributeValues.map((value) => {
                               const valueId = String(value.id);

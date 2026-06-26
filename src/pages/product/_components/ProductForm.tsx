@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
@@ -225,13 +225,13 @@ const ProductForm = () => {
 
 
 
-  const handleDeleteFeaturedImage = () => {
+  const handleDeleteFeaturedImage = useCallback(() => {
     setDeleteFeaturedImage(true);
-  };
+  }, []);
 
-  const handleDeleteGalleryImage = (uuid: string) => {
+  const handleDeleteGalleryImage = useCallback((uuid: string) => {
     setDeletedGalleryImageUuids(prev => [...prev, uuid]);
-  };
+  }, []);
 
   const handleSubmit = async () => {
     try {

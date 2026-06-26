@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { FieldError } from "../../../components/ui/field-error";
@@ -206,4 +207,4 @@ const ImageUpload = ({
   );
 };
 
-export default ImageUpload;
+export default memo(ImageUpload);

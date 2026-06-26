@@ -36,13 +36,11 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
   }, [initialLocalAttributes]);
 
   const addAttributes = (newAttributes: any[]) => {
-    console.log("Adding/Updating attributes:", newAttributes);
-    
     // Separate new attributes from existing ones
     const existingIds = new Set(localAttributes.map(a => String(a.attribute_id)));
     const toUpdate: any[] = [];
     const toAdd: any[] = [];
-    
+
     newAttributes.forEach(attr => {
       const attrId = String(attr.attribute_id);
       if (existingIds.has(attrId)) {
@@ -52,15 +50,11 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
       }
     });
 
-    console.log("To update:", toUpdate);
-    console.log("To add:", toAdd);
-
     // Update existing attributes
     if (toUpdate.length > 0) {
       const updatedLocalAttrs = localAttributes.map(existing => {
         const update = toUpdate.find(u => u.attribute_id === existing.attribute_id);
         if (update) {
-          console.log("Updating attribute:", existing.name, "with values:", update.values);
           return {
             ...existing,
             values: update.values || existing.values,
@@ -139,8 +133,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
   };
 
   const updateAttributeValues = (attributeId: string, valueIds: number[]) => {
-    console.log("Updating attribute values:", attributeId, valueIds);
-    
     // Update local attributes
     setLocalAttributes(
       localAttributes.map((attr) =>
@@ -162,14 +154,9 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
   };
 
   const generateVariations = () => {
-    console.log("Generate variations clicked");
-    console.log("Local attributes:", localAttributes);
-    
     const variationAttributes = localAttributes.filter(
       (attr) => attr.usedForVariations
     );
-
-    console.log("Variation attributes:", variationAttributes);
 
     if (variationAttributes.length === 0) {
       toast.error("Please add at least one attribute marked for variations");
@@ -180,18 +167,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
     const hasEmptyValues = variationAttributes.some((attr) => {
       const noValues = !attr.values.trim();
       const noValueIds = !attr.attribute_value_ids || attr.attribute_value_ids.length === 0;
-      
-      console.log(`Attribute ${attr.name}:`, {
-        id: attr.id,
-        attribute_id: attr.attribute_id,
-        values: attr.values,
-        valueIds: attr.attribute_value_ids,
-        valueIdsLength: attr.attribute_value_ids?.length || 0,
-        noValues,
-        noValueIds,
-        fullObject: attr
-      });
-      
       return noValues || noValueIds;
     });
 
@@ -207,8 +182,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
       values: attr.values.split(",").map((v) => v.trim()).filter((v) => v),
       value_ids: attr.attribute_value_ids,
     }));
-
-    console.log("Attribute data for combinations:", attributeData);
 
     const generateCombinations = (
       arrays: any[],
@@ -230,7 +203,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
     };
 
     const combinations = generateCombinations(attributeData);
-    console.log("Generated combinations:", combinations);
 
     // Create a map of existing variations by their attribute combination
     const existingVariationsMap = new Map();
@@ -242,8 +214,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
         .join('|');
       existingVariationsMap.set(key, variation);
     });
-
-    console.log("Existing variations map:", existingVariationsMap);
 
     // Generate variations, preserving existing ones
     const newVariations = combinations.map((combo, index) => {
@@ -258,11 +228,9 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
 
       if (existing) {
         // Keep existing variation data
-        console.log("Found existing variation for:", key);
         return existing;
       } else {
         // Create new variation
-        console.log("Creating new variation for:", key);
         const sku = `SKU-${Date.now()}-${index}`;
         
         return {
@@ -279,8 +247,6 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
         };
       }
     });
-
-    console.log("Final variations (preserved + new):", newVariations);
 
     setFormData({
       ...formData,
