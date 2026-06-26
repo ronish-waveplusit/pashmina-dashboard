@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Store, Share2, Mail, Info } from "lucide-react";
+import { Store, Share2, Mail, Info, Home } from "lucide-react";
 
 export interface FieldDef {
   key: string;
@@ -40,6 +40,35 @@ export const SETTINGS_GROUPS: GroupDef[] = [
       { key: "site_description", label: "Description", type: "textarea", rows: 3, placeholder: "Hand-loomed in the Himalayas since 1962." },
       { key: "site_location", label: "Location", type: "text", placeholder: "Kathmandu, Nepal", half: true },
       { key: "atelier_tagline", label: "Atelier tagline", type: "text", placeholder: "Visits to the workshop are by appointment.", half: true },
+    ],
+  },
+  {
+    id: "home",
+    label: "Home",
+    icon: Home,
+    description: "The hero headline and the two intro lines above the home banner.",
+    fields: [
+      {
+        key: "hero_words",
+        label: "Hero rotating words",
+        type: "text",
+        placeholder: "Heritage, Culture, Elegance",
+        help: "Comma-separated. Each word animates in turn as the big hero title.",
+      },
+      {
+        key: "hero_left_text",
+        label: "Intro line (left of banner)",
+        type: "textarea",
+        rows: 2,
+        placeholder: "From the high-altitude Changthang plateau, through the looms of Kathmandu, to the world.",
+      },
+      {
+        key: "hero_right_text",
+        label: "Intro line (right of banner)",
+        type: "textarea",
+        rows: 2,
+        placeholder: "Pure cashmere, hand-spun and woven by master artisans across three generations.",
+      },
     ],
   },
   {
