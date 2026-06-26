@@ -380,7 +380,7 @@ const ProductForm = () => {
             });
 
             if (variation.image instanceof File) {
-              formData.append(`variant[${varIdx}]_image`, variation.image);
+              formData.append(`variations[${varIdx}][variant_image]`, variation.image);
             }
           }
         });
