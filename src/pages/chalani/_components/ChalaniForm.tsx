@@ -75,7 +75,7 @@ const ChalaniForm = () => {
     );
     const [dueDate, setDueDate] = useState("");
     const [applyDiscount, setApplyDiscount] = useState(false);
-    const [discountType, setDiscountType] = useState<"percentage" | "fixed_amount">("percentage");
+    const [discountType, setDiscountType] = useState<"percentage" | "amount">("percentage");
     const [discountValue, setDiscountValue] = useState<number>(0);
     const [items, setItems] = useState<ChalanItem[]>(prefillItems);
 
@@ -653,7 +653,7 @@ const ChalaniForm = () => {
                                                     <Select
                                                         value={discountType}
                                                         onValueChange={(value) => {
-                                                            setDiscountType(value as "percentage" | "fixed_amount");
+                                                            setDiscountType(value as "percentage" | "amount");
                                                             if (errors.discountValue)
                                                                 setErrors((prev) => ({ ...prev, discountValue: undefined }));
                                                         }}
@@ -663,7 +663,7 @@ const ChalaniForm = () => {
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="percentage">Percentage (%)</SelectItem>
-                                                            <SelectItem value="fixed_amount">Fixed (NPR)</SelectItem>
+                                                            <SelectItem value="amount">Fixed (NPR)</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
