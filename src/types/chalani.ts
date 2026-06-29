@@ -17,6 +17,9 @@ export interface ChalanListItem {
 export interface ProductVariation {
   id: number;
   name: string;
+  color?: string | null;
+  size?: string | null;
+  sku?: string | null;
 }
 
 export interface ChalanItem {
@@ -32,6 +35,7 @@ export interface ChalanDetail {
   chalan_no: string;
   name: string;
   issue_date: string;
+  due_date?: string | null;
   total_amount: string;
   discount_type: "percentage" | "fixed";
   discount_value: string;
@@ -52,6 +56,7 @@ export interface CreateChalanPayload {
   is_guide: boolean;
   name: string;
   issue_date: string;
+  due_date?: string;
   total_amount: number;
   discount_type: "percentage" | "amount"|null;
   discount_value: number;

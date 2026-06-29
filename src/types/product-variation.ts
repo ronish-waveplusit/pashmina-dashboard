@@ -8,6 +8,8 @@ export interface ProductVariation {
   low_stock_threshold: number;
   stock_status: "low_stock" | "in_stock" | "out_of_stock";
   status: "active" | "inactive";
+  color?: string | null;
+  size?: string | null;
   created_at: string;
   updated_at: string;
   lots?: Lot[]; // Add this line

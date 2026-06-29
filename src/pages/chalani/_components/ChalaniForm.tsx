@@ -23,9 +23,17 @@ interface ChalanItem extends CreateChalanItemPayload {
     id: string;
     product_name?: string;
     sku?: string;
+    color?: string | null;
+    size?: string | null;
     lot_number?: string;
     stock_quantity?: number;
 }
+
+// Build a "Red / M" style label from color + size
+const formatVariantLabel = (
+    color?: string | null,
+    size?: string | null
+): string => [color, size].filter(Boolean).join(" / ");
 
 const ChalaniForm = () => {
     const navigate = useNavigate();
@@ -84,6 +92,7 @@ const ChalaniForm = () => {
     const [errors, setErrors] = useState<{
         name?: string;
         issueDate?: string;
+        dueDate?: string;
         items?: string;
         discountValue?: string;
     }>({});
@@ -116,6 +125,8 @@ const ChalaniForm = () => {
                             stock_quantity: product.quantity,
                             product_name: item.product_name || product.product_name || "",
                             sku: item.sku || product.sku || "",
+                            color: item.color ?? product.color ?? null,
+                            size: item.size ?? product.size ?? null,
                         };
                     }
                 }
@@ -183,6 +194,8 @@ const ChalaniForm = () => {
                             updatedItem.unit_price = parseFloat(selectedProduct.sale_price || selectedProduct.price || "0");
                             updatedItem.product_name = selectedProduct.product_name || "";
                             updatedItem.sku = selectedProduct.sku || "";
+                            updatedItem.color = selectedProduct.color ?? null;
+                            updatedItem.size = selectedProduct.size ?? null;
                             updatedItem.stock_quantity = selectedProduct.quantity;
                             updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
                         }
@@ -235,6 +248,11 @@ const ChalaniForm = () => {
             newErrors.issueDate = "Issue date is required";
         }
 
+        // Due date must be after the issue date (only when provided)
+        if (dueDate && issueDate && new Date(dueDate) <= new Date(issueDate)) {
+            newErrors.dueDate = "Due date must be after the issue date";
+        }
+
         // Discount validation
         if (applyDiscount && discountType === "percentage" && discountValue > 100) {
             newErrors.discountValue = "Percentage discount cannot exceed 100%";
@@ -283,6 +301,7 @@ const ChalaniForm = () => {
             is_guide: isGuide,
             name: name.trim(),
             issue_date: issueDate,
+            ...(dueDate ? { due_date: dueDate } : {}),
             total_amount: calculateGrandTotal(),
             discount_type: applyDiscount ? discountType : null,
             discount_value: applyDiscount ? discountValue : 0,
@@ -424,8 +443,17 @@ const ChalaniForm = () => {
                                     <Input
                                         type="date"
                                         value={dueDate}
-                                        onChange={(e) => setDueDate(e.target.value)}
+                                        min={issueDate || undefined}
+                                        onChange={(e) => {
+                                            setDueDate(e.target.value);
+                                            if (errors.dueDate)
+                                                setErrors((prev) => ({ ...prev, dueDate: undefined }));
+                                        }}
+                                        className={errors.dueDate ? "border-red-500 focus-visible:ring-red-500" : ""}
                                     />
+                                    {errors.dueDate && (
+                                        <p className="text-sm text-red-600 mt-1">{errors.dueDate}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -477,6 +505,9 @@ const ChalaniForm = () => {
                                                                     <span className="truncate">
                                                                         {item.product_name}
                                                                         {item.sku ? ` - ${item.sku}` : ""}
+                                                                        {formatVariantLabel(item.color, item.size)
+                                                                            ? ` (${formatVariantLabel(item.color, item.size)})`
+                                                                            : ""}
                                                                     </span>
                                                                 ) : (
                                                                     <SelectValue placeholder="Select product..." />
@@ -520,8 +551,11 @@ const ChalaniForm = () => {
                                                                                             ? `${product.product_name}${product.sku ? ` - ${product.sku}` : ""}`
                                                                                             : "Unknown"}
                                                                                     </span>
-
-
+                                                                                    {formatVariantLabel(product.color, product.size) && (
+                                                                                        <span className="text-xs text-gray-500">
+                                                                                            {formatVariantLabel(product.color, product.size)}
+                                                                                        </span>
+                                                                                    )}
                                                                                 </div>
                                                                             </SelectItem>
                                                                         ))

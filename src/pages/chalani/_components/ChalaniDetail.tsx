@@ -5,7 +5,12 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useChalaniDetail } from "../_hooks/useChalani";
+import { ProductVariation } from "../../../types/chalani";
 import { useReactToPrint } from "react-to-print";
+
+// Build a "Red / M" style label from a variation's color + size
+const variantLabel = (variation: ProductVariation): string =>
+    [variation.color, variation.size].filter(Boolean).join(" / ");
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
 
@@ -277,8 +282,12 @@ const ChalaniDetail = () => {
                                             <td className="border border-gray-300 py-3 px-4">
                                                 <div className="text-sm font-medium">
                                                     {item.product_variations.name}
+                                                    {variantLabel(item.product_variations) && (
+                                                        <span className="text-gray-500 font-normal">
+                                                            {" "}({variantLabel(item.product_variations)})
+                                                        </span>
+                                                    )}
                                                 </div>
-                                               
                                             </td>
                                             <td className="border border-gray-300 py-3 px-4 text-center text-sm">
                                                 {item.quantity}
@@ -339,6 +348,22 @@ const ChalaniDetail = () => {
                         <h3 className="text-lg font-semibold mb-4">Financial Details</h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
+                                <span className="text-gray-600">Issue Date:</span>
+                                <span className="font-semibold">
+                                    {formatDate(chalani.issue_date)}
+                                </span>
+                            </div>
+
+                            {chalani.due_date && (
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Due Date:</span>
+                                    <span className="font-semibold">
+                                        {formatDate(chalani.due_date)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between">
                                 <span className="text-gray-600">Subtotal:</span>
                                 <span className="font-semibold">
                                     NPR {formatCurrency(calculateSubtotal())}
@@ -378,7 +403,14 @@ const ChalaniDetail = () => {
                                         className="flex justify-between items-center p-3 bg-gray-50 rounded"
                                     >
                                         <div>
-                                            <p className="font-medium">{item.product_variations.name}</p>
+                                            <p className="font-medium">
+                                                {item.product_variations.name}
+                                                {variantLabel(item.product_variations) && (
+                                                    <span className="text-gray-500 font-normal">
+                                                        {" "}({variantLabel(item.product_variations)})
+                                                    </span>
+                                                )}
+                                            </p>
                                             <p className="text-sm text-gray-600">
                                                 Qty: {item.quantity} × NPR {formatCurrency(item.unit_price)}
                                             </p>
