@@ -1,4 +1,5 @@
 export type EnquiryStatus = "new" | "contacted" | "closed" | "converted";
+export type EnquiryStatus = "new" | "contacted" | "closed" | "converted";
 
 export interface EnquiryItem {
   id: number;

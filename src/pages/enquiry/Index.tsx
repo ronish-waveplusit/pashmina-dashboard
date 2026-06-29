@@ -31,10 +31,11 @@ import Pagination from "../../components/pagination/pagination";
 import { Enquiry, EnquiryStatus } from "../../types/enquiry";
 import { ChalaniPrefillState } from "../../types/chalani";
 
-const STATUS_STYLES: Record<EnquiryStatus, string> = {
+const STATUS_STYLES: Record<string, string> = {
   new: "bg-blue-100 text-blue-800 hover:bg-blue-100",
   contacted: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   closed: "bg-gray-100 text-gray-700 hover:bg-gray-100",
+  converted: "bg-green-100 text-green-800 hover:bg-green-100",
   converted: "bg-green-100 text-green-800 hover:bg-green-100",
 };
 
@@ -264,6 +265,7 @@ const Index = () => {
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="new">New</SelectItem>
                   <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="converted">Converted</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
                   <SelectItem value="converted">Converted</SelectItem>
                 </SelectContent>
