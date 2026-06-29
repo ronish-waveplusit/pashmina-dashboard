@@ -12,6 +12,7 @@ interface Props {
   setFormData: (data: SizeColorProductFormData) => void;
   initialLocalAttributes?: LocalAttribute[];
   onVariationDeleted?: (variationId: number | undefined) => void;
+  errors?: Record<string, string[]>;
 }
 
 interface LocalAttribute {
@@ -24,7 +25,7 @@ interface LocalAttribute {
   attribute_value_ids: number[];
 }
 
-const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , onVariationDeleted}: Props) => {
+const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , onVariationDeleted, errors = {}}: Props) => {
   const [activeTab, setActiveTab] = useState("attributes");
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
 
@@ -34,6 +35,16 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
       setLocalAttributes(initialLocalAttributes);
     }
   }, [initialLocalAttributes]);
+
+  // When the backend returns variation errors, jump to the variations tab so they're visible
+  const hasVariationErrors = Object.keys(errors).some((key) =>
+    key.startsWith("variations.")
+  );
+  useEffect(() => {
+    if (hasVariationErrors) {
+      setActiveTab("variations");
+    }
+  }, [hasVariationErrors]);
 
   const addAttributes = (newAttributes: any[]) => {
     // Separate new attributes from existing ones
@@ -340,6 +351,7 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
             onUpdate={updateVariation}
             onRemove={removeVariation}
              onVariationDeleted={onVariationDeleted}
+             errors={errors}
           />
         )}
       </TabsContent>

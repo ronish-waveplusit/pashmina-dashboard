@@ -36,7 +36,7 @@ const STATUS_STYLES: Record<string, string> = {
   contacted: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   closed: "bg-gray-100 text-gray-700 hover:bg-gray-100",
   converted: "bg-green-100 text-green-800 hover:bg-green-100",
-  converted: "bg-green-100 text-green-800 hover:bg-green-100",
+ 
 };
 
 const Index = () => {

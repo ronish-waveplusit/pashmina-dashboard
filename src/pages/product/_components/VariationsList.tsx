@@ -41,18 +41,30 @@ interface Props {
   onUpdate: (index: number, updates: Partial<Variation>) => void;
   onRemove: (index: number) => void;
   onVariationDeleted?: (variationId: number | undefined) => void; // Callback to notify parent
+  errors?: Record<string, string[]>;
 }
 
-const VariationsList = ({ 
-  variations, 
-  attributes, 
-  onUpdate, 
+const VariationsList = ({
+  variations,
+  attributes,
+  onUpdate,
   onRemove,
-  onVariationDeleted 
+  onVariationDeleted,
+  errors = {},
 }: Props) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const variationAttributes = attributes.filter((attr) => attr.usedForVariations);
+
+  // Get the error message for a specific variation field, e.g. variations.0.price
+  const getFieldError = (index: number, field: string): string | undefined =>
+    errors[`variations.${index}.${field}`]?.[0];
+
+  // All error messages for a given variation (any field)
+  const getVariationErrors = (index: number): string[] =>
+    Object.entries(errors)
+      .filter(([key]) => key.startsWith(`variations.${index}.`))
+      .flatMap(([, msgs]) => msgs);
 
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -120,14 +132,17 @@ const VariationsList = ({
           <div className="divide-y divide-border overflow-y-auto flex-1">
             {variations.map((variation, index) => {
               const isEditing = editingIndex === index;
+              const variationErrors = getVariationErrors(index);
+              const hasError = variationErrors.length > 0;
 
               return (
                 <div
                   key={variation.id || index}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors ${
+                  className={`flex flex-col gap-1 px-4 py-3 hover:bg-accent/50 transition-colors ${
                     isEditing ? "bg-accent border-l-4 border-l-primary" : ""
-                  }`}
+                  } ${hasError ? "border-l-4 border-l-destructive bg-destructive/5" : ""}`}
                 >
+                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-4 min-w-0">
                     {variationAttributes.map((attr) => {
                       const valueName = getAttributeValueName(
@@ -188,6 +203,14 @@ const VariationsList = ({
                       </Button>
                     )}
                   </div>
+                 </div>
+                  {hasError && (
+                    <div className="pl-1 text-xs text-destructive space-y-0.5">
+                      {variationErrors.map((msg, i) => (
+                        <p key={i}>{msg}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -241,6 +264,11 @@ const VariationsList = ({
                   className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="SKU-001"
                 />
+                {getFieldError(editingIndex, "sku") && (
+                  <p className="text-xs text-destructive mt-1">
+                    {getFieldError(editingIndex, "sku")}
+                  </p>
+                )}
               </div>
 
               {/* Image Upload */}
@@ -297,6 +325,11 @@ const VariationsList = ({
                     className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="0.00"
                   />
+                  {getFieldError(editingIndex, "price") && (
+                    <p className="text-xs text-destructive mt-1">
+                      {getFieldError(editingIndex, "price")}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -326,6 +359,11 @@ const VariationsList = ({
                     className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="0"
                   />
+                  {getFieldError(editingIndex, "quantity") && (
+                    <p className="text-xs text-destructive mt-1">
+                      {getFieldError(editingIndex, "quantity")}
+                    </p>
+                  )}
                 </div>
 
                 <div>

@@ -521,6 +521,7 @@ const ProductForm = () => {
                     formData={sizeColorFormData}
                     setFormData={setSizeColorFormData}
                     initialLocalAttributes={localAttributes}
+                    errors={validationErrors}
                     onVariationDeleted={(variationId: number | undefined) => {
                       if (variationId) {
                         setDeletedVariationIds(prev => [...prev, variationId]);
