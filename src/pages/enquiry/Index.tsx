@@ -35,6 +35,7 @@ const STATUS_STYLES: Record<EnquiryStatus, string> = {
   new: "bg-blue-100 text-blue-800 hover:bg-blue-100",
   contacted: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   closed: "bg-gray-100 text-gray-700 hover:bg-gray-100",
+  converted: "bg-green-100 text-green-800 hover:bg-green-100",
 };
 
 const Index = () => {
@@ -105,13 +106,23 @@ const Index = () => {
 
   // Convert an enquiry into a pre-filled Chalani form
   const handleConvertToChalani = (enquiry: Enquiry) => {
+    // Already converted -> open the created chalani instead of the create page
+    if (enquiry.chalani_id) {
+      navigate(`/chalani/${enquiry.chalani_id}`);
+      return;
+    }
+
     const prefill: ChalaniPrefillState = {
       enquiry_id: enquiry.id,
       name: enquiry.name,
       items: enquiry.items
-        .filter((item) => item.product_variant_id)
         .map((item) => ({
-          product_variation_id: item.product_variant_id as number,
+          variationId: item.product_variation_id ?? item.product_variant_id ?? 0,
+          item,
+        }))
+        .filter(({ variationId }) => variationId > 0)
+        .map(({ variationId, item }) => ({
+          product_variation_id: variationId,
           product_name: item.product_name,
           quantity: item.quantity,
           unit_price: parseFloat(item.price ?? "0") || 0,
@@ -254,6 +265,7 @@ const Index = () => {
                   <SelectItem value="new">New</SelectItem>
                   <SelectItem value="contacted">Contacted</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="converted">Converted</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -346,12 +358,15 @@ const Index = () => {
                                 size="sm"
                                 onClick={() => handleConvertToChalani(enquiry)}
                                 disabled={
-                                  !enquiry.items.some((i) => i.product_variant_id)
+                                  !enquiry.chalani_id &&
+                                  !enquiry.items.some(
+                                    (i) => i.product_variation_id ?? i.product_variant_id
+                                  )
                                 }
                                 className="text-xs text-coffee border-coffee hover:bg-coffee/10"
                               >
                                 <FileText className="h-3.5 w-3.5 mr-1" />
-                               Chalani
+                                {enquiry.chalani_id ? "View Chalani" : "Chalani"}
                               </Button>
                               <Button
                                 variant="destructive"
@@ -483,25 +498,45 @@ const Index = () => {
                 </div>
 
                 {/* Status control */}
-                <div>
-                  <p className="text-xs text-gray-500 mb-2">Update status</p>
-                  <Select
-                    value={selected.status}
-                    onValueChange={(value) =>
-                      actions.updateStatus(selected.id, value as EnquiryStatus)
-                    }
-                    disabled={isUpdating}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {selected.chalani_id ? (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Status</p>
+                    <div className="flex items-center justify-between rounded-lg border p-3">
+                      <Badge className={`text-xs capitalize ${STATUS_STYLES.converted}`}>
+                        Converted
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs text-coffee border-coffee hover:bg-coffee/10"
+                        onClick={() => navigate(`/chalani/${selected.chalani_id}`)}
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" />
+                        View Chalani
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Update status</p>
+                    <Select
+                      value={selected.status}
+                      onValueChange={(value) =>
+                        actions.updateStatus(selected.id, value as EnquiryStatus)
+                      }
+                      disabled={isUpdating}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="contacted">Contacted</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             )}
 

@@ -22,6 +22,7 @@ import { AxiosError } from "axios";
 interface ChalanItem extends CreateChalanItemPayload {
     id: string;
     product_name?: string;
+    sku?: string;
     lot_number?: string;
     stock_quantity?: number;
 }
@@ -114,6 +115,7 @@ const ChalaniForm = () => {
                             ...item,
                             stock_quantity: product.quantity,
                             product_name: item.product_name || product.product_name || "",
+                            sku: item.sku || product.sku || "",
                         };
                     }
                 }
@@ -180,6 +182,7 @@ const ChalaniForm = () => {
                         if (selectedProduct) {
                             updatedItem.unit_price = parseFloat(selectedProduct.sale_price || selectedProduct.price || "0");
                             updatedItem.product_name = selectedProduct.product_name || "";
+                            updatedItem.sku = selectedProduct.sku || "";
                             updatedItem.stock_quantity = selectedProduct.quantity;
                             updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
                         }
@@ -471,7 +474,10 @@ const ChalaniForm = () => {
                                                         >
                                                             <SelectTrigger className={`w-full ${itemErrors[item.id] ? "border-red-500 focus:ring-red-500" : ""}`}>
                                                                 {item.product_variation_id > 0 && item.product_name ? (
-                                                                    <span className="truncate">{item.product_name}</span>
+                                                                    <span className="truncate">
+                                                                        {item.product_name}
+                                                                        {item.sku ? ` - ${item.sku}` : ""}
+                                                                    </span>
                                                                 ) : (
                                                                     <SelectValue placeholder="Select product..." />
                                                                 )}
