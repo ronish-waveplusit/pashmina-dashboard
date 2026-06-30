@@ -7,8 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-import { Badge } from "../../../components/ui/badge";
-import { X } from "lucide-react";
 import { FieldError } from "../../../components/ui/field-error";
 interface Props {
   formData: ColorProductFormData | SizeColorProductFormData;
@@ -20,27 +18,13 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
   const { transactionCategories, isLoading, isError } = useTransactionCategory();
 
   const selectedCategoryIds = formData.category_id || [];
+  const selectedCategoryId = selectedCategoryIds[0];
 
-  const handleAddCategory = (categoryId: string) => {
-    const id = parseInt(categoryId);
-    if (!selectedCategoryIds.includes(id)) {
-      setFormData({
-        ...formData,
-        category_id: [...selectedCategoryIds, id],
-      });
-    }
-  };
-
-  const handleRemoveCategory = (categoryId: number) => {
+  const handleSelectCategory = (categoryId: string) => {
     setFormData({
       ...formData,
-      category_id: selectedCategoryIds.filter((id) => id !== categoryId),
+      category_id: categoryId ? [parseInt(categoryId)] : [],
     });
-  };
-
-  const getCategoryName = (id: number) => {
-    const category = transactionCategories?.find((cat: any) => cat.id === id);
-    return category?.name || `Category ${id}`;
   };
 
   return (
@@ -109,30 +93,16 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
 
       <div>
         <label className="text-sm font-medium text-foreground block mb-2">
-          Categories
+          Category
         </label>
 
-        {/* Selected Categories */}
-        {selectedCategoryIds.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {selectedCategoryIds.map((id) => (
-              <Badge key={id} variant="secondary" className="pl-3 pr-1">
-                {getCategoryName(id)}
-                <button
-                  onClick={() => handleRemoveCategory(id)}
-                  className="ml-2 hover:bg-destructive/20 rounded-full p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Category Selector */}
-        <Select onValueChange={handleAddCategory}>
+        {/* Category Selector (single select) */}
+        <Select
+          value={selectedCategoryId ? String(selectedCategoryId) : ""}
+          onValueChange={handleSelectCategory}
+        >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select categories" />
+            <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
@@ -144,13 +114,11 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
                 Error loading categories
               </SelectItem>
             ) : transactionCategories && transactionCategories.length > 0 ? (
-              transactionCategories
-                .filter((category: any) => !selectedCategoryIds.includes(category.id))
-                .map((category: any) => (
-                  <SelectItem key={category.id} value={String(category.id)}>
-                    {category.name}
-                  </SelectItem>
-                ))
+              transactionCategories.map((category: any) => (
+                <SelectItem key={category.id} value={String(category.id)}>
+                  {category.name}
+                </SelectItem>
+              ))
             ) : (
               <SelectItem value="empty" disabled>
                 No categories available

@@ -198,6 +198,7 @@ const ProductForm = () => {
           quantity: variation.quantity || 0,
           low_stock_threshold: variation.low_stock_threshold || 5,
           status: variation.status || "active",
+          image: variation.variant_image || undefined, // existing variant image URL
           attributes: variation.attributes?.map((attr: any) => ({
             attribute_id: attr.attribute.id,
             attribute_value_id: attr.value.id,

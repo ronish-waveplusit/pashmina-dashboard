@@ -162,7 +162,7 @@ const Index = () => {
             search: debouncedSearchQuery,
             per_page: ITEMS_PER_PAGE,
             ...(selectedStatus !== "all" && { status: selectedStatus }),
-            ...(selectedCategory !== "all" && { category: selectedCategory }),
+            ...(selectedCategory !== "all" && { category_id: selectedCategory }),
             ...(sortBy !== "none" && { sort_by: "name", sort_order: sortBy }),
         }),
         [page, debouncedSearchQuery, selectedStatus, selectedCategory, sortBy]
@@ -186,7 +186,7 @@ const Index = () => {
     });
 
     const categories = useMemo(() => {
-        return transactionCategories.map(cat => cat.name);
+        return transactionCategories.map((cat) => ({ id: cat.id, name: cat.name }));
     }, [transactionCategories]);
 
     const filteredAndSortedProducts = allProducts;
@@ -377,8 +377,8 @@ const Index = () => {
                                     >
                                         <option value="all">All Categories</option>
                                         {categories.map((category) => (
-                                            <option key={category} value={category}>
-                                                {category}
+                                            <option key={category.id} value={String(category.id)}>
+                                                {category.name}
                                             </option>
                                         ))}
                                     </select>

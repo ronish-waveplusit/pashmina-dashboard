@@ -31,6 +31,8 @@ const AddLotModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openSelectId, setOpenSelectId] = useState<number | null>(null);
+  // Per-row quantity validation errors (keyed by item id)
+  const [quantityErrors, setQuantityErrors] = useState<Record<number, string>>({});
 
   // Debounce search query
   useEffect(() => {
@@ -85,6 +87,7 @@ const AddLotModal = ({
       setImportedDate(new Date().toISOString().split('T')[0]);
       setSearchQuery("");
       setDebouncedSearch("");
+      setQuantityErrors({});
     }
   }, [isOpen, preSelectedProductId]);
 
@@ -120,9 +123,30 @@ const AddLotModal = ({
     setLotItems(lotItems.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ));
+    if (field === "quantity_received" && quantityErrors[id]) {
+      setQuantityErrors(prev => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    }
   };
 
   const handleSubmit = () => {
+    // Validate quantity received is greater than 0 for each row
+    const newQuantityErrors: Record<number, string> = {};
+    lotItems.forEach(item => {
+      const qty = parseInt(item.quantity_received);
+      if (!item.quantity_received || isNaN(qty) || qty <= 0) {
+        newQuantityErrors[item.id] = "Quantity received must be greater than 0";
+      }
+    });
+    setQuantityErrors(newQuantityErrors);
+
+    if (Object.keys(newQuantityErrors).length > 0) {
+      return;
+    }
+
     // Validate all fields are filled
     const isValid = lotItems.every(item =>
       item.lotable_id && item.quantity_received && item.import_price
@@ -316,9 +340,18 @@ const AddLotModal = ({
                           value={item.quantity_received}
                           onChange={(e) => updateLotItem(item.id, 'quantity_received', e.target.value)}
                           placeholder="Enter quantity"
-                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={`w-full px-2.5 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 ${
+                            quantityErrors[item.id]
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 focus:ring-blue-500"
+                          }`}
                           required
                         />
+                        {quantityErrors[item.id] && (
+                          <p className="text-xs text-red-600 mt-1">
+                            {quantityErrors[item.id]}
+                          </p>
+                        )}
                       </div>
 
                       <div>

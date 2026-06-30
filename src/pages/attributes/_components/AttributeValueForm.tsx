@@ -116,7 +116,15 @@ const handleSelectChange = (value: string) => {
         });
         setErrors(validationErrors);
       } else if (err instanceof AxiosError && err.response?.status === 422) {
-        setErrors(err.response.data.errors || {});
+        // Backend validates the value under the "name" key; the form shows it as "value"
+        const backendErrors: Record<string, string | string[]> = {
+          ...(err.response.data.errors || {}),
+        };
+        if (backendErrors.name) {
+          backendErrors.value = backendErrors.name;
+          delete backendErrors.name;
+        }
+        setErrors(backendErrors);
       } else {
         console.error("Submission error:", err);
       }

@@ -27,7 +27,7 @@ interface ProductFilters {
   search?: string;
   per_page?: number;
   status?: string;
-  category?: string;
+  category_id?: string | number;
   sort_by?: string;
   sort_order?: "asc" | "desc";
 }
@@ -81,7 +81,7 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
     search = "",
     per_page = 10,
     status,
-    category,
+    category_id,
     sort_by,
     sort_order,
   } = filters;
@@ -92,7 +92,7 @@ export const useProduct = (filters: ProductFilters = {}): UseProductReturn => {
     per_page,
     ...(search && { search }),
     ...(status && { status }),
-    ...(category && { category }),
+    ...(category_id && { category_id }),
     ...(sort_by && { sort_by }),
     ...(sort_order && { sort_order }),
   };
