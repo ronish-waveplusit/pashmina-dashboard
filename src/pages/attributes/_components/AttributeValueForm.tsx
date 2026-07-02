@@ -1,5 +1,5 @@
 // _components/AttributeValueForm.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -39,7 +39,13 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
   const [formData, setFormData] = useState({
     attribute_id: "",
     value: "", // this is what user types → will be sent as "name"
+    color_hash: "",
   });
+
+  const isColorAttribute = useMemo(() => {
+      const attr = attributes.find(a => a.id.toString() === formData.attribute_id);
+      return attr?.name.toLowerCase().includes('color');
+  }, [formData.attribute_id, attributes]);
 
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
 
@@ -49,11 +55,13 @@ export const AttributeValueForm: React.FC<AttributeValueFormProps> = ({
       setFormData({
         attribute_id: initialData.attribute_id.toString(),
         value: initialData.name || "", // ← API returns "name"
+        color_hash: initialData.color_hash || "",
       });
     } else if (selectedAttribute) {
       setFormData({
         attribute_id: selectedAttribute.id.toString(),
         value: "",
+        color_hash: "",
       });
     }
   }, [initialData, selectedAttribute, isEditMode]);
@@ -99,6 +107,9 @@ const handleSelectChange = (value: string) => {
       const payload = new FormData();
       payload.append("attribute_id", formData.attribute_id);
       payload.append("name", formData.value.trim()); // ← Send as "name"
+      if (isColorAttribute && formData.color_hash) {
+        payload.append("color_hash", formData.color_hash);
+      }
 
       if (isEditMode) {
         payload.append("_method", "PUT");
@@ -186,6 +197,35 @@ const handleSelectChange = (value: string) => {
             </p>
           )}
         </div>
+
+        {isColorAttribute && (
+          <div className="space-y-2">
+            <Label htmlFor="color_hash">Pick Color</Label>
+            <div className="flex gap-2">
+              <Input
+                id="color_hash"
+                name="color_hash"
+                type="color"
+                className="w-20 h-10 p-1"
+                value={formData.color_hash}
+                onChange={handleInputChange}
+              />
+              <Input
+                type="text"
+                value={formData.color_hash}
+                onChange={handleInputChange}
+                name="color_hash"
+                placeholder="#000000"
+                className="flex-1"
+              />
+            </div>
+            {errors.color_hash && (
+              <p className="text-sm text-red-600 mt-1">
+                {getErrorMessage(errors.color_hash)}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">

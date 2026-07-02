@@ -4,6 +4,7 @@ export interface AttributeValuePayload {
   id: string | number;
   attribute_id: string | number;
   name: string;
+  color_hash?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -30,4 +31,5 @@ export interface AttributeFormData {
 export interface AttributeValueFormData {
   attribute_id: string | number;
   name: string;
+  color_hash?: string;
 }
