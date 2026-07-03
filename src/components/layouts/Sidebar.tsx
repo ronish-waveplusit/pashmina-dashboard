@@ -10,6 +10,7 @@ import { UserRole } from "../../constants/user-roles";
 import { NAV_GROUPS } from "../../constants/navConstants";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useBrandingStore } from "../../store/brandingStore";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -25,7 +26,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   );
 
   const themeName = "New Monalisa Pashmina";
-  const themeLogo = "/newmonalisa.png";
+  // Prefer the uploaded logo (persisted branding store); fall back to bundled.
+  const brandingLogo = useBrandingStore((s) => s.logo);
+  const themeLogo = brandingLogo || "/newmonalisa.png";
   const { logout } = useAuth();
   const isMobile = useIsMobile();
 
@@ -176,7 +179,11 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
               alt={`${themeName} Logo`}
               className="h-20 w-auto object-contain"
               onError={(e) => {
-                e.currentTarget.style.display = "none";
+                if (e.currentTarget.src.endsWith("/newmonalisa.png")) {
+                  e.currentTarget.style.display = "none";
+                } else {
+                  e.currentTarget.src = "/newmonalisa.png";
+                }
               }}
             />
           ) : (

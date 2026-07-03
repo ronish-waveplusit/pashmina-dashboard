@@ -2,6 +2,7 @@ import React from "react";
 import { useLogin } from "../_hooks/useLogin";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { ROUTES } from "../../../routes/url.constants"; // Import ROUTES for navigation
+import { useBrandingStore } from "../../../store/brandingStore";
 
 
 const DesktopLogin: React.FC = () => {
@@ -14,6 +15,8 @@ const DesktopLogin: React.FC = () => {
     isLoginPending,
   } = useLogin();
   const navigate = useNavigate(); // Initialize useNavigate
+  // Uploaded logo (persisted from a previous session); fall back to the bundled image.
+  const logo = useBrandingStore((s) => s.logo);
 
   // Function to handle navigation to forgot password page
   const handleForgotPassword = () => {
@@ -26,9 +29,12 @@ const DesktopLogin: React.FC = () => {
         <div className="p-8">
           <div className="flex justify-center  h-[150px]">
             <img
-              src="/newmonalisa.png"
+              src={logo || "/newmonalisa.png"}
               alt="Pashmina"
               className="w-full h-full object-contain"
+              onError={(e) => {
+                e.currentTarget.src = "/newmonalisa.png";
+              }}
             />
           </div>
 

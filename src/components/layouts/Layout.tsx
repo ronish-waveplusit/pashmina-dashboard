@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useIsMobile } from "../../hooks/use-mobile";
 import { Coffee, Menu } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { useBrandingStore } from "../../store/brandingStore";
 import Sidebar from "./Sidebar";
 
 import UserMenu from "./UserMenu";
@@ -19,7 +20,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Access themeData from Redux store
 
     const themeName = "New Monalisa Pashmina";
-    const themeLogo = "/newmonalisa.png";
+    // Prefer the uploaded logo (persisted in the branding store); fall back to bundled.
+    const brandingLogo = useBrandingStore((s) => s.logo);
+    const themeLogo = brandingLogo || "/newmonalisa.png";
 
     return (
         <div className="flex min-h-screen bg-background w-full">

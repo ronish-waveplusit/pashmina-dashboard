@@ -3,6 +3,9 @@ export interface Setting {
   key: string;
   value: string | null;
   group: string;
+  /** Branding rows expose the uploaded file URL here rather than in `value`. */
+  logo?: string | null;
+  favicon?: string | null;
   created_at?: string;
   updated_at?: string;
 }

@@ -16,6 +16,7 @@ import {
 import { Settings as SettingsIcon, MessageSquareQuote } from "lucide-react";
 import { SETTINGS_GROUPS, GroupDef } from "./settingsConfig";
 import { GroupForm } from "./_components/GroupForm";
+import { BrandingSettings } from "./_components/BrandingSettings";
 import { TestimonialsManager } from "./_components/TestimonialsManager";
 import { useSettingsManager } from "./_hooks/useSettingsManager";
 
@@ -136,6 +137,20 @@ const Index = () => {
                       isSaving={isSaving && savingGroup === g.id}
                       disabled={g.hasImage ? aboutPageLoading : false}
                     />
+                    {g.id === "general" && (
+                      <BrandingSettings
+                        logoUrl={
+                          settingsMap.get("logo")?.logo ??
+                          settingsMap.get("logo")?.value ??
+                          null
+                        }
+                        faviconUrl={
+                          settingsMap.get("favicon")?.favicon ??
+                          settingsMap.get("favicon")?.value ??
+                          null
+                        }
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

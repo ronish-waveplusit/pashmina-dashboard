@@ -7,6 +7,13 @@ import AppProvider from "./utils/provider/app-provider";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 import AddLotPage from "./pages/inventory/_components/AddLotPage";
+import { useBranding } from "./hooks/useBranding";
+
+/** Applies the favicon and keeps the branding store in sync (must live inside AppProvider). */
+const BrandingBootstrap = () => {
+  useBranding();
+  return null;
+};
 const Index = lazy(() => import("./pages/Index"));
 const CategoryForm = lazy(() => import("./pages/category/Index"));
 const LoginPage = lazy(() => import("./pages/login/Page")); 
@@ -35,6 +42,7 @@ const LoadingFallback = () => (
 
   return (
    <AppProvider>
+   <BrandingBootstrap />
    <Suspense fallback={<LoadingFallback />}>
       <Routes>
          <Route path="/" element={<Index />} />
