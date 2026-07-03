@@ -91,42 +91,70 @@ const GeneralInformation = ({ formData, setFormData, errors={} }: Props) => {
         </div>
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-foreground block mb-2">
-          Category
-        </label>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-foreground block mb-2">
+            Category
+          </label>
 
-        {/* Category Selector (single select) */}
-        <Select
-          value={selectedCategoryId ? String(selectedCategoryId) : ""}
-          onValueChange={handleSelectCategory}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {isLoading ? (
-              <SelectItem value="loading" disabled>
-                Loading categories...
-              </SelectItem>
-            ) : isError ? (
-              <SelectItem value="error" disabled>
-                Error loading categories
-              </SelectItem>
-            ) : transactionCategories && transactionCategories.length > 0 ? (
-              transactionCategories.map((category: any) => (
-                <SelectItem key={category.id} value={String(category.id)}>
-                  {category.name}
+          {/* Category Selector (single select) */}
+          <Select
+            value={selectedCategoryId ? String(selectedCategoryId) : ""}
+            onValueChange={handleSelectCategory}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {isLoading ? (
+                <SelectItem value="loading" disabled>
+                  Loading categories...
                 </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="empty" disabled>
-                No categories available
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-        <FieldError errors={errors?.category_id} />
+              ) : isError ? (
+                <SelectItem value="error" disabled>
+                  Error loading categories
+                </SelectItem>
+              ) : transactionCategories && transactionCategories.length > 0 ? (
+                transactionCategories.map((category: any) => (
+                  <SelectItem key={category.id} value={String(category.id)}>
+                    {category.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="empty" disabled>
+                  No categories available
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+          <FieldError errors={errors?.category_id} />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground block mb-2">
+            Status (Public/Private)
+          </label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) =>
+              setFormData({ ...formData, status: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Public</SelectItem>
+              <SelectItem value="inactive">Private</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {formData.status === "active"
+              ? "Visible and available for purchase"
+              : "Hidden from customers"}
+          </p>
+          <FieldError errors={errors?.status} />
+        </div>
       </div>
        <div>
         <label className="text-sm font-medium text-foreground">Description</label>

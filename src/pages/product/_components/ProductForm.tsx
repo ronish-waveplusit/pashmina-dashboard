@@ -7,7 +7,6 @@ import { Label } from "../../../components/ui/label";
 import GeneralInformation from "./GeneralInformation";
 import ImageUpload, { GalleryImage } from "./ImageUpload";
 import PricingStock from "./PricingStock";
-import StatusSection from "./StatusSection";
 import VariantsSection from "./VariantsSection";
 import { toast } from "sonner";
 import Layout from "../../../components/layouts/Layout";
@@ -499,7 +498,7 @@ const ProductForm = () => {
               </CardContent>
             </Card>
 
-            {variationType === "color" ? (
+            {variationType === "color" && (
               <Card>
                 <CardHeader>
                   <CardTitle>Pricing And Stock</CardTitle>
@@ -509,26 +508,6 @@ const ProductForm = () => {
                     formData={colorFormData}
                     setFormData={setColorFormData}
                     errors={validationErrors}
-                  />
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Variants</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <VariantsSection
-                    formData={sizeColorFormData}
-                    setFormData={setSizeColorFormData}
-                    initialLocalAttributes={localAttributes}
-                    errors={validationErrors}
-                    onVariationDeleted={(variationId: number | undefined) => {
-                      if (variationId) {
-                        setDeletedVariationIds(prev => [...prev, variationId]);
-                      }
-                    }}
-
                   />
                 </CardContent>
               </Card>
@@ -552,26 +531,30 @@ const ProductForm = () => {
                 />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <StatusSection
-                  formData={variationType === "color" ? colorFormData : sizeColorFormData}
-                  setFormData={(data) => {
-                    if (variationType === "color") {
-                      setColorFormData(data as ColorProductFormData);
-                    } else {
-                      setSizeColorFormData(data as SizeColorProductFormData);
-                    }
-                  }}
-                />
-              </CardContent>
-            </Card>
           </div>
         </div>
+
+        {/* Variants span the full page width so many sizes have room */}
+        {variationType === "size_color" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Variants</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VariantsSection
+                formData={sizeColorFormData}
+                setFormData={setSizeColorFormData}
+                initialLocalAttributes={localAttributes}
+                errors={validationErrors}
+                onVariationDeleted={(variationId: number | undefined) => {
+                  if (variationId) {
+                    setDeletedVariationIds(prev => [...prev, variationId]);
+                  }
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex justify-end gap-3 mb-4">
           <Button

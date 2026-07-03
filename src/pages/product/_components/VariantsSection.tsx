@@ -3,7 +3,8 @@ import { Button } from "../../../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { SizeColorProductFormData } from "../../../types/product";
 import AttributeCard from "./AttributeCard";
-import VariationsList from "./VariationsList";
+import VariationMatrix from "./VariationMatrix";
+import BulkEditToolbar, { BulkUpdates } from "./BulkEditToolbar";
 import AddAttributesDialog from "./AddAttributesDialog";
 import { toast } from "sonner";
 
@@ -241,9 +242,16 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
         // Keep existing variation data
         return existing;
       } else {
-        // Create new variation
-        const sku = `SKU-${Date.now()}-${index}`;
-        
+        // Build a readable SKU from the product code + value abbreviations,
+        // e.g. PASH-RED-L, instead of an opaque timestamp.
+        const skuBase = (formData.code || "SKU")
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, "");
+        const skuParts = combo.map((c) =>
+          String(c.value).replace(/[^a-z0-9]/gi, "").toUpperCase().slice(0, 6)
+        );
+        const sku = [skuBase, ...skuParts].filter(Boolean).join("-") || `SKU-${index}`;
+
         return {
           sku,
           price: "",
@@ -275,10 +283,35 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
   };
 
   const removeVariation = (index: number) => {
+    // Tell the parent to schedule the backend delete when it's a saved variation.
+    const removed = formData.variations[index];
+    if (removed?.id && onVariationDeleted) {
+      onVariationDeleted(removed.id);
+    }
     setFormData({
       ...formData,
       variations: formData.variations.filter((_, i) => i !== index),
     });
+  };
+
+  // Apply a partial update to every variation matching the predicate. Powers
+  // the bulk-edit toolbar ("apply to all") and the grid's shared images /
+  // copy-across-row actions.
+  const bulkUpdateVariations = (
+    predicate: (v: (typeof formData.variations)[number]) => boolean,
+    updates: Partial<(typeof formData.variations)[number]>
+  ) => {
+    setFormData({
+      ...formData,
+      variations: formData.variations.map((v) =>
+        predicate(v) ? { ...v, ...updates } : v
+      ),
+    });
+  };
+
+  const applyToAll = (updates: BulkUpdates) => {
+    bulkUpdateVariations(() => true, updates);
+    toast.success(`Applied to all ${formData.variations.length} variations`);
   };
 
   return (
@@ -345,14 +378,21 @@ const VariantsSection = ({ formData, setFormData, initialLocalAttributes = [] , 
             </p>
           </div>
         ) : (
-          <VariationsList
-            variations={formData.variations}
-            attributes={localAttributes}
-            onUpdate={updateVariation}
-            onRemove={removeVariation}
-             onVariationDeleted={onVariationDeleted}
-             errors={errors}
-          />
+          <>
+            <BulkEditToolbar
+              count={formData.variations.length}
+              onApply={applyToAll}
+            />
+
+            <VariationMatrix
+              variations={formData.variations}
+              attributes={localAttributes}
+              onUpdate={updateVariation}
+              onBulkUpdate={bulkUpdateVariations}
+              onRemove={removeVariation}
+              errors={errors}
+            />
+          </>
         )}
       </TabsContent>
     </Tabs>
