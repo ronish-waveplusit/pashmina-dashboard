@@ -52,6 +52,8 @@ GET_FAQS:"/v1/cms/faqs",
   //theme settings
   GET_THEME: "cms/website-settings",
   GET_PUBLIC_THEME: "cms/public/web-settings",
+  //branding logo/favicon upload (multipart: key + file)
+  SAVE_MEDIA_SETTING: "cms/website-settings/media-settings",
   //Certficate
   GET_CERTIFICATE: "en/certificates",
   GET_PRODUCT_VARIATIONS:"/v1/product-variations",

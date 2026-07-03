@@ -137,20 +137,7 @@ const Index = () => {
                       isSaving={isSaving && savingGroup === g.id}
                       disabled={g.hasImage ? aboutPageLoading : false}
                     />
-                    {g.id === "general" && (
-                      <BrandingSettings
-                        logoUrl={
-                          settingsMap.get("logo")?.logo ??
-                          settingsMap.get("logo")?.value ??
-                          null
-                        }
-                        faviconUrl={
-                          settingsMap.get("favicon")?.favicon ??
-                          settingsMap.get("favicon")?.value ??
-                          null
-                        }
-                      />
-                    )}
+                    {g.id === "general" && <BrandingSettings />}
                   </CardContent>
                 </Card>
               </TabsContent>

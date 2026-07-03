@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import { Loader2, ImagePlus, Trash2 } from "lucide-react";
+import { Loader2, ImagePlus } from "lucide-react";
 import { toast } from "../../../components/ui/use-toast";
 import { saveBranding } from "../../../api/setting";
 import { useBrandingStore } from "../../../store/brandingStore";
@@ -33,30 +32,24 @@ const validateBrandingFile = (file: File): string | null => {
   return null;
 };
 
-interface Props {
-  /** Current logo URL from the settings API (server truth). */
-  logoUrl?: string | null;
-  /** Current favicon URL from the settings API (server truth). */
-  faviconUrl?: string | null;
-}
-
 interface Slot {
   file: File | null;
   preview: string | null;
-  remove: boolean;
   error: string | null;
 }
 
-const emptySlot: Slot = { file: null, preview: null, remove: false, error: null };
+const emptySlot: Slot = { file: null, preview: null, error: null };
 
 /**
- * Logo & favicon uploader. Sends both binaries (and delete_logo / delete_favicon
- * flags) in a single multipart request, then updates the persisted branding
- * store so the login page and browser tab reflect the change without a reload.
+ * Logo & favicon uploader. Images can only be replaced (not removed): picking a
+ * new file uploads it via the media-settings endpoint, then updates the
+ * persisted branding store so the login page, sidebar and browser tab reflect
+ * the change without a reload. Current images are read from the same store.
  */
-export const BrandingSettings: React.FC<Props> = ({ logoUrl, faviconUrl }) => {
-  const queryClient = useQueryClient();
+export const BrandingSettings: React.FC = () => {
   const setBranding = useBrandingStore((s) => s.setBranding);
+  const logoUrl = useBrandingStore((s) => s.logo);
+  const faviconUrl = useBrandingStore((s) => s.favicon);
 
   const [logo, setLogo] = useState<Slot>(emptySlot);
   const [favicon, setFavicon] = useState<Slot>(emptySlot);
@@ -72,77 +65,32 @@ export const BrandingSettings: React.FC<Props> = ({ logoUrl, faviconUrl }) => {
     }
     const error = validateBrandingFile(file);
     if (error) {
-      setSlot({ file: null, preview: null, remove: false, error });
+      setSlot({ file: null, preview: null, error });
       return false;
     }
-    setSlot({
-      file,
-      preview: URL.createObjectURL(file),
-      remove: false,
-      error: null,
-    });
+    setSlot({ file, preview: URL.createObjectURL(file), error: null });
     return true;
   };
 
-  const markRemove = (
-    setSlot: React.Dispatch<React.SetStateAction<Slot>>
-  ) => setSlot({ file: null, preview: null, remove: true, error: null });
-
-  const hasChanges =
-    logo.file !== null ||
-    favicon.file !== null ||
-    logo.remove ||
-    favicon.remove;
+  const hasChanges = logo.file !== null || favicon.file !== null;
 
   const handleSave = async () => {
-    // The settings endpoint is keyed, so logo and favicon go as separate
-    // requests, each carrying its own `key` + `group` (the endpoint rejects a
-    // request with no `key`). Binary is sent as `logo` / `favicon`; removal
-    // uses the `delete_logo` / `delete_favicon` flags.
-    // Uploads go as POST multipart (key + group + binary); deletes go as PUT
-    // with just the delete flag.
-    const requests: Promise<unknown>[] = [];
-
-    if (logo.file) {
-      const fd = new FormData();
-      fd.append("key", "logo");
-      fd.append("group", "general");
-      fd.append("logo", logo.file);
-      requests.push(saveBranding(fd, "post"));
-    } else if (logo.remove) {
-      requests.push(saveBranding({ delete_logo: 1 }, "put"));
-    }
-
-    if (favicon.file) {
-      const fd = new FormData();
-      fd.append("key", "favicon");
-      fd.append("group", "general");
-      fd.append("favicon", favicon.file);
-      requests.push(saveBranding(fd, "post"));
-    } else if (favicon.remove) {
-      requests.push(saveBranding({ delete_favicon: 1 }, "put"));
-    }
-
-    if (requests.length === 0) return;
+    // Replace-only: upload each picked image via the media-settings endpoint
+    // (key = logo_image | favicon_image, file = binary).
+    if (!logo.file && !favicon.file) return;
 
     setIsSaving(true);
     try {
-      await Promise.all(requests);
-      // Reflect the change immediately in the persisted store.
+      const [logoRes, faviconRes] = await Promise.all([
+        logo.file ? saveBranding("logo_image", logo.file) : null,
+        favicon.file ? saveBranding("favicon_image", favicon.file) : null,
+      ]);
+
+      // Update the persisted store from the URLs the server returned.
       setBranding({
-        ...(logo.file
-          ? { logo: logo.preview }
-          : logo.remove
-            ? { logo: null }
-            : {}),
-        ...(favicon.file
-          ? { favicon: favicon.preview }
-          : favicon.remove
-            ? { favicon: null }
-            : {}),
+        ...(logoRes?.url ? { logo: logoRes.url } : {}),
+        ...(faviconRes?.url ? { favicon: faviconRes.url } : {}),
       });
-      // Refetch settings so the store/store-URLs pick up the real server URLs.
-      queryClient.invalidateQueries({ queryKey: ["settings-all"] });
       setLogo(emptySlot);
       setFavicon(emptySlot);
       toast({ title: "Branding saved" });
@@ -171,9 +119,8 @@ export const BrandingSettings: React.FC<Props> = ({ logoUrl, faviconUrl }) => {
     setSlot: React.Dispatch<React.SetStateAction<Slot>>,
     boxClass: string
   ) => {
-    // Preview precedence: newly picked > removed (blank) > current server URL.
-    const shown = slot.preview ?? (slot.remove ? null : currentUrl ?? null);
-    const canRemove = !slot.remove && (slot.file !== null || !!currentUrl);
+    // Preview precedence: newly picked > current server URL.
+    const shown = slot.preview ?? currentUrl ?? null;
 
     return (
       <div className="rounded-lg border bg-muted/30 p-4">
@@ -211,24 +158,10 @@ export const BrandingSettings: React.FC<Props> = ({ logoUrl, faviconUrl }) => {
               <p className="text-xs text-muted-foreground">
                 New image selected — click Save to upload.
               </p>
-            ) : slot.remove ? (
-              <p className="text-xs text-red-600">
-                Will be removed on Save.
-              </p>
             ) : (
-              <p className="text-xs text-muted-foreground">{help}</p>
-            )}
-            {canRemove && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                onClick={() => markRemove(setSlot)}
-              >
-                <Trash2 className="mr-1 h-3 w-3" />
-                Remove
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                {help} Upload a new image to replace the current one.
+              </p>
             )}
           </div>
         </div>
@@ -241,8 +174,8 @@ export const BrandingSettings: React.FC<Props> = ({ logoUrl, faviconUrl }) => {
       <div>
         <h3 className="text-sm font-semibold">Branding</h3>
         <p className="text-xs text-muted-foreground">
-          Logo appears on the login page and admin header; the favicon is the
-          browser-tab icon.
+          Logo appears on the login page, sidebar and admin header; the favicon
+          is the browser-tab icon.
         </p>
       </div>
 

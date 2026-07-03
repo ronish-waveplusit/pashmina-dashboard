@@ -64,27 +64,34 @@ export async function updateSetting({
   }
 }
 
+export type MediaSettingKey = "logo_image" | "favicon_image";
+
+export interface MediaSettingResponse {
+  message: string;
+  key: MediaSettingKey;
+  url: string;
+}
+
 /**
- * Sends one branding change (logo or favicon) to the settings endpoint.
- * - Upload: POST multipart FormData with `key` + `group` + the `logo`/`favicon`
- *   binary.
- * - Delete: PUT with just `delete_logo` / `delete_favicon` = "1".
- * (POST/PUT /v1/cms/settings)
+ * Uploads one branding image (logo or favicon). Replace-only: POSTs a multipart
+ * FormData with `key` (logo_image | favicon_image) + `file` (binary) and returns
+ * the saved `{ key, url }`. (POST cms/website-settings/media-settings)
  */
 export async function saveBranding(
-  data: FormData | Record<string, unknown>,
-  method: "post" | "put" = "post"
-): Promise<unknown> {
+  key: MediaSettingKey,
+  file: File
+): Promise<MediaSettingResponse> {
   try {
-    const isFormData =
-      typeof FormData !== "undefined" && data instanceof FormData;
+    const formData = new FormData();
+    formData.append("key", key);
+    formData.append("file", file);
     const response = await http({
-      url: apiRoutes.GET_SETTINGS,
-      method,
-      data,
-      headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+      url: apiRoutes.SAVE_MEDIA_SETTING,
+      method: "post",
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error("Failed to save branding:", error);
     throw error;
