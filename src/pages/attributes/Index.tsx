@@ -1,5 +1,5 @@
 // Index.tsx
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import Layout from "../../components/layouts/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -94,6 +94,7 @@ const Index = () => {
         id: val.id,
         attribute_id: val.attribute_id,
         name: val.name,
+        color_hash: val.color_hash,
         created_at: val.created_at,
         updated_at: val.updated_at,
       })) || [],
@@ -123,6 +124,18 @@ const Index = () => {
       setEditingAttributeValue(attributeValue || null);
       setSelectedAttributeForValue(attribute || null);
     }
+  };
+
+  const handleEditValue = (
+    attribute: AttributeWithValues,
+    value: AttributeValuePayload
+  ) => {
+    handleOpenModal("attributeValue", attribute, {
+      id: value.id,
+      attribute_id: value.attribute_id,
+      name: value.name,
+      color_hash: value.color_hash,
+    });
   };
 
   const handleCloseModal = () => {
@@ -293,8 +306,8 @@ const Index = () => {
                     </TableHeader>
                     <TableBody>
                       {attributes.map((attribute, index) => (
-                        <>
-                          <TableRow key={attribute.id}>
+                        <Fragment key={attribute.id}>
+                          <TableRow>
                             <TableCell className="text-sm">
                               {(page - 1) * ITEMS_PER_PAGE + index + 1}
                             </TableCell>
@@ -312,7 +325,12 @@ const Index = () => {
                                   <>
                                     {attribute.attributeValues.slice(0, 3).map((val) => (
                                       <div key={val.id} className="relative group">
-                                        <Badge variant="secondary" className="pr-6 text-xs">
+                                        <Badge
+                                          variant="secondary"
+                                          className={`pr-6 text-xs ${canEdit ? "cursor-pointer" : ""}`}
+                                          onClick={canEdit ? () => handleEditValue(attribute, val) : undefined}
+                                          title={canEdit ? `Edit ${val.name}` : undefined}
+                                        >
                                           {val.name}
                                         </Badge>
                                         {canDelete && (
@@ -325,15 +343,20 @@ const Index = () => {
                                         )}
                                       </div>
                                     ))}
-                                    {attribute.attributeValues.length > 3 && (
-                                      <Badge
-                                        variant="outline"
-                                        className="cursor-pointer text-xs"
-                                        onClick={() => toggleExpandRow(attribute.id)}
-                                      >
-                                        +{attribute.attributeValues.length - 3} more
-                                      </Badge>
-                                    )}
+                                    {/* Always offer a way into the panel below. Gating this on
+                                        "more than 3 values" left short attributes with no route
+                                        to the edit and delete controls at all. */}
+                                    <Badge
+                                      variant="outline"
+                                      className="cursor-pointer text-xs"
+                                      onClick={() => toggleExpandRow(attribute.id)}
+                                    >
+                                      {expandedRows.has(attribute.id)
+                                        ? "Hide"
+                                        : attribute.attributeValues.length > 3
+                                          ? `+${attribute.attributeValues.length - 3} more`
+                                          : "Manage"}
+                                    </Badge>
                                   </>
                                 ) : (
                                   <Badge variant="outline" className="text-xs">No values</Badge>
@@ -398,14 +421,7 @@ const Index = () => {
                                             <Button
                                               variant="ghost"
                                               size="sm"
-                                              onClick={() => {
-                                                const valuePayload: AttributeValuePayload = {
-                                                  id: val.id,
-                                                  attribute_id: val.attribute_id,
-                                                  name: val.name,
-                                                };
-                                                handleOpenModal("attributeValue", attribute, valuePayload);
-                                              }}
+                                              onClick={() => handleEditValue(attribute, val)}
                                             >
                                               <Edit className="h-3 w-3" />
                                             </Button>
@@ -428,7 +444,7 @@ const Index = () => {
                               </TableCell>
                             </TableRow>
                           )}
-                        </>
+                        </Fragment>
                       ))}
                     </TableBody>
                   </Table>
@@ -466,7 +482,12 @@ const Index = () => {
                                 : attribute.attributeValues.slice(0, 5)
                               ).map((val) => (
                                 <div key={val.id} className="relative group">
-                                  <Badge variant="secondary" className="text-xs pr-6">
+                                  <Badge
+                                    variant="secondary"
+                                    className={`text-xs pr-6 ${canEdit ? "cursor-pointer" : ""}`}
+                                    onClick={canEdit ? () => handleEditValue(attribute, val) : undefined}
+                                    title={canEdit ? `Edit ${val.name}` : undefined}
+                                  >
                                     {val.name}
                                   </Badge>
                                   {canDelete && (
