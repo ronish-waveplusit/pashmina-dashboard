@@ -10,7 +10,7 @@ import PricingStock from "./PricingStock";
 import VariantsSection from "./VariantsSection";
 import { toast } from "sonner";
 import Layout from "../../../components/layouts/Layout";
-import { ColorProductFormData, SizeColorProductFormData } from "../../../types/product";
+import { appendVariations, ColorProductFormData, SizeColorProductFormData } from "../../../types/product";
 import { useProduct, useProductDetail } from "../_hooks/useProduct";
 import { validateProductForm } from "../_hooks/productSchema";
 type VariationType = "color" | "size_color";
@@ -350,40 +350,14 @@ const ProductForm = () => {
           });
         });
 
-        sizeColorFormData.variations.forEach((variation, varIdx) => {
-          // Only send variations that don't have an ID (new) or have an ID but weren't deleted
-          if (!variation.id || !deletedVariationIds.includes(variation.id)) {
-            // If variation has an ID, include it for update
-            if (variation.id) {
-              formData.append(`variations[${varIdx}][id]`, variation.id.toString());
-            }
+        // Drop the variations the user removed, then hand the rest to the
+        // shared encoder — one JSON field instead of ~11 form fields each, which
+        // is what keeps large matrices under PHP's max_input_vars limit.
+        const submittedVariations = sizeColorFormData.variations.filter(
+          (variation) => !variation.id || !deletedVariationIds.includes(variation.id)
+        );
 
-            formData.append(`variations[${varIdx}][sku]`, variation.sku);
-            formData.append(`variations[${varIdx}][price]`, variation.price);
-            formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);
-            formData.append(`variations[${varIdx}][quantity]`, variation.quantity.toString());
-            formData.append(
-              `variations[${varIdx}][low_stock_threshold]`,
-              variation.low_stock_threshold.toString()
-            );
-            formData.append(`variations[${varIdx}][status]`, variation.status);
-
-            variation.attributes.forEach((attr, attrIdx) => {
-              formData.append(
-                `variations[${varIdx}][attributes][${attrIdx}][attribute_id]`,
-                attr.attribute_id.toString()
-              );
-              formData.append(
-                `variations[${varIdx}][attributes][${attrIdx}][attribute_value_id]`,
-                attr.attribute_value_id.toString()
-              );
-            });
-
-            if (variation.image instanceof File) {
-              formData.append(`variations[${varIdx}][variant_image]`, variation.image);
-            }
-          }
-        });
+        appendVariations(formData, submittedVariations);
 
         // Send deleted variation IDs
         if (deletedVariationIds.length > 0 && isEditMode) {

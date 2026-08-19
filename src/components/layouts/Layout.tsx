@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     isMobile && "pb-16",
                 )}
             >
-                <div className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+                <div className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-20">
                     {/* Mobile menu button and logo */}
                     <div className="flex items-center space-x-3">
                         {isMobile && (

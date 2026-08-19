@@ -189,6 +189,48 @@ export function productResponseToFormData(
   }
 }
 
+// A single variation exactly as the product form submits it.
+export type SubmittedVariation = SizeColorProductFormData["variations"][number];
+
+/**
+ * Appends the variation set to `formData` as one JSON field plus deduplicated
+ * image parts.
+ *
+ * Sending every variation field as its own multipart part costs ~11 parts per
+ * variation, so a 12-colour x 8-size product needs over 1,000 of them. PHP
+ * caps that at `max_input_vars` / `max_multipart_body_parts` (1,000 by
+ * default), silently drops everything past the limit and the API then rejects
+ * the request with "variations.96.price is required". One JSON field keeps the
+ * part count flat no matter how many variations there are.
+ */
+export function appendVariations(
+  formData: FormData,
+  variations: SubmittedVariation[]
+): void {
+  // Every size of a colour shares one File object (the "copy to all sizes"
+  // button), so upload each file once and let the variations point at it.
+  const imageIndexes = new Map<File, number>();
+
+  const payload = variations.map(variation => {
+    const { image, ...rest } = variation;
+
+    if (!(image instanceof File)) {
+      return rest;
+    }
+
+    let imageIndex = imageIndexes.get(image);
+    if (imageIndex === undefined) {
+      imageIndex = imageIndexes.size;
+      imageIndexes.set(image, imageIndex);
+      formData.append(`variation_images[${imageIndex}]`, image);
+    }
+
+    return { ...rest, image_index: imageIndex };
+  });
+
+  formData.append("variations_json", JSON.stringify(payload));
+}
+
 // Helper to convert form data to FormData object
 export function productFormDataToFormData(
   data: ProductFormData | ProductFormDataWithId
@@ -254,36 +296,7 @@ export function productFormDataToFormData(
       });
     });
 
-    data.variations.forEach((variation, varIdx) => {
-      if (variation.id) {
-        formData.append(`variations[${varIdx}][id]`, variation.id.toString());
-      }
-      
-      formData.append(`variations[${varIdx}][sku]`, variation.sku);
-      formData.append(`variations[${varIdx}][price]`, variation.price);
-      formData.append(`variations[${varIdx}][sale_price]`, variation.sale_price);
-      formData.append(`variations[${varIdx}][quantity]`, variation.quantity.toString());
-      formData.append(
-        `variations[${varIdx}][low_stock_threshold]`,
-        variation.low_stock_threshold.toString()
-      );
-      formData.append(`variations[${varIdx}][status]`, variation.status);
-
-      variation.attributes.forEach((attr, attrIdx) => {
-        formData.append(
-          `variations[${varIdx}][attributes][${attrIdx}][attribute_id]`,
-          attr.attribute_id.toString()
-        );
-        formData.append(
-          `variations[${varIdx}][attributes][${attrIdx}][attribute_value_id]`,
-          attr.attribute_value_id.toString()
-        );
-      });
-
-      if (variation.image instanceof File) {
-        formData.append(`variations[${varIdx}][image]`, variation.image);
-      }
-    });
+    appendVariations(formData, data.variations);
 
     if (data.variant_images) {
       data.variant_images.forEach(img => {

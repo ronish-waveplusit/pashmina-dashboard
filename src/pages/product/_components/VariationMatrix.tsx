@@ -334,7 +334,7 @@ const VariationMatrix = ({
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-accent">
-              <th className="sticky left-0 z-10 min-w-[220px] border-b border-r border-border bg-accent px-3 py-2 text-left font-semibold">
+              <th className="sticky left-0 z-[1] min-w-[220px] border-b border-r border-border bg-accent px-3 py-2 text-left font-semibold">
                 {rowAttr.name} \ {colAttr.name}
               </th>
               {colValues.map((col) => (
@@ -355,7 +355,7 @@ const VariationMatrix = ({
               return (
                 <tr key={row.id} className="border-b border-border last:border-0">
                   {/* Row header: colour name + shared image + copy-across */}
-                  <th className="sticky left-0 z-10 border-r border-border bg-card px-3 py-3 text-left align-top">
+                  <th className="sticky left-0 z-[1] border-r border-border bg-card px-3 py-3 text-left align-top">
                     <div className="flex items-start gap-3">
                       <label className="group relative h-14 w-14 flex-shrink-0 cursor-pointer overflow-hidden rounded border border-input bg-background">
                         {imgUrl ? (
